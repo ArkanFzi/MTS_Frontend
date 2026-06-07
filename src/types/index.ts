@@ -39,15 +39,17 @@ export interface Tag {
 // ─── 4. WRAPPER PAGINATION GLOBAL (STANDAR LARAVEL API API RESOURCE) ───
 // Digunakan oleh fitur seperti Search, Home Feed, Trending, dll.
 export interface PaginatedResponse<T> {
-  data: T[];                   // Array data utama (misal: SearchResultItem[], Post[])
-  current_page: number;
-  last_page: number;
-  per_page: number;
-  total: number;
-  from: number | null;
-  to: number | null;
-  
-  // Struktur links bawaan API Resource Laravel (jika kamu membutuhkannya nanti)
+  status: string; // Tambahkan ini karena API Laravelmu mengirimnya
+  message: string;
+  data: T[]; 
+  meta: {
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from: number | null;
+    to: number | null;
+  };
   links?: {
     first: string;
     last: string;

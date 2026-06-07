@@ -28,9 +28,9 @@ export default function SearchPage() {
       
       setLoading(true);
       try {
-        const response = await fetchSearchPosts({ q: query, page: 1 });
-        setResults(response.data);
-        setTotalFound(response.total); // Diambil dari PaginatedResponse global
+          const response = await fetchSearchPosts({ q: query, page: 1 });
+        setResults(response.data); 
+        setTotalFound((response as any).meta?.total || 0); 
       } catch (error) {
         console.error("Gagal mengambil data pencarian:", error);
       } finally {

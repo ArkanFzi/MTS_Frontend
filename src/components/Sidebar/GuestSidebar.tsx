@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Home, TrendingUp, Tag, Trophy, LogIn, UserPlus } from 'lucide-react';
+import { Home, TrendingUp, Tag, Trophy, LogIn, UserPlus, Search } from 'lucide-react';
 import { Button } from '../ui/button';
 
 
@@ -9,6 +9,7 @@ export default function GuestSidebar() {
   // Daftar menu sesuai grup 'Jelajah' pada spesifikasi dokumen [cite: 19]
   const menuItems = [
     { name: 'Home Feed', path: '/', icon: <Home className="h-4 w-4" /> },
+    { name: 'Search Posts', path: '/search', icon: <Search className="h-4 w-4" /> },
     { name: 'Trending Posts', path: '/trending', icon: <TrendingUp className="h-4 w-4" /> },
     { name: 'Semua Tag', path: '/tags', icon: <Tag className="h-4 w-4" /> },
     { name: 'Papan Peringkat', path: '/leaderboard', icon: <Trophy className="h-4 w-4" /> },

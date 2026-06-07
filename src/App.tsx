@@ -1,16 +1,19 @@
-import './App.css'
-import AppRouter from './routes/AppRouter'
-import { BrowserRouter } from 'react-router-dom'
+import { BrowserRouter } from 'react-router-dom';
+import { ErrorBoundary } from 'react-error-boundary';
+import AppRouter from './routes/AppRouter';
+import ErrorFallback from './components/ErrorFallback/ErrorFallback';
 
-function App() {
-
+export default function App() {
   return (
-    <>
     <BrowserRouter>
-     <AppRouter/>
+      <ErrorBoundary 
+        FallbackComponent={ErrorFallback}
+        onReset={() => {
+          window.location.reload(); 
+        }}
+      >
+        <AppRouter />
+      </ErrorBoundary>
     </BrowserRouter>
-    </>
-  )
+  );
 }
-
-export default App

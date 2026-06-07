@@ -29,6 +29,8 @@ export interface Category {
 export interface Tag {
   id: string;                  // UUID
   name: string;
+  description: string | null; 
+  hex_color: string | null;
   slug: string;
   color: string;               // Menyimpan kode HEX (contoh: #D4AF37 atau #E53E3E)
   posts_count?: number;

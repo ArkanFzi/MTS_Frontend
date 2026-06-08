@@ -1,123 +1,162 @@
 import { Link } from "react-router-dom";
-import { User, Mail, Lock, RotateCcw } from "lucide-react";
+import { User, Mail, Lock, RotateCcw, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { Button } from "../../../../components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../../../../components/ui/card";
 import { Input } from "../../../../components/ui/input";
 import { Label } from "../../../../components/ui/label";
+import { useState } from "react";
 
 export function RegisterForm() {
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const handleRegisterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Taruh logika register/daftar API di sini
   };
 
   return (
-    <Card className="w-full max-w-sm h-fit">
-      <CardHeader className="space-y-1">
-        <div className="flex items-start justify-between gap-4">
-          <CardTitle className="text-xl font-bold tracking-tight">
-        Login Mau Tanya Suhu
-          </CardTitle>
-          <Link 
-            to="/login" 
-            className="text-sm font-medium text-lime-500 hover:text-lime-600 hover:underline transition-colors duration-200"
-          >
-            Login
-          </Link>
+    <Card className="w-full rounded-4xl max-w-sm h-fit bg-[#1d1d1f]/60 backdrop-blur-md border border-1 border-[#856e23] shadow-sm px-3 py-8">
+      <CardHeader className="space-y-4 text-center flex flex-col items-center">
+        <div className="p-3 rounded-2xl bg-[#353538] border-2 border-[#856e23] text-primary w-fit shadow-sm">
+          <User className="text-[#D4AF37] h-6 w-6" />
         </div>
-        <CardDescription>
-          Silakan isi data di bawah ini untuk membuat akun Anda
-        </CardDescription>
+
+        <div className="space-y-1">
+          <CardTitle className="text-xl font-bold tracking-tight text-foreground">
+            Create Account
+          </CardTitle>
+          <CardDescription className="text-muted-foreground text-sm">
+            Please fill in the data below to register.
+          </CardDescription>
+        </div>
       </CardHeader>
       
       <form onSubmit={handleRegisterSubmit}>
         <CardContent>
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-5">
             
-            {/* Input Username */}
             <div className="grid gap-2">
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="username" className="text-sm text-white font-semibold">
+                USERNAME
+              </Label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <User className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   id="username"
                   type="text"
-                  placeholder="Pilih username Anda"
-                  className="pl-9"
+                  placeholder="Select your username"
+                  className="h-10 pl-9 bg-muted border border-[#3f3f3f] text-foreground rounded-xl placeholder:text-muted-foreground/50 border-1 focus:bg-background focus-visible:border-[#D4AF37] focus-visible:ring-1 focus-visible:ring-[#856e23] transition-all"
                   required
                 />
               </div>
             </div>
 
-            {/* Input Alamat Email */}
             <div className="grid gap-2">
-              <Label htmlFor="email">Alamat Email</Label>
+              <Label htmlFor="email" className="text-sm text-white font-semibold">
+                EMAIL ADDRESS
+              </Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Mail className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   id="email"
                   type="email"
-                  placeholder="nama@email.com"
-                  className="pl-9"
+                  placeholder="expert@mautanyasuhu.com"
+                  className="h-10 pl-9 bg-muted border border-[#3f3f3f] text-foreground rounded-xl placeholder:text-muted-foreground/50 border-1 focus:bg-background focus-visible:border-[#D4AF37] focus-visible:ring-1 focus-visible:ring-[#856e23] transition-all"
                   required
                 />
               </div>
             </div>
 
-            {/* Input Kata Sandi */}
             <div className="grid gap-2">
-              <Label htmlFor="password">Kata Sandi</Label>
+              <Label htmlFor="password" className="text-sm text-white font-semibold">
+                PASSWORD
+              </Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   id="password"
-                  type="password"
-                  placeholder="Minimal 8 karakter"
-                  className="pl-9"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Minimum 8 characters"
+                  className="h-10 pl-9 bg-muted border border-[#3f3f3f] text-foreground rounded-xl placeholder:text-muted-foreground/50 border-1 focus:bg-background focus-visible:border-[#D4AF37] focus-visible:ring-1 focus-visible:ring-[#856e23] focus-visible:ring-offset-0 transition-all"
                   required
                 />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0 text-muted-foreground hover:bg-transparent hover:text-foreground"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4 text-[#D4AF37]" /> : <Eye className="h-4 w-4" />}
+                </Button>
               </div>
             </div>
 
-            {/* Input Konfirmasi Kata Sandi */}
             <div className="grid gap-2">
-              <Label htmlFor="confirm-password">Konfirmasi Kata Sandi</Label>
+              <Label htmlFor="confirm-password">
+                CONFIRM PASSWORD
+              </Label>
               <div className="relative">
                 <RotateCcw className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   id="confirm-password"
-                  type="password"
-                  placeholder="Ulangi kata sandi"
-                  className="pl-9"
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder="Repeat password"
+                  className="h-10 pl-9 bg-muted border border-[#3f3f3f] text-foreground rounded-xl placeholder:text-muted-foreground/50 border-1 focus:bg-background focus-visible:border-[#D4AF37] focus-visible:ring-1 focus-visible:ring-[#856e23] focus-visible:ring-offset-0 transition-all"
                   required
                 />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0 text-muted-foreground hover:bg-transparent hover:text-foreground"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  {showConfirmPassword ? <EyeOff className="h-4 w-4 text-[#D4AF37]" /> : <Eye className="h-4 w-4" />}
+                </Button>
               </div>
             </div>
 
-            {/* Checkbox Syarat & Ketentuan */}
-            <div className="flex items-start gap-2 pt-1">
+            <div className="flex items-center gap-2 pt-1">
               <input 
                 id="terms" 
                 type="checkbox" 
-                className="mt-1 h-4 w-4 rounded border-gray-300 text-lime-500 focus:ring-lime-500 accent-lime-500" 
+                className="h-4 w-4 rounded border-zinc-700 bg-transparent text-black accent-[#D4AF37] cursor-pointer" 
                 required 
               />
-              <label htmlFor="terms" className="text-xs text-muted-foreground leading-tight">
-                Saya setuju dengan{" "}
-                <a href="#" className="underline hover:text-lime-500">Syarat Ketentuan</a>{" "}
-                dan{" "}
-                <a href="#" className="underline hover:text-lime-500">Kebijakan Privasi</a>.
+              <label htmlFor="terms" className="text-xs text-muted-foreground cursor-pointer select-none">
+                I agree to the{" "}
+                <a href="#" className="underline hover:text-[#D4AF37] transition-colors">Terms of Service</a>{" "}
+                and{" "}
+                <a href="#" className="underline hover:text-[#D4AF37] transition-colors">Privacy Policy</a>.
               </label>
             </div>
 
           </div>
         </CardContent>
         <br />
-        <CardFooter className="pt-0">
-          {/* Tombol Submit Utama */}
-          <Button type="submit" className="w-full bg-lime-500 hover:bg-lime-600 text-black font-medium">
-            Daftar Sekarang
+        <CardFooter className="flex flex-col gap-4">
+          <Button 
+            type="submit" 
+            variant="default"
+            className="w-full font-bold rounded-xl flex items-center bg-[#D4AF37] hover:bg-[#d6a915] text-black justify-center gap-2 py-5 shadow-md transition-colors duration-300 ease-in-out active:scale-[0.8]"
+          >
+            Register Account <ArrowRight className="h-4 w-4" />
           </Button>
+
+          <div className="relative w-full">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-border" />
+            </div>
+          </div>
+          
+          <p className="text-sm text-muted-foreground text-center">
+            Already have an account?{" "}
+            <Link
+              to="/login"
+              className="text-primary hover:underline font-bold text-[#D4AF37]"
+            >
+              Login Here
+            </Link>
+          </p>
         </CardFooter>
       </form>
     </Card>

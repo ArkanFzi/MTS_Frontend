@@ -4,7 +4,7 @@ import { RegisterForm } from '../../features/Auth/F1_Register/components/Registe
 
 const RegisterPage = () => {
   return (
-    <div className="grid min-h-screen w-screen place-items-center bg-zinc-50 p-4">
+    <div className="grid min-h-screen w-screen place-items-center p-4">
 <RegisterForm/>
     </div>
   )

@@ -4,7 +4,7 @@ import type { SearchQuery, SearchResponse } from '../types';
 
 // Setup instance axios dasar
 const apiClient = axios.create({
-  baseURL: 'http://localhost:8000', // Sesuaikan port Laravel-mu
+  baseURL: 'http://localhost:8000/api', // Sesuaikan port Laravel-mu
   headers: {
     'Content-Type': 'application/json',
   },

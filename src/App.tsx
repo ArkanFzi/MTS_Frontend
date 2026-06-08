@@ -1,18 +1,19 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
-import AppRouter from './routes/AppRouter'
+import { BrowserRouter } from 'react-router-dom';
+import { ErrorBoundary } from 'react-error-boundary';
+import AppRouter from './routes/AppRouter';
+import ErrorFallback from './components/ErrorFallback/ErrorFallback';
 
-function App() {
-  const [count, setCount] = useState(0)
-
+export default function App() {
   return (
-    <>
-    <AppRouter/>
-    </>
-  )
+    <BrowserRouter>
+      <ErrorBoundary 
+        FallbackComponent={ErrorFallback}
+        onReset={() => {
+          window.location.reload(); 
+        }}
+      >
+        <AppRouter />
+      </ErrorBoundary>
+    </BrowserRouter>
+  );
 }
-
-export default App

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { Outlet, Navigate } from 'react-router-dom';
 
 export default function PublicLayout() {
@@ -24,6 +25,22 @@ export default function PublicLayout() {
       <footer className="absolute bottom-4 w-full text-center text-xs text-slate-400">
         &copy; {new Date().getFullYear()} MTS-Frontend. All rights reserved.
       </footer>
+=======
+import { Outlet } from 'react-router-dom';
+import GuestSidebar from '../components/Sidebar/GuestSidebar';
+
+
+export default function PublicLayout() {
+  return (
+    <div className="min-h-screen w-full bg-[#0B0B0C] text-[#FOFOFO] flex font-['Inter']">
+      
+      <GuestSidebar />
+
+      <main className="flex-1 min-w-0 overflow-y-auto">
+        <Outlet />
+      </main>
+
+>>>>>>> ee1f51ead7f09bd838620ec8220ee39cb6f956be
     </div>
   );
 }

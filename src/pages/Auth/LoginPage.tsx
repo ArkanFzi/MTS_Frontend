@@ -1,9 +1,10 @@
-import React from 'react'
+import { LoginForm } from "../../features/Auth/F2_Login/components/LoginForm";
 
-const LoginPage = () => {
+export default function LoginPage() {
   return (
-    <div>LoginPage</div>
+    <div className="grid min-h-screen w-screen place-items-center  p-4">
+      <LoginForm />
+
+    </div>
   )
 }
-
-export default LoginPage

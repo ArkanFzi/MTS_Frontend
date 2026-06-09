@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarImage, AvatarFallback } from '../../../../components/ui/avatar';
 import { Button } from '../../../../components/ui/button';
 import type { NotificationItem } from '../types';
-import TechnicalTimestamp from '../../../../components/shared/TechnicalTimestamp';
 import { Bell, CheckCircle2, MessageSquare, ThumbsUp, Award } from 'lucide-react';
+import TechnicalTimestamp from '../../../../components/shared/TechnicalTimestamp';
 
 interface NotificationRowProps {
   notification: NotificationItem;
@@ -95,3 +95,5 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({ notification, 
     </div>
   );
 };
+
+export default TechnicalTimestamp;

@@ -1,29 +1,19 @@
-import { AlertTriangle, RefreshCcw } from 'lucide-react';
-import type { FallbackProps } from 'react-error-boundary';
+import { AlertCircle } from "lucide-react";
 
-export default function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
+export default function ErrorFallback({ error, resetErrorBoundary }: any) {
   return (
-    // 1. Tambahkan fixed, inset-0, dan z-50 untuk fullscreen
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0B0B0C] p-6 text-center">
+    <div className="flex flex-col items-center justify-center py-20 text-center text-red-400">
+      <AlertCircle className="w-12 h-12 mb-4" />
+      <h2 className="text-xl font-bold text-white">Gagal Memuat Data</h2>
+      <p className="text-sm text-zinc-500 mb-6">{error.message}</p>
       
-      {/* Container pesan error */}
-      <div className="max-w-md w-full flex flex-col items-center">
-        <AlertTriangle className="w-20 h-20 text-[#E53E3E] mb-6 animate-pulse" />
-        
-        <h2 className="text-3xl font-bold text-white mb-3">Oops! Ada yang error</h2>
-        <p className="text-zinc-400 text-sm mb-8 bg-[#161618] p-4 rounded-lg border border-red-900/30">
-          {error instanceof Error ? error.message : "Terjadi kesalahan yang tidak terduga"}
-        </p>
-        
-        <button 
-          onClick={resetErrorBoundary}
-          className="flex items-center gap-2 px-6 py-3 bg-[#D4AF37] text-black font-bold text-lg rounded-xl hover:bg-[#b8962f] transition-all transform hover:scale-105"
-        >
-          <RefreshCcw className="w-5 h-5" />
-          Coba Muat Ulang
-        </button>
-      </div>
-      
+      {/* Tombol ini akan memanggil onReset dan mencoba re-render komponen */}
+      <button 
+        onClick={resetErrorBoundary}
+        className="px-6 py-2 bg-[#D4AF37] text-black font-bold rounded-lg hover:bg-[#b8962d] transition-colors"
+      >
+        Coba Lagi
+      </button>
     </div>
   );
 }

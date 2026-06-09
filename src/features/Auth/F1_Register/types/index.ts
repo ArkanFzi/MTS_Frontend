@@ -1,3 +1,4 @@
+// src/features/Auth/F1_Register/types/index.ts
 export interface RegisterPayload {
   username: string;
   email: string;
@@ -5,19 +6,13 @@ export interface RegisterPayload {
   password_confirmation: string;
 }
 
-// RESPONSE dari API jika berhasil
 export interface RegisterResponse {
   message: string;
-  user: {
-    id: string;
-    username: string;
-    email: string;
-  };
+  user: import('@/types').User;
 }
 
-// State form validation error
-export interface RegisterFormErrors {
-  username?: string[];
-  email?: string[];
-  password?: string[];
+export interface RegisterFormProps {
+  onSubmit: (data: RegisterPayload) => void;
+  isLoading: boolean;
+  errorMsg: string;
 }

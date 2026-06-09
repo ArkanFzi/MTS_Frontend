@@ -15,3 +15,9 @@ export interface LoginFormErrors {
   password?: string[];
   general?: string; // "The provided credentials are incorrect"
 }
+
+export interface LoginFormProps {
+  onSubmit: (email: string, password: string, rememberMe: boolean) => void;
+  isLoading: boolean;
+  errorMsg: string;
+}

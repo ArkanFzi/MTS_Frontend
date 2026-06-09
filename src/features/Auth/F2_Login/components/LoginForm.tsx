@@ -1,6 +1,10 @@
 import { Link } from "react-router-dom";
 import { Lock, Mail, Key, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+
 import { Button } from "../../../../components/ui/button";
 import {
   Card,
@@ -12,25 +16,29 @@ import {
 } from "../../../../components/ui/card";
 import { Input } from "../../../../components/ui/input";
 import { Label } from "../../../../components/ui/label";
+import type { LoginFormProps } from "../types";
 
-// Bikin interface props untuk menerima data & fungsi dari Container
-interface LoginFormProps {
-  onSubmit: (email: string, password: string, rememberMe: boolean) => void;
-  isLoading: boolean;
-  errorMsg: string;
-}
+// ✅ Validasi Zod
+const loginSchema = z.object({
+  email: z.string().email("Format email tidak valid"),
+  password: z.string().min(1, "Password wajib diisi"),
+  rememberMe: z.boolean().default(false),
+});
+
+type LoginSchema = z.infer<typeof loginSchema>;
+
+
 
 export function LoginForm({ onSubmit, isLoading, errorMsg }: LoginFormProps) {
-  // State UI lokal murni untuk inputan saja
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Panggil fungsi onSubmit bawaan dari props (dikirim dari LoginPage)
-    onSubmit(email, password, rememberMe);
+  const { register, handleSubmit, formState: { errors } } = useForm<LoginSchema>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: "", password: "", rememberMe: false }
+  });
+
+  const handleFormSubmit = (data: LoginSchema) => {
+    onSubmit(data.email, data.password, data.rememberMe);
   };
 
   return (
@@ -50,7 +58,7 @@ export function LoginForm({ onSubmit, isLoading, errorMsg }: LoginFormProps) {
         </div>
       </CardHeader>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit(handleFormSubmit)}>
         <CardContent>
           <div className="flex flex-col gap-5">
             {/* ALERT ERROR BACKEND DARI PROPS */}
@@ -61,10 +69,7 @@ export function LoginForm({ onSubmit, isLoading, errorMsg }: LoginFormProps) {
             )}
 
             <div className="grid gap-2">
-              <Label
-                htmlFor="email"
-                className="text-sm text-white font-semibold"
-              >
+              <Label htmlFor="email" className="text-sm text-white font-semibold">
                 EMAIL ADDRESS
               </Label>
               <div className="relative">
@@ -73,26 +78,19 @@ export function LoginForm({ onSubmit, isLoading, errorMsg }: LoginFormProps) {
                   id="email"
                   type="email"
                   placeholder="expert@mautanyasuhu.com"
-                  className="h-10 pl-9 bg-muted border border-[#3f3f3f] text-foreground rounded-xl placeholder:text-muted-foreground/50 border-1 focus:bg-background focus-visible:border-[#D4AF37] focus-visible:ring-1 focus-visible:ring-[#856e23] transition-all"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  className={`h-10 pl-9 bg-muted border ${errors.email ? 'border-red-500' : 'border-[#3f3f3f]'} text-foreground rounded-xl placeholder:text-muted-foreground/50 border-1 focus:bg-background focus-visible:border-[#D4AF37] focus-visible:ring-1 focus-visible:ring-[#856e23] transition-all`}
+                  {...register("email")}
                 />
               </div>
+              {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email.message}</p>}
             </div>
             
             <div className="grid gap-2">
               <div className="flex items-center justify-between w-full">
-                <Label
-                  htmlFor="password"
-                  className="text-sm text-white font-semibold"
-                >
+                <Label htmlFor="password" className="text-sm text-white font-semibold">
                   PASSWORD
                 </Label>
-                <Link
-                  to="/forgot-password"
-                  className="text-xs text-primary hover:underline font-semi-bold"
-                >
+                <Link to="/forgot-password" className="text-xs text-primary hover:underline font-semi-bold">
                   Lupa kata sandi?
                 </Link>
               </div>
@@ -102,10 +100,8 @@ export function LoginForm({ onSubmit, isLoading, errorMsg }: LoginFormProps) {
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
-                  className="h-10 pl-9 bg-muted border border-[#3f3f3f] text-foreground rounded-xl placeholder:text-muted-foreground/50 border-1 focus:bg-background focus-visible:border-[#D4AF37] focus-visible:ring-1 focus-visible:ring-[#856e23] focus-visible:ring-offset-0 transition-all"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  className={`h-10 pl-9 bg-muted border ${errors.password ? 'border-red-500' : 'border-[#3f3f3f]'} text-foreground rounded-xl placeholder:text-muted-foreground/50 border-1 focus:bg-background focus-visible:border-[#D4AF37] focus-visible:ring-1 focus-visible:ring-[#856e23] focus-visible:ring-offset-0 transition-all`}
+                  {...register("password")}
                 />
                 <Button
                   type="button"
@@ -116,20 +112,17 @@ export function LoginForm({ onSubmit, isLoading, errorMsg }: LoginFormProps) {
                   {showPassword ? <EyeOff className="h-4 w-4 text-[#D4AF37]" /> : <Eye className="h-4 w-4" />}
                 </Button>
               </div>
+              {errors.password && <p className="text-red-400 text-xs mt-1">{errors.password.message}</p>}
             </div>
 
             <div className="flex items-center gap-2 pt-1">
               <input
                 id="remember"
                 type="checkbox"
-                className="h-4 w-4 rounded border-zinc-700 bg-transparent text-black accent-[#D4AF37] cursor-pointer "
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
+                className="h-4 w-4 rounded border-zinc-700 bg-transparent text-black accent-[#D4AF37] cursor-pointer"
+                {...register("rememberMe")}
               />
-              <label
-                htmlFor="remember"
-                className="text-sm font-medium cursor-pointer select-none text-muted-foreground"
-              >
+              <label htmlFor="remember" className="text-sm font-medium cursor-pointer select-none text-muted-foreground">
                 Ingat Saya
               </label>
             </div>
@@ -153,10 +146,7 @@ export function LoginForm({ onSubmit, isLoading, errorMsg }: LoginFormProps) {
           </div>
           <p className="text-sm text-muted-foreground text-center">
             Don't have an account?{" "}
-            <Link
-              to="/register"
-              className="text-primary hover:underline font-bold"
-            >
+            <Link to="/register" className="text-primary hover:underline font-bold">
               Register Now
             </Link>
           </p>

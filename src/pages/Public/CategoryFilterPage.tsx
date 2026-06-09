@@ -1,7 +1,9 @@
 import React from 'react'
 
-export const CategoryFilterPage = () => {
+const CategoryFilterPage = () => {
   return (
     <div>CategoryFilterPage</div>
   )
 }
+
+export default CategoryFilterPage

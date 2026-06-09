@@ -1041,7 +1041,8 @@ export interface ModActionLog extends import('@/types').ModerationLog {
 | # | Method | Endpoint | Guard | Deskripsi |
 |---|--------|----------|-------|-----------|
 | 1 | `GET` | `/api/moderator/bans` | 🔒 Moderator/Admin | Daftar user yang sedang dibanned |
-| 2 | `POST` | `/api/moderator/bans/{id}/ban` | 🔒 Moderator/Admin | Eksekusi ban |
+| 2 | `POST` | `/api/moderator/bans/{id}/warn |
+| POST | /api/moderator/bans/{id}/ban` | 🔒 Moderator/Admin | Eksekusi ban |
 | 3 | `POST` | `/api/moderator/bans/{id}/unban` | 🔒 Moderator/Admin | Cabut ban |
 
 #### TypeScript Interface (`features/Moderator/F15_UserBanSanction/types/index.ts`):
@@ -1362,7 +1363,8 @@ export interface BadgePayload {
 | `PUT /moderator/reports/{id}` | ReportQueuePage |
 | `GET /moderator/logs` | ActionLogPage |
 | `GET /moderator/bans` | BanManagementPage |
-| `POST /moderator/bans/{id}/ban` | BanManagementPage |
+| `POST /moderator/bans/{id}/warn |
+| POST | /api/moderator/bans/{id}/ban` | BanManagementPage |
 | `POST /moderator/bans/{id}/unban` | BanManagementPage |
 | `GET /moderator/posts/{post}/history` | PostEditHistoryPage, EditHistoryPage |
 | `GET /moderator/comments/{comment}/history` | CommentEditHistoryPage, EditHistoryPage |

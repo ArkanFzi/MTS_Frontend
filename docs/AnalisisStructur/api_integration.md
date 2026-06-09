@@ -15,6 +15,8 @@ Semua request (kecuali yang di blok Publik) **wajib menyertakan header otorisasi
 | **F1_Register** | `POST` | `/api/auth/register` | `username`, `email`, `password`, `password_confirmation` | Registrasi akun baru (Publik) |
 | **F2_Login** | `POST` | `/api/auth/login` | `email`, `password` | Mengembalikan Bearer Token (Publik) |
 | **F3_Logout** | `POST` | `/api/auth/logout` | *(kosong)* | Menghapus token di server (Wajib Login) |
+| **F31_ForgotPassword**| `POST` | `/api/auth/forgot-password`| `email` | Meminta link reset password (Publik) |
+| **F31_ForgotPassword**| `POST` | `/api/auth/reset-password`| `email`, `token`, `password`, `password_confirmation` | Mengatur ulang password (Publik) |
 
 ---
 
@@ -65,6 +67,7 @@ Semua request (kecuali yang di blok Publik) **wajib menyertakan header otorisasi
 | **F28_ProfileSettings** (Pass)| `PUT` | `/api/settings/password` | `current_password`, `new_password` |
 | **F29_BadgeAchievement** | `GET` | `/api/me/badges` | Ambil koleksi medali milik sendiri |
 | **F30_UserReport** | `POST` | `/api/reports` | `reportable_id`, `reportable_type`, `reason`, `description` |
+| **TagManagement** | `POST` | `/api/tags` | `name`, `color` | Menambah tag baru oleh user login |
 
 ---
 
@@ -77,7 +80,9 @@ Semua request (kecuali yang di blok Publik) **wajib menyertakan header otorisasi
 | **F13_ContentReportQueue**| `PUT` | `/api/moderator/reports/{id}` | Update status laporan (Resolved/Rejected) |
 | **F14_ModeratorActionLog**| `GET` | `/api/moderator/logs` | Lihat rekam jejak keputusan semua moderator |
 | **F15_UserBanSanction** | `GET` | `/api/moderator/bans` | Lihat daftar user yang sedang dibanned |
+| **F15_UserBanSanction** | `POST` | `/api/moderator/bans/{id}/warn` | Kirim peringatan ke user |
 | **F15_UserBanSanction** | `POST` | `/api/moderator/bans/{id}/ban` (dan `/unban`) | Eksekusi hukuman ban/unban ke user |
+| **Moderation** | `DELETE`| `/api/moderator/posts/{post}/comments/{comment}`| Hapus paksa komentar (Moderator/Admin) |
 
 > *Moderator juga memiliki akses CRUD ke Categories, Badges, dan Tags layaknya Admin.*
 
@@ -93,7 +98,8 @@ Semua request (kecuali yang di blok Publik) **wajib menyertakan header otorisasi
 | **F8_RoleAndPermission** | `GET, POST, PUT, DEL` | `/api/admin/roles` | Manajemen nama Role dan JSON permissions |
 | **F9_UserManagement** | `GET` | `/api/admin/users` (dan `/{id}`) | Direktori seluruh tabel `users` |
 | **F9_UserManagement** | `PUT` | `/api/admin/users/{id}/role` | Mengubah/assign jabatan (role) ke user |
-| **F9_UserManagement** | `PUT` | `/api/admin/users/{id}/profile` | Otoritas paksa ubah profil orang (termasuk reset password) |
+| **F9_UserManagement** | `PUT` | `/api/admin/users/{id}/profile` | Otoritas paksa ubah profil orang |
+| **F9_UserManagement** | `PUT` | `/api/admin/users/{id}/reset-password`| Otoritas paksa reset password |
 | **F10_CategoryMaster** | `GET, POST, PUT, DEL` | `/api/admin/categories` (atau via `/moderator/categories`) | CRUD Rumpun Kategori Forum |
 | **F11_BadgeMaster** | `GET, POST, PUT, DEL` | `/api/admin/badges` | CRUD Master Reward Lencana |
 | **F12_TagMaster** | `GET, POST, PUT, DEL` | `/api/admin/tags` | CRUD Master warna Tag dan slug |

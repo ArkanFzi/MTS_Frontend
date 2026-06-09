@@ -28,7 +28,8 @@ Modules/
 ├── Auth/
 │   ├── F1_Register/   → {Controllers, Services, Repositories, Requests}
 │   ├── F2_Login/      → {Controllers, Services, Repositories, Requests}
-│   └── F3_Logout/     → {Controllers, Services, Repositories, Requests}
+│   ├── F3_Logout/     → {Controllers, Services, Repositories, Requests}
+│   └── F31_ForgotPassword/ → {Controllers, Services, Repositories, Requests}
 │
 ├── Common/
 │   ├── F4_SearchPost/          → API pencarian teks penuh
@@ -108,7 +109,8 @@ src/
 │   ├── Auth/
 │   │   ├── F1_Register/   → api/index.ts | components/{RegisterForm, TermsCheckbox}.tsx | types/index.ts
 │   │   ├── F2_Login/      → api/index.ts | components/LoginForm.tsx | types/index.ts
-│   │   └── F3_Logout/     → api/index.ts | components/LogoutButton.tsx | types/index.ts
+│   │   ├── F3_Logout/     → api/index.ts | components/LogoutButton.tsx | types/index.ts
+│   │   └── F31_ForgotPassword/ → api/index.ts | components/ForgotPasswordForm.tsx | types/index.ts
 │   │
 │   ├── Common/
 │   │   ├── F4_SearchPost/          → api/ | components/SearchBar.tsx | types/
@@ -268,7 +270,7 @@ AppRouter.tsx  →  PublicLayout.tsx  →  RegisterPage.tsx (Smart Container)
 | Admin | 5 folder (F8-F12) | 5 folder (F8-F12) | ✅ 100% |
 | Moderator | 3 folder (F13-F15) | 3 folder (F13-F15) | ✅ 100% |
 | User | 15 folder (F16-F30) | 15 folder (F16-F30) | ✅ 100% |
-| **TOTAL** | **30 folder** | **30 folder** | ✅ **100% MATCH** |
+| **TOTAL** | **31 folder** | **31 folder** | ✅ **100% MATCH** |
 
 
 

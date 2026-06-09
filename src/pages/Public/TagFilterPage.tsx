@@ -1,124 +1,122 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ErrorBoundary, useErrorBoundary } from 'react-error-boundary';
 
-// Impor tipe data & fungsi API dengan relative path yang aman
+import ErrorFallback from '../../components/ErrorFallback/ErrorFallback';
+import TagPostCard from '../../features/Common/F5_FilterByTag/components/TagPostCard';
 import type { TagDetailData } from '../../features/Common/F5_FilterByTag/types';
 import { getPostsByTag } from '../../features/Common/F5_FilterByTag/api';
+import TagHeader from '../../features/Common/F5_FilterByTag/components/TagHeader';
+import { Button } from '../../components/ui/button'; // TAMBAHAN IMPORT
 
-// BIKIN AMAN: Impor langsung secara spesifik ke file fisik TagHeader.tsx (Hindari folder induk/index.ts)
-import TagHeader from '../../components/TagHeader'; 
-
-// Impor komponen kartu postingan fitur
-import TagPostCard from '../../features/Common/F5_FilterByTag/components/TagPostCard';
-
-export default function TagFilterPage() {
+function TagFilterContent() {
   const { slug } = useParams<{ slug: string }>();
+  const { showBoundary } = useErrorBoundary();
+  
   const [data, setData] = useState<TagDetailData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const [loadingMore, setLoadingMore] = useState<boolean>(false);
   const [page, setPage] = useState<number>(1);
 
+  // Jika tag slug berubah, reset page dan data
   useEffect(() => {
-    if (!slug) return;
+    setData(null);
+    setPage(1);
+  }, [slug]);
 
-    // Definisikan fungsi fetcher di dalam useEffect agar trackable
-    const fetchTagContent = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await getPostsByTag(slug, page);
-        if (res.success && res.data) {
+  const fetchTagContent = useCallback(async () => {
+    if (!slug) return;
+    
+    if (page === 1) setLoading(true);
+    else setLoadingMore(true);
+    
+    try {
+      const res = await getPostsByTag(slug, page);
+      
+      if (res.success) {
+        if (page === 1) {
           setData(res.data);
         } else {
-          setError(res.message || 'Gagal memuat data taksonomi tag.');
+          // Append postingan baru ke array yang sudah ada tanpa menimpa data lama
+          setData(prev => {
+            if (!prev) return res.data;
+            return {
+              ...res.data,
+              posts: {
+                ...res.data.posts,
+                data: [...prev.posts.data, ...res.data.posts.data]
+              }
+            };
+          });
         }
-      } catch (err: any) {
-        setError(err.response?.data?.message || 'Terjadi kesalahan koneksi ke server backend.');
-      } finally {
-        setLoading(false);
+      } else {
+        throw new Error(res.message || 'Terjadi kesalahan sistem.');
       }
-    };
+    } catch (err: any) {
+      showBoundary(err);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  }, [slug, page, showBoundary]);
 
+  useEffect(() => {
     fetchTagContent();
-  }, [slug, page]);
+  }, [fetchTagContent]);
 
-  // State Loading Spinner (Hanya tampil jika data belum ada)
-  if (loading && !data) {
+  if (loading && page === 1) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] text-zinc-400 gap-3">
         <Loader2 className="w-8 h-8 animate-spin text-[#D4AF37]" />
-        <p className="text-sm font-fira-code">Menyinkronkan repositori tag #{slug}...</p>
       </div>
     );
   }
 
-  // State Error Box
-  if (error) {
-    return (
-      <div className="bg-[#161618] border border-red-900/30 rounded-xl p-6 text-center max-w-lg mx-auto my-10 space-y-4">
-        <div className="inline-flex p-3 rounded-full bg-red-500/10 text-[#E53E3E]">
-          <AlertCircle className="w-6 h-6" />
-        </div>
-        <h3 className="text-white font-semibold">Gagal Memuat Konten</h3>
-        <p className="text-zinc-400 text-sm font-inter">{error}</p>
-        <Link to="/" className="inline-flex items-center gap-2 text-xs text-[#D4AF37] hover:underline pt-2">
-          <ArrowLeft className="w-3.5 h-3.5" /> Kembali ke Beranda
-        </Link>
-      </div>
-    );
-  }
+  const posts = data?.posts?.data || [];
+  const hasMore = data?.posts ? data.posts.current_page < data.posts.last_page : false;
 
   return (
     <div className="space-y-6">
-      {/* Navigasi Back / Breadcrumb */}
-      <Link 
-        to="/" 
-        className="inline-flex items-center gap-2 text-xs text-zinc-400 hover:text-[#D4AF37] transition-colors font-fira-code mb-2"
-      >
+      <Link to="/" className="inline-flex items-center gap-2 text-xs text-zinc-400 hover:text-[#D4AF37] transition-colors font-fira-code mb-2">
         <ArrowLeft className="w-3.5 h-3.5" /> EXPLORE_ROOT / TAGS
       </Link>
 
-      {/* Render Header Informasi Tag */}
-      {data?.tag && (
-        <TagHeader tag={data.tag} totalPosts={data.posts.total} />
-      )}
+      {data?.tag && <TagHeader tag={data.tag} totalPosts={data.posts.total} />}
 
-      {/* Daftar Postingan terkait Tag */}
       <div className="space-y-3">
-        {data?.posts.data.length === 0 ? (
-          <div className="text-center py-12 border border-dashed border-[#2A2A2C] rounded-xl text-zinc-500 text-sm font-inter">
-            Belum ada diskusi yang disematkan dengan tag ini. Jadilah yang pertama bertanya!
+        {posts.length === 0 ? (
+          <div className="text-center py-20 border border-dashed border-[#2A2A2C] rounded-xl text-zinc-500 font-inter">
+            <p>Belum ada postingan untuk tag ini.</p>
           </div>
         ) : (
-          data?.posts.data.map((post) => (
-            <TagPostCard key={post.id} post={post} />
-          ))
+          posts.map((post) => <TagPostCard key={post.id} post={post} />)
         )}
       </div>
 
-      {/* Sistem Paginasi */}
-      {data && data.posts.last_page > 1 && (
-        <div className="flex items-center justify-end gap-2 pt-4">
-          <button
-            onClick={() => setPage(p => Math.max(p - 1, 1))}
-            disabled={page === 1}
-            className="px-3 py-1 text-xs bg-[#161618] border border-[#2A2A2C] rounded text-zinc-400 disabled:opacity-40 font-inter hover:bg-[#2A2A2C] transition-colors"
+      {/* Tombol Load More */}
+      {hasMore && (
+        <div className="flex justify-center mt-8 pb-8">
+          <Button 
+            variant="outline" 
+            className="border-[#2A2A2C] text-[#D4AF37] hover:bg-[#161618] px-8"
+            disabled={loadingMore}
+            onClick={() => setPage(p => p + 1)}
           >
-            Previous
-          </button>
-          <span className="text-xs text-zinc-500 font-fira-code px-2">
-            Page {page} of {data.posts.last_page}
-          </span>
-          <button
-            onClick={() => setPage(p => Math.min(p + 1, data.posts.last_page))}
-            disabled={page === data.posts.last_page}
-            className="px-3 py-1 text-xs bg-[#161618] border border-[#2A2A2C] rounded text-zinc-400 disabled:opacity-40 font-inter hover:bg-[#2A2A2C] transition-colors"
-          >
-            Next
-          </button>
+             {loadingMore ? (
+               <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Memuat...</>
+             ) : "Muat Lebih Banyak"}
+          </Button>
         </div>
       )}
     </div>
+  );
+}
+
+export default function TagFilterPage() {
+  return (
+    <ErrorBoundary FallbackComponent={ErrorFallback}>
+      <TagFilterContent />
+    </ErrorBoundary>
   );
 }

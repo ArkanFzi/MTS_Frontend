@@ -10,6 +10,7 @@ export interface User {
   level: number;
   is_banned: boolean;
   role?: 'user' | 'moderator' | 'admin'; // Di-inject dari relasi Spatie / Role system
+  roles?: string[]; // Array of role names from backend Auth::user()->roles->pluck('name')
   created_at?: string;
   updated_at?: string;
 }

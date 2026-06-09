@@ -1,19 +1,21 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import type { ProtectedRouteProps } from './type';
-import { useAuthStore } from '../../store/useAuthStore'; // ← Import Zustand
+import { useAuthStore } from '../../store/useAuthStore';
 
 export default function ProtectedRoute({ allowedRoles, fallbackPath = '/login' }: ProtectedRouteProps) {
-  // ← Baca dari Zustand, bukan localStorage langsung
-  const { token, user } = useAuthStore();
+  const { user } = useAuthStore();
 
-  // 1. Jika belum login, tendang ke login
-  if (!token || !user) {
+  // 1. If not logged in, redirect to login
+  if (!user) {
     return <Navigate to={fallbackPath} replace />;
   }
 
-  // 2. Jika ada pembatasan Role, cek apakah role user cocok
-  if (allowedRoles && !allowedRoles.includes(user.role ?? '')) {
-    return <Navigate to="/" replace />;
+  // 2. If role restriction exists, check user roles (backend sends roles as array)
+  if (allowedRoles && user.roles) {
+    const hasRole = user.roles.some((role: string) => allowedRoles.includes(role));
+    if (!hasRole) {
+      return <Navigate to="/" replace />;
+    }
   }
 
   return <Outlet />;

@@ -1,10 +1,13 @@
 import { create } from 'zustand';
 import type { User } from '../types';
 
+// ─── Pattern #2: Centralized State Management (Zustand) ───
+// Single source of truth for authentication state across the entire app.
+// Any component can call useAuthStore() to read user data or trigger login/logout.
+
 interface AuthState {
   user: User | null;
-  // token: string | null; <-- HAPUS BARIS INI
-  login: (userData: User) => void; // Hapus parameter token
+  login: (userData: User) => void;
   logout: () => void;
 }
 
@@ -13,7 +16,7 @@ const getInitialUser = (): User | null => {
     const data = localStorage.getItem('user_data');
     if (!data || data === 'undefined') return null;
     return JSON.parse(data);
-  } catch (error) {
+  } catch {
     return null;
   }
 };
@@ -21,7 +24,6 @@ const getInitialUser = (): User | null => {
 export const useAuthStore = create<AuthState>((set) => ({
   user: getInitialUser(),
 
-  // Hanya menyimpan data User untuk keperluan UI (Nama, Avatar, Role)
   login: (userData) => {
     localStorage.setItem('user_data', JSON.stringify(userData));
     set({ user: userData });

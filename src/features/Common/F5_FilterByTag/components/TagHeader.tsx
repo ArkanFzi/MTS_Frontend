@@ -1,47 +1,113 @@
-import { Hash } from 'lucide-react';
-import type { Tag } from '../../../../types';
+import { Link } from 'react-router-dom';
+import { Hash, Bell, PenSquare, FolderOpen } from 'lucide-react';
+import type { TagInfo } from '../types';
+import { Badge } from '../../../../components/ui/badge';
+import { Button } from '../../../../components/ui/button';
 
-interface TagHeaderProps {
-  tag: Tag;
-  totalPosts: number;
+interface CategoryOption {
+  id: string;
+  name: string;
+  slug: string;
 }
 
-export default function TagHeader({ tag, totalPosts }: TagHeaderProps) {
+interface TagHeaderProps {
+  tag: TagInfo | null;
+  totalPosts: number;
+  categories?: CategoryOption[];
+  activeCategory?: string;
+  onCategoryChange?: (slug: string) => void;
+}
+
+function formatNumber(n: number): string {
+  return n.toLocaleString('en-US');
+}
+
+export default function TagHeader({
+  tag,
+  totalPosts,
+  categories = [],
+  activeCategory = '',
+  onCategoryChange,
+}: TagHeaderProps) {
+  if (!tag) return null;
+
   const tagColor = tag.color || '#D4AF37';
 
   return (
-    <div 
-      className="bg-[#161618] border border-[#2A2A2C] rounded-xl p-6 mb-6 relative overflow-hidden"
-      style={{ borderLeft: `4px solid ${tagColor}` }}
-    >
-      <div className="flex items-start justify-between">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <div 
-              className="p-2 rounded-lg bg-opacity-10 flex items-center justify-center"
-              style={{ backgroundColor: `${tagColor}1A`, color: tagColor }}
-            >
-              <Hash className="w-6 h-6" />
-            </div>
-            <h1 className="text-2xl font-bold tracking-tight text-white font-inter">
-              {tag.name}
-            </h1>
+    <div className="mb-6">
+      {/* Top row: tag info + buttons */}
+      <div className="flex items-start justify-between gap-4 mb-4">
+        <div className="flex items-center gap-3">
+          {/* Tag icon */}
+          <div
+            className="p-2.5 rounded-lg flex items-center justify-center"
+            style={{ backgroundColor: `${tagColor}1A`, color: tagColor }}
+          >
+            <Hash className="w-6 h-6" />
           </div>
-          
-          <p className="text-zinc-400 text-sm max-w-2xl font-inter leading-relaxed">
-            Kumpulan diskusi, pertanyaan, dan panduan seputar teknologi {tag.name}.
-          </p>
+
+          <div>
+            <h1 className="text-2xl font-bold text-white tracking-tight">{tag.name}</h1>
+            <span className="text-sm text-gray-500">{formatNumber(totalPosts)} questions</span>
+          </div>
         </div>
 
-        <div className="bg-[#0B0B0C] border border-[#2A2A2C] px-4 py-2 rounded-lg text-center min-w-[100px]">
-          <span className="block text-xs text-zinc-500 font-medium uppercase tracking-wider font-inter">
-            Postingan
-          </span>
-          <span className="text-xl font-bold text-[#D4AF37] font-fira-code">
-            {totalPosts}
-          </span>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-[#2A2A2C] text-gray-300 hover:bg-[#1A1A1C] hover:text-white text-xs h-9 bg-transparent gap-1.5"
+          >
+            <Bell className="w-3.5 h-3.5" />
+            Follow Tag
+          </Button>
+          <Link to={`/posts/create?tag=${tag.slug}`}>
+            <Button
+              size="sm"
+              className="bg-[#D4AF37] text-black hover:bg-[#c29f2f] text-xs font-bold h-9 gap-1.5"
+            >
+              <PenSquare className="w-3.5 h-3.5" />
+              Tanya Seputar {tag.name}
+            </Button>
+          </Link>
         </div>
       </div>
+
+      {/* Category filter chips */}
+      {categories.length > 0 && (
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-1.5 text-xs text-gray-500 mr-1">
+            <FolderOpen className="w-3.5 h-3.5" />
+            <span className="font-medium">Category:</span>
+          </div>
+
+          {/* All chip */}
+          <button
+            onClick={() => onCategoryChange?.('')}
+            className={`px-3 py-1 rounded-md text-xs font-medium transition-colors border ${
+              !activeCategory
+                ? 'bg-[#D4AF37] text-black border-[#D4AF37]'
+                : 'bg-[#1A1A1C] text-gray-400 border-[#2A2A2C] hover:border-[#D4AF37]/50 hover:text-gray-200'
+            }`}
+          >
+            All
+          </button>
+
+          {categories.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => onCategoryChange?.(cat.slug)}
+              className={`px-3 py-1 rounded-md text-xs font-medium transition-colors border ${
+                activeCategory === cat.slug
+                  ? 'bg-[#D4AF37] text-black border-[#D4AF37]'
+                  : 'bg-[#1A1A1C] text-gray-400 border-[#2A2A2C] hover:border-[#D4AF37]/50 hover:text-gray-200'
+              }`}
+            >
+              {cat.name}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

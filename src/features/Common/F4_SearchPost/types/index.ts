@@ -1,10 +1,10 @@
 // src/features/Common/F4_SearchPost/types/index.ts
-import type { PaginatedResponse } from "../../../../types"; // Pastikan path benar
 
 export interface SearchQuery {
   q: string;
   page?: number;
   sort?: string;
+  category?: string;
 }
 
 export interface SearchResultItem {
@@ -15,6 +15,7 @@ export interface SearchResultItem {
   vote_score: number;
   view_count: number;
   comments_count: number;
+  is_answered: boolean;
   created_at: string;
   user: {
     id: string;
@@ -30,9 +31,18 @@ export interface SearchResultItem {
     id: string;
     name: string;
     slug: string;
-    color: string;
+    color: string | null;
   }[];
 }
 
-// Gunakan PaginatedResponse yang sudah kita perbaiki di atas
-export type SearchResponse = PaginatedResponse<SearchResultItem>;
+export interface SearchResponse {
+  status: string;
+  message: string;
+  data: SearchResultItem[];
+  meta: {
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+  };
+}

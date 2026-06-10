@@ -23,7 +23,7 @@ import SearchPage from '../pages/Public/SearchPage';
 import TrendingPage from '../pages/Public/TrendingPage';
 import TagsListPage from '../pages/Public/TagsListPage';
 import TagFilterPage from '../pages/Public/TagFilterPage';
-import CategoryFilterPage from '../pages/Public/CategoryFilterPage';
+import CategoriesListPage from '../pages/Public/CategoriesListPage';
 import LeaderboardPage from '../pages/Public/LeaderboardPage';
 import PublicProfilePage from '../pages/User/PublicProfilePage';
 
@@ -87,7 +87,7 @@ export default function AppRouter() {
         <Route path="/trending" element={<TrendingPage />} />
         <Route path="/tags" element={<TagsListPage />} />
         <Route path="/tags/:slug" element={<TagFilterPage />} />
-        <Route path="/category/:slug" element={<CategoryFilterPage />} />
+        <Route path="/categories" element={<CategoriesListPage />} />
         <Route path="/leaderboard" element={<LeaderboardPage />} />
         <Route path="/profile/:id" element={<PublicProfilePage />} />
 

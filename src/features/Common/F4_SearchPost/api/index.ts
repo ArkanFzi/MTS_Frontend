@@ -1,4 +1,4 @@
-import axios from '../../../../lib/axios'; // Gunakan global interceptor axios
+import axios from '../../../../lib/axios';
 import type { SearchQuery, SearchResponse } from '../types';
 
 export const fetchSearchPosts = async (params: SearchQuery): Promise<SearchResponse> => {
@@ -6,8 +6,14 @@ export const fetchSearchPosts = async (params: SearchQuery): Promise<SearchRespo
     params: {
       q: params.q,
       page: params.page || 1,
-      sort: params.sort || 'terbaru', // ← Mengirimkan parameter filter ke backend
-    }
+      sort: params.sort || 'terbaru',
+      category: params.category || undefined,
+    },
   });
+  return response.data;
+};
+
+export const fetchCategories = async (): Promise<{ success: boolean; data: Array<{ id: string; name: string; slug: string }> }> => {
+  const response = await axios.get('/api/explore/categories');
   return response.data;
 };

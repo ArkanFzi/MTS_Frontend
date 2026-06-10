@@ -1,9 +1,9 @@
-import axios from '../../../../lib/axios';
-import type { CategoryPostsResponse } from '../types';
+// src/features/Common/F6_FilterByCategory/api/index.ts
 
-export const getPostsByCategory = async (slug: string, page = 1): Promise<CategoryPostsResponse> => {
-  const response = await axios.get(`/api/explore/category/${slug}`, {
-    params: { page },
-  });
+import axios from '../../../../lib/axios';
+import type { CategoriesWithTagsResponse } from '../types';
+
+export async function getCategoriesWithTags(): Promise<CategoriesWithTagsResponse> {
+  const response = await axios.get('/api/explore/categories/with-tags');
   return response.data;
-};
+}

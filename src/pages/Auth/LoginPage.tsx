@@ -20,7 +20,10 @@ export default function LoginPage() {
       const response = await loginUser({ email, password });
 
       // ← Sinkronkan state Zustand + localStorage sekaligus
-      login(response.user, response.token);
+      login({
+  ...response.data.user,
+  role: response.data.user.roles?.[0] ?? 'user'
+}, response.data.access_token);
 
       toast.success("Login Successful!");
       navigate("/");

@@ -2,7 +2,6 @@
 import axios from 'axios';
 import type { NotificationItem, MarkReadResponse } from '../types';
 
-// Interface penampung pembungkus API lokal
 export interface ApiLocalResponse<T> {
   success: boolean;
   message: string;
@@ -24,7 +23,8 @@ const getAuthHeader = () => {
   };
 };
 
-export const fetchNotifications = async (page = 1): Promise<PaginatedLocalResponse<NotificationItem>> => {
+// ✅ DIUBAH: Menggunakan ApiLocalResponse<PaginatedLocalResponse<...>> agar serasi dengan panggilan res.data.data di Page
+export const fetchNotifications = async (page = 1): Promise<ApiLocalResponse<PaginatedLocalResponse<NotificationItem>>> => {
   const response = await axios.get(`/api/notifications?page=${page}`, {
     headers: getAuthHeader(),
   });
@@ -32,6 +32,7 @@ export const fetchNotifications = async (page = 1): Promise<PaginatedLocalRespon
 };
 
 export const markAsRead = async (id: string): Promise<ApiLocalResponse<null>> => {
+  // Jika backend kamu ternyata memakai Route::put atau Route::post, ubah .patch di bawah ini menyesuaikan backend
   const response = await axios.patch(`/api/notifications/${id}/read`, {}, {
     headers: getAuthHeader(),
   });
@@ -39,6 +40,7 @@ export const markAsRead = async (id: string): Promise<ApiLocalResponse<null>> =>
 };
 
 export const markAllNotificationsAsRead = async (): Promise<MarkReadResponse> => {
+  // Jika backend kamu ternyata memakai Route::put atau Route::post, ubah .patch di bawah ini menyesuaikan backend
   const response = await axios.patch('/api/notifications/mark-all-read', {}, {
     headers: getAuthHeader(),
   });

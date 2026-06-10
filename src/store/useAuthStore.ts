@@ -3,8 +3,8 @@ import type { User } from '../types';
 
 interface AuthState {
   user: User | null;
-  // token: string | null; <-- HAPUS BARIS INI
-  login: (userData: User) => void; // Hapus parameter token
+  token: string | null;
+  login: (userData: User, token: string) => void;
   logout: () => void;
 }
 
@@ -20,15 +20,17 @@ const getInitialUser = (): User | null => {
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: getInitialUser(),
+  token: localStorage.getItem('token'),
 
-  // Hanya menyimpan data User untuk keperluan UI (Nama, Avatar, Role)
-  login: (userData) => {
+  login: (userData, token) => {
     localStorage.setItem('user_data', JSON.stringify(userData));
-    set({ user: userData });
+    localStorage.setItem('token', token);
+    set({ user: userData, token });
   },
 
   logout: () => {
     localStorage.removeItem('user_data');
-    set({ user: null });
+    localStorage.removeItem('token');
+    set({ user: null, token: null });
   },
 }));

@@ -1,3 +1,4 @@
+// src/routes/AppRouter.tsx
 import { Routes, Route } from 'react-router-dom';
 
 // Import Layouts
@@ -19,7 +20,6 @@ import TagsListPage from '../pages/Public/TagsListPage';
 import TagFilterPage from '../pages/Public/TagFilterPage';
 import CategoryFilterPage from '../pages/Public/CategoryFilterPage';
 import LeaderboardPage from '../pages/Public/LeaderboardPage';
-
 
 // Import Pages (Auth)
 import RegisterPage from '../pages/Auth/RegisterPage';
@@ -51,8 +51,6 @@ import RoleManagementPage from '../pages/Admin/RoleManagementPage';
 import BadgeMasterPage from '../pages/Admin/BadgeMasterPage';
 import AuditTimelinePage from '../pages/Admin/AuditTimelinePage';
 
-
-
 export default function AppRouter() {
   return (
     <Routes>
@@ -71,13 +69,14 @@ export default function AppRouter() {
         <Route path="/trending" element={<TrendingPage />} />
         <Route path="/tags" element={<TagsListPage />} />
         <Route path="/tags/:slug" element={<TagFilterPage />} />
-        <Route path="/category/:slug" element={<CategoryFilterPage />} />
+        <Route path="/category/:slug?" element={<CategoryFilterPage />} />
         <Route path="/leaderboard" element={<LeaderboardPage />} />
         <Route path="/profile/:id" element={<PublicProfilePage />} />
       </Route>
 
       {/* ================= PROTECTED USER ROUTES ================= */}
-      <Route element={<ProtectedRoute />}>
+      {/* 🟢 PERBAIKAN: Eksplisit mendefinisikan allowedRoles untuk 'user' agar akun baru lolos guard pembungkus */}
+      <Route element={<ProtectedRoute allowedRoles={['user', 'moderator', 'admin']} />}>
         <Route element={<UserLayout />}>
           <Route path="/posts/create" element={<CreatePostPage />} />
           <Route path="/posts/:id/edit" element={<EditPostPage />} />
@@ -114,7 +113,7 @@ export default function AppRouter() {
       </Route>
 
       {/* Fallback 404 Halaman Tidak Ditemukan */}
-      <Route path="*" element={<div className="text-white text-center py-20">Halaman tidak ditemukan.</div>} />
+      <Route path="*" element={<div className="text-white text-center py-20 font-mono">Halaman tidak ditemukan.</div>} />
 
     </Routes>
   );

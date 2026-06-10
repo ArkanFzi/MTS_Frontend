@@ -13,8 +13,7 @@ export default function ProtectedRoute({ allowedRoles, fallbackPath = '/login' }
 
   // 2. Jika ada pembatasan Role, cek apakah role user cocok
   if (allowedRoles && !allowedRoles.includes(user.role ?? '')) {
-    return <Navigate to="/" replace />;
-  }
-
+  return <Navigate to="/" replace />;
+}
   return <Outlet />;
 }

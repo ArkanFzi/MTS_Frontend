@@ -96,4 +96,4 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({ notification, 
   );
 };
 
-export default TechnicalTimestamp;
+export default NotificationRow;

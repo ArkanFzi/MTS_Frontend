@@ -104,6 +104,15 @@ export default function AppSidebar() {
   const isModerator = user?.roles?.some((r) => r === 'moderator' || r === 'admin');
   const isAdmin = user?.roles?.some((r) => r === 'admin');
 
+  // ─── Role badge config ───
+  const roleBadge = isAdmin
+    ? { label: 'Admin', color: 'bg-red-950/50 text-red-400 border-red-900' }
+    : isModerator
+      ? { label: 'Moderator', color: 'bg-blue-950/50 text-blue-400 border-blue-900' }
+      : user
+        ? { label: 'Member', color: 'bg-[#1A1A1C] text-gray-400 border-[#2A2A2C]' }
+        : null;
+
   return (
     <aside className="w-[250px] max-w-[250px] min-w-[250px] h-screen bg-[#161618] border-r border-[#2A2A2C] flex flex-col justify-between p-5 sticky top-0 overflow-y-auto font-['Inter']">
       {/* ─── Top section ─── */}
@@ -128,6 +137,11 @@ export default function AppSidebar() {
               </span>
               <span className="text-[10px] text-gray-500">Lv.{user.level || 1}</span>
             </div>
+            {roleBadge && (
+              <span className={`ml-auto text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${roleBadge.color}`}>
+                {roleBadge.label}
+              </span>
+            )}
           </div>
         )}
 

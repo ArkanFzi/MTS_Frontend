@@ -12,6 +12,10 @@ import LoginPage from '../pages/Auth/LoginPage';
 import RegisterPage from '../pages/Auth/RegisterPage';
 import ForgotPasswordPage from '../pages/Auth/ForgotPasswordPage';
 
+// ─── Error Pages ───
+import ForbiddenPage from '../pages/Errors/ForbiddenPage';
+import BannedPage from '../pages/Errors/BannedPage';
+
 // ─── Public / Shared Pages ───
 import HomePage from '../pages/Public/HomePage';
 import PostDetailPage from '../pages/Public/PostDetailPage';
@@ -52,21 +56,31 @@ export default function AppRouter() {
   return (
     <Routes>
 
-      {/* ═══════════════ GUEST-ONLY (no sidebar) ═══════════════ */}
+      {/* ═══════════════════════════════════════════════════════════
+          GUEST-ONLY ROUTES (no sidebar — fullscreen auth pages)
+          Guard: GuestRoute redirects logged-in users to /
+          ═══════════════════════════════════════════════════════════ */}
       <Route element={<GuestRoute />}>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ForgotPasswordPage />} />
       </Route>
 
-      {/* Forgot password is accessible to guests only but not wrapped in GuestRoute
-          so users who are logged in can still visit (edge case) */}
-      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-      <Route path="/reset-password" element={<ForgotPasswordPage />} />
+      {/* ═══════════════════════════════════════════════════════════
+          STANDALONE ROUTES (no sidebar, no guard)
+          These are full-page screens outside the main layout.
+          ═══════════════════════════════════════════════════════════ */}
+      <Route path="/banned" element={<BannedPage />} />
 
-      {/* ═══════════════ ALL PAGES (unified sidebar for everyone) ═══════════════ */}
+      {/* ═══════════════════════════════════════════════════════════
+          ALL SIDEBAR-WRAPPED ROUTES
+          Layout: AppLayout (unified sidebar + <Outlet />)
+          The sidebar adapts to the user's role automatically.
+          ═══════════════════════════════════════════════════════════ */}
       <Route element={<AppLayout />}>
 
-        {/* ── Public routes (visible to all) ── */}
+        {/* ── Public routes (visible to ALL visitors, including guests) ── */}
         <Route path="/" element={<HomePage />} />
         <Route path="/posts/:id" element={<PostDetailPage />} />
         <Route path="/search" element={<SearchPage />} />
@@ -77,7 +91,8 @@ export default function AppRouter() {
         <Route path="/leaderboard" element={<LeaderboardPage />} />
         <Route path="/profile/:id" element={<PublicProfilePage />} />
 
-        {/* ── Protected: Authenticated User ── */}
+        {/* ── Protected: Any authenticated user (user role) ──
+             Guard: Must be logged in + not banned */}
         <Route element={<ProtectedRoute />}>
           <Route path="/posts/create" element={<CreatePostPage />} />
           <Route path="/posts/:id/edit" element={<EditPostPage />} />
@@ -90,7 +105,8 @@ export default function AppRouter() {
           <Route path="/settings/profile" element={<ProfileSettingsPage />} />
         </Route>
 
-        {/* ── Protected: Moderator + Admin ── */}
+        {/* ── Protected: Moderator + Admin ──
+             Guard: Must have 'moderator' OR 'admin' role (fail-closed) */}
         <Route element={<ProtectedRoute allowedRoles={['moderator', 'admin']} />}>
           <Route path="/moderator/reports" element={<ReportQueuePage />} />
           <Route path="/moderator/logs" element={<ActionLogPage />} />
@@ -98,7 +114,8 @@ export default function AppRouter() {
           <Route path="/moderator/tag-category" element={<ModTagCategoryPage />} />
         </Route>
 
-        {/* ── Protected: Admin only ── */}
+        {/* ── Protected: Admin only ──
+             Guard: Must have 'admin' role (fail-closed) */}
         <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
           <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
           <Route path="/admin/users" element={<UserDirectoryPage />} />
@@ -108,14 +125,20 @@ export default function AppRouter() {
           <Route path="/admin/audit-logs" element={<AuditTimelinePage />} />
         </Route>
 
+        {/* ── Error pages (inside layout so sidebar stays visible) ── */}
+        <Route path="/403" element={<ForbiddenPage />} />
+
       </Route>
 
-      {/* ═══════════════ 404 Fallback ═══════════════ */}
+      {/* ═══════════════════════════════════════════════════════════
+          404 FALLBACK
+          ═══════════════════════════════════════════════════════════ */}
       <Route path="*" element={
         <div className="min-h-screen bg-[#0B0B0C] flex items-center justify-center text-white font-['Inter']">
           <div className="text-center">
-            <h1 className="text-4xl font-bold text-[#D4AF37] mb-2">404</h1>
-            <p className="text-gray-400">Page not found.</p>
+            <h1 className="text-5xl font-bold text-[#D4AF37] mb-2">404</h1>
+            <p className="text-gray-400 mb-6">Page not found.</p>
+            <a href="/" className="text-[#D4AF37] hover:underline text-sm">Back to Home</a>
           </div>
         </div>
       } />

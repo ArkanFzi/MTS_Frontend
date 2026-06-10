@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import type { SearchResultItem } from '../../features/Common/F4_SearchPost/types';
+import { useQuery } from '@tanstack/react-query';
 import { fetchSearchPosts } from '../../features/Common/F4_SearchPost/api';
 import { SearchBar } from '../../features/Common/F4_SearchPost/components/SearchBar';
 import { Button } from '../../components/ui/button';
 import { SearchResultCard } from '../../components/shared/SearchResultCard';
+import { useState } from 'react';
 
 export default function SearchPage() {
   const [searchParams] = useSearchParams();
@@ -13,54 +13,53 @@ export default function SearchPage() {
   const query = searchParams.get('q') || '';
   const sort = searchParams.get('sort') || 'terbaru';
   
-  const [results, setResults] = useState<SearchResultItem[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [totalFound, setTotalFound] = useState(0);
   const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(false);
+  const [allResults, setAllResults] = useState<any[]>([]);
 
-  // Kunci utama: ketika URL query/sort berubah, reset state ke awal
-  useEffect(() => {
-    setPage(1);
-    setResults([]);
-  }, [query, sort]);
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['search', query, sort, page],
+    queryFn: () => fetchSearchPosts({ q: query, page, sort }),
+    enabled: !!query,
+  });
 
-  useEffect(() => {
-    const loadResults = async () => {
-      if (!query) {
-        setResults([]);
-        setTotalFound(0);
-        setHasMore(false);
-        return;
-      }
-      
-      setLoading(true);
-      try {
-        const response = await fetchSearchPosts({ q: query, page, sort });
-        
-        if (page === 1) {
-          setResults(response.data);
-        } else {
-          setResults(prev => [...prev, ...response.data]);
-        }
-        
-        const meta = (response as any).meta;
-        setTotalFound(meta?.total || 0); 
-        setHasMore(meta?.current_page < meta?.last_page);
-      } catch (error) {
-        console.error("Gagal mengambil data pencarian:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Reset page when query/sort changes
+  const prevQuery = useSearchParams()[0].toString();
+  if (page !== 1 && searchParams.get('q') && searchParams.get('sort')) {
+    // handled by query key
+  }
 
-    loadResults();
-  }, [query, sort, page]);
+  // Accumulate results for "load more" pattern
+  const results = data?.data || [];
+  const meta = (data as any)?.meta;
+  const totalFound = meta?.total || 0;
+  const hasMore = meta ? meta.current_page < meta.last_page : false;
 
+  const displayResults = page === 1 ? results : [...allResults, ...results];
+
+  if (page === 1 && data) {
+    if (JSON.stringify(allResults) !== JSON.stringify(results)) {
+      setAllResults(results);
+    }
+  } else if (page > 1 && data) {
+    const combined = [...allResults, ...results];
+    if (combined.length !== allResults.length) {
+      setAllResults(combined);
+    }
+  }
+
+  // Reset when query changes
   const handleSearchSubmit = (newKeyword: string) => {
     if (newKeyword.trim()) {
+      setPage(1);
+      setAllResults([]);
       navigate(`/search?q=${encodeURIComponent(newKeyword)}&sort=${sort}`);
     }
+  };
+
+  const handleSortChange = (newSort: string) => {
+    setPage(1);
+    setAllResults([]);
+    navigate(`/search?q=${query}&sort=${newSort}`);
   };
 
   return (
@@ -77,7 +76,7 @@ export default function SearchPage() {
               variant={sort === 'terbaru' ? 'default' : 'outline'} 
               size="sm"
               className={`rounded-full px-4 text-xs ${sort === 'terbaru' ? 'bg-transparent border-[#D4AF37] text-[#D4AF37]' : 'border-gray-800 text-gray-400 hover:text-white hover:border-gray-600'}`}
-              onClick={() => navigate(`/search?q=${query}&sort=terbaru`)}
+              onClick={() => handleSortChange('terbaru')}
             >
               Terbaru
             </Button>
@@ -85,7 +84,7 @@ export default function SearchPage() {
               variant={sort === 'tertinggi' ? 'default' : 'outline'} 
               size="sm"
               className={`rounded-full px-4 text-xs ${sort === 'tertinggi' ? 'bg-transparent border-[#D4AF37] text-[#D4AF37]' : 'border-gray-800 text-gray-400 hover:text-white hover:border-gray-600'}`}
-              onClick={() => navigate(`/search?q=${query}&sort=tertinggi`)}
+              onClick={() => handleSortChange('tertinggi')}
             >
               Vote Tertinggi
             </Button>
@@ -95,12 +94,12 @@ export default function SearchPage() {
       </div>
 
       <div className="flex flex-col gap-4">
-        {results.length > 0 ? (
-          results.map((post) => (
+        {displayResults.length > 0 ? (
+          displayResults.map((post) => (
             <SearchResultCard key={post.id} post={post} />
           ))
-        ) : loading && page === 1 ? (
-           null
+        ) : isLoading ? (
+          null
         ) : query ? (
           <p className="text-gray-500 text-center py-20">Tidak ada hasil yang ditemukan untuk "{query}"</p>
         ) : (
@@ -109,14 +108,18 @@ export default function SearchPage() {
           </div>
         )}
 
-        {loading && (
+        {isLoading && (
           <div className="flex justify-center py-10">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#D4AF37]"></div>
           </div>
         )}
+
+        {isError && (
+          <p className="text-red-400 text-center py-10">Gagal memuat hasil pencarian. Silakan coba lagi.</p>
+        )}
       </div>
       
-      {hasMore && !loading && (
+      {hasMore && !isLoading && (
         <div className="flex justify-center mt-8">
           <Button 
             variant="outline" 

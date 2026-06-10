@@ -1,6 +1,5 @@
-// src/features/User/F26_NotificationSystem/api/index.ts
-import axios from 'axios';
-import type { NotificationItem, MarkReadResponse } from '../types';
+import axios from '../../../../lib/axios';
+import type { NotificationItem, MarkReadResponse, MarkAllReadResponse } from '../types';
 
 export interface ApiLocalResponse<T> {
   success: boolean;
@@ -11,6 +10,7 @@ export interface ApiLocalResponse<T> {
 export interface PaginatedLocalResponse<T> {
   data: T[];
   current_page: number;
+  data: NotificationItem[];
   last_page: number;
   per_page: number;
   total: number;

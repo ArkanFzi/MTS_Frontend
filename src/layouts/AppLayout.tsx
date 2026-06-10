@@ -1,10 +1,10 @@
 import { Outlet } from 'react-router-dom';
-import Sidebar from '../components/Sidebar/Sidebar';
+import AppSidebar from '../components/Sidebar/AppSidebar';
 
-export default function PublicLayout() {
+export default function AppLayout() {
   return (
     <div className="min-h-screen w-full bg-[#0B0B0C] text-[#F0F0F0] flex font-['Inter']">
-      <Sidebar />
+      <AppSidebar />
       <main className="flex-1 min-w-0 overflow-y-auto">
         <Outlet />
       </main>

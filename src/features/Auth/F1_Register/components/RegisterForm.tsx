@@ -1,9 +1,8 @@
 import { Link } from "react-router-dom";
 import { User, Mail, Lock, Key, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { useFormik } from "formik";
+import * as Yup from "yup";
 
 import { Button } from "../../../../components/ui/button";
 import {
@@ -18,40 +17,57 @@ import { Input } from "../../../../components/ui/input";
 import { Label } from "../../../../components/ui/label";
 import type { RegisterFormProps, RegisterPayload } from "../types";
 
-// ✅ Skema validasi Zod
-const registerSchema = z.object({
-  username: z.string().min(3, "Username minimal 3 karakter").max(100),
-  email: z.string().email("Format email tidak valid"),
-  password: z.string().min(8, "Password minimal 8 karakter"),
-  password_confirmation: z.string(),
-  terms: z.boolean().refine(val => val === true, { message: "Anda harus menyetujui syarat & ketentuan." })
-}).refine(data => data.password === data.password_confirmation, {
-  message: "Konfirmasi password tidak cocok",
-  path: ["password_confirmation"],
+// ✅ Yup validation schema
+const registerValidationSchema = Yup.object({
+  username: Yup.string()
+    .min(3, "Username minimal 3 karakter")
+    .max(100, "Username maksimal 100 karakter")
+    .required("Username wajib diisi"),
+  email: Yup.string()
+    .email("Format email tidak valid")
+    .required("Email wajib diisi"),
+  password: Yup.string()
+    .min(8, "Password minimal 8 karakter")
+    .required("Password wajib diisi"),
+  password_confirmation: Yup.string()
+    .oneOf([Yup.ref("password")], "Konfirmasi password tidak cocok")
+    .required("Konfirmasi password wajib diisi"),
+  terms: Yup.boolean()
+    .oneOf([true], "Anda harus menyetujui syarat & ketentuan.")
+    .required(),
 });
 
-type RegisterSchema = z.infer<typeof registerSchema>;
-
-
+interface RegisterFormValues {
+  username: string;
+  email: string;
+  password: string;
+  password_confirmation: string;
+  terms: boolean;
+}
 
 export function RegisterForm({ onSubmit, isLoading, errorMsg }: RegisterFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const { register, handleSubmit, formState: { errors } } = useForm<RegisterSchema>({
-    resolver: zodResolver(registerSchema),
-    defaultValues: { username: "", email: "", password: "", password_confirmation: "", terms: false }
+  const formik = useFormik<RegisterFormValues>({
+    initialValues: {
+      username: "",
+      email: "",
+      password: "",
+      password_confirmation: "",
+      terms: false,
+    },
+    validationSchema: registerValidationSchema,
+    onSubmit: (values) => {
+      const payload: RegisterPayload = {
+        username: values.username,
+        email: values.email,
+        password: values.password,
+        password_confirmation: values.password_confirmation,
+      };
+      onSubmit(payload);
+    },
   });
-
-  const handleFormSubmit = (data: RegisterSchema) => {
-    // Panggil fungsi onSubmit bawaan dari props (dikirim dari RegisterPage)
-    onSubmit({
-      username: data.username,
-      email: data.email,
-      password: data.password,
-      password_confirmation: data.password_confirmation,
-    });
-  };
 
   return (
     <Card className="w-full rounded-4xl max-w-sm h-fit bg-[#1d1d1f]/60 backdrop-blur-md border border-1 border-[#856e23] shadow-sm px-3 py-8">
@@ -70,7 +86,7 @@ export function RegisterForm({ onSubmit, isLoading, errorMsg }: RegisterFormProp
         </div>
       </CardHeader>
 
-      <form onSubmit={handleSubmit(handleFormSubmit)}>
+      <form onSubmit={formik.handleSubmit}>
         <CardContent>
           <div className="flex flex-col gap-4">
             {/* ALERT ERROR BACKEND DARI PROPS */}
@@ -85,11 +101,11 @@ export function RegisterForm({ onSubmit, isLoading, errorMsg }: RegisterFormProp
               <div className="relative">
                 <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input id="username" type="text" placeholder="johndoe"
-                  className={`h-10 pl-9 bg-muted border ${errors.username ? 'border-red-500' : 'border-[#3f3f3f]'} text-foreground rounded-xl placeholder:text-muted-foreground/50 border-1 focus:bg-background focus-visible:border-[#D4AF37] focus-visible:ring-1 focus-visible:ring-[#856e23] transition-all`}
-                  {...register("username")} 
+                  className={`h-10 pl-9 bg-muted border ${formik.touched.username && formik.errors.username ? 'border-red-500' : 'border-[#3f3f3f]'} text-foreground rounded-xl placeholder:text-muted-foreground/50 border-1 focus:bg-background focus-visible:border-[#D4AF37] focus-visible:ring-1 focus-visible:ring-[#856e23] transition-all`}
+                  {...formik.getFieldProps("username")}
                 />
               </div>
-              {errors.username && <p className="text-red-400 text-xs mt-1">{errors.username.message}</p>}
+              {formik.touched.username && formik.errors.username && <p className="text-red-400 text-xs mt-1">{formik.errors.username}</p>}
             </div>
 
             <div className="grid gap-2">
@@ -97,11 +113,11 @@ export function RegisterForm({ onSubmit, isLoading, errorMsg }: RegisterFormProp
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input id="email" type="email" placeholder="expert@mautanyasuhu.com"
-                  className={`h-10 pl-9 bg-muted border ${errors.email ? 'border-red-500' : 'border-[#3f3f3f]'} text-foreground rounded-xl placeholder:text-muted-foreground/50 border-1 focus:bg-background focus-visible:border-[#D4AF37] focus-visible:ring-1 focus-visible:ring-[#856e23] transition-all`}
-                  {...register("email")} 
+                  className={`h-10 pl-9 bg-muted border ${formik.touched.email && formik.errors.email ? 'border-red-500' : 'border-[#3f3f3f]'} text-foreground rounded-xl placeholder:text-muted-foreground/50 border-1 focus:bg-background focus-visible:border-[#D4AF37] focus-visible:ring-1 focus-visible:ring-[#856e23] transition-all`}
+                  {...formik.getFieldProps("email")}
                 />
               </div>
-              {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email.message}</p>}
+              {formik.touched.email && formik.errors.email && <p className="text-red-400 text-xs mt-1">{formik.errors.email}</p>}
             </div>
 
             <div className="grid gap-2">
@@ -109,14 +125,14 @@ export function RegisterForm({ onSubmit, isLoading, errorMsg }: RegisterFormProp
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input id="password" type={showPassword ? "text" : "password"} placeholder="••••••••"
-                  className={`h-10 pl-9 bg-muted border ${errors.password ? 'border-red-500' : 'border-[#3f3f3f]'} text-foreground rounded-xl placeholder:text-muted-foreground/50 border-1 focus:bg-background focus-visible:border-[#D4AF37] focus-visible:ring-1 focus-visible:ring-[#856e23] transition-all`}
-                  {...register("password")} 
+                  className={`h-10 pl-9 bg-muted border ${formik.touched.password && formik.errors.password ? 'border-red-500' : 'border-[#3f3f3f]'} text-foreground rounded-xl placeholder:text-muted-foreground/50 border-1 focus:bg-background focus-visible:border-[#D4AF37] focus-visible:ring-1 focus-visible:ring-[#856e23] transition-all`}
+                  {...formik.getFieldProps("password")}
                 />
                 <Button type="button" variant="ghost" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0 text-muted-foreground hover:bg-transparent" onClick={() => setShowPassword(!showPassword)}>
                   {showPassword ? <EyeOff className="h-4 w-4 text-[#D4AF37]" /> : <Eye className="h-4 w-4" />}
                 </Button>
               </div>
-              {errors.password && <p className="text-red-400 text-xs mt-1">{errors.password.message}</p>}
+              {formik.touched.password && formik.errors.password && <p className="text-red-400 text-xs mt-1">{formik.errors.password}</p>}
             </div>
 
             <div className="grid gap-2">
@@ -124,25 +140,28 @@ export function RegisterForm({ onSubmit, isLoading, errorMsg }: RegisterFormProp
               <div className="relative">
                 <Key className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input id="password_confirmation" type={showConfirmPassword ? "text" : "password"} placeholder="••••••••"
-                  className={`h-10 pl-9 bg-muted border ${errors.password_confirmation ? 'border-red-500' : 'border-[#3f3f3f]'} text-foreground rounded-xl placeholder:text-muted-foreground/50 border-1 focus:bg-background focus-visible:border-[#D4AF37] focus-visible:ring-1 focus-visible:ring-[#856e23] transition-all`}
-                  {...register("password_confirmation")} 
+                  className={`h-10 pl-9 bg-muted border ${formik.touched.password_confirmation && formik.errors.password_confirmation ? 'border-red-500' : 'border-[#3f3f3f]'} text-foreground rounded-xl placeholder:text-muted-foreground/50 border-1 focus:bg-background focus-visible:border-[#D4AF37] focus-visible:ring-1 focus-visible:ring-[#856e23] transition-all`}
+                  {...formik.getFieldProps("password_confirmation")}
                 />
                 <Button type="button" variant="ghost" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0 text-muted-foreground hover:bg-transparent" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
                   {showConfirmPassword ? <EyeOff className="h-4 w-4 text-[#D4AF37]" /> : <Eye className="h-4 w-4" />}
                 </Button>
               </div>
-              {errors.password_confirmation && <p className="text-red-400 text-xs mt-1">{errors.password_confirmation.message}</p>}
+              {formik.touched.password_confirmation && formik.errors.password_confirmation && <p className="text-red-400 text-xs mt-1">{formik.errors.password_confirmation}</p>}
             </div>
 
             <div className="flex items-start gap-2 pt-1 mt-1">
               <input id="terms" type="checkbox" className="h-4 w-4 mt-0.5 rounded border-zinc-700 bg-transparent text-black accent-[#D4AF37] cursor-pointer"
-                {...register("terms")}
+                checked={formik.values.terms}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                name="terms"
               />
               <div className="flex flex-col">
                 <label htmlFor="terms" className="text-xs font-medium cursor-pointer text-muted-foreground leading-tight">
                   Saya setuju dengan syarat dan ketentuan yang berlaku.
                 </label>
-                {errors.terms && <p className="text-red-400 text-xs mt-1">{errors.terms.message}</p>}
+                {formik.touched.terms && formik.errors.terms && <p className="text-red-400 text-xs mt-1">{formik.errors.terms}</p>}
               </div>
             </div>
           </div>

@@ -10,6 +10,7 @@ export interface User {
   level: number;
   is_banned: boolean;
   role?: 'user' | 'moderator' | 'admin'; // Di-inject dari relasi Spatie / Role system
+  roles?: string[]; // Array of role names from backend Auth::user()->roles->pluck('name')
   created_at?: string;
   updated_at?: string;
 }
@@ -29,11 +30,10 @@ export interface Category {
 export interface Tag {
   id: string;                  // UUID
   name: string;
-  description: string | null; 
-  hex_color: string | null;
   slug: string;
   color: string;               // Menyimpan kode HEX (contoh: #D4AF37 atau #E53E3E)
-  posts_count?: number;
+  usage_count?: number;
+  created_at?: string;
 }
 
 // ─── 4. WRAPPER PAGINATION GLOBAL (STANDAR LARAVEL API API RESOURCE) ───

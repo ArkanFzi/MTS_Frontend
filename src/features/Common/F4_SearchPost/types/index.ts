@@ -11,7 +11,7 @@ export interface SearchResultItem {
   id: string;
   title: string;
   body: string;
-  status: 'published';
+  status: 'open' | 'closed';
   vote_score: number;
   view_count: number;
   comments_count: number;
@@ -29,6 +29,7 @@ export interface SearchResultItem {
   tags: {
     id: string;
     name: string;
+    slug: string;
     color: string;
   }[];
 }

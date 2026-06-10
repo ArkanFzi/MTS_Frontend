@@ -3,20 +3,23 @@ import type { Tag } from '../../../../types';
 
 export interface CreateTagPayload {
   name: string;
-  description?: string;
-  hex_color?: string;
+  color?: string;
 }
 
 export interface UpdateTagPayload {
   name?: string;
-  description?: string;
-  hex_color?: string;
+  color?: string;
 }
 
 export interface TagListResponse {
-  status: string;
-  message: string;
-  data: Tag[];
+  success: boolean;
+  data: {
+    current_page: number;
+    data: Tag[];
+    last_page: number;
+    per_page: number;
+    total: number;
+  };
 }
 
 export interface TagMutationResponse {

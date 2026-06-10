@@ -33,7 +33,7 @@ export default function TagsListPage() {
                 </div>
                 <div>
                   <h2 className="font-semibold text-white group-hover:text-[#D4AF37]">{tag.name}</h2>
-                  <p className="text-xs text-zinc-500">{tag.posts_count || 0} Postingan</p>
+                  <p className="text-xs text-zinc-500">{tag.usage_count || 0} Postingan</p>
                 </div>
               </div>
             </Link>

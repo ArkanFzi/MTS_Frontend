@@ -7,8 +7,7 @@ interface TagHeaderProps {
 }
 
 export default function TagHeader({ tag, totalPosts }: TagHeaderProps) {
-  // Gunakan hex_color dari database, jika null fallback ke Burnished Gold (#D4AF37)
-  const tagColor = tag.hex_color || '#D4AF37';
+  const tagColor = tag.color || '#D4AF37';
 
   return (
     <div 
@@ -30,7 +29,7 @@ export default function TagHeader({ tag, totalPosts }: TagHeaderProps) {
           </div>
           
           <p className="text-zinc-400 text-sm max-w-2xl font-inter leading-relaxed">
-            {tag.description || `Kumpulan diskusi, pertanyaan, dan panduan seputar teknologi ${tag.name}.`}
+            Kumpulan diskusi, pertanyaan, dan panduan seputar teknologi {tag.name}.
           </p>
         </div>
 

@@ -20,10 +20,10 @@ const NotificationsPage: React.FC = () => {
       try {
         if (isMounted) setLoading(true);
         const res = await fetchNotifications(1);
-        
+
         if (isMounted) {
           setNotifications(res.data);
-          const unreadCount = res.data.filter((item: NotificationItem) => item.read_at === null).length;
+          const unreadCount = res.data.filter((item: NotificationItem) => !item.is_read).length;
           setTotalUnread(unreadCount);
         }
       } catch (error) {
@@ -44,7 +44,7 @@ const NotificationsPage: React.FC = () => {
     try {
       await markAsRead(id);
       setNotifications((prev) =>
-        prev.map((item) => (item.id === id ? { ...item, read_at: new Date().toISOString() } : item))
+        prev.map((item) => (item.id === id ? { ...item, is_read: true } : item))
       );
       setTotalUnread((prev) => Math.max(0, prev - 1));
     } catch (error) {
@@ -57,7 +57,7 @@ const NotificationsPage: React.FC = () => {
     try {
       await markAllNotificationsAsRead();
       setNotifications((prev) =>
-        prev.map((item) => ({ ...item, read_at: new Date().toISOString() }))
+        prev.map((item) => ({ ...item, is_read: true }))
       );
       setTotalUnread(0);
     } catch (error) {
@@ -77,7 +77,7 @@ const NotificationsPage: React.FC = () => {
               Kamu memiliki {totalUnread} notifikasi baru yang belum dibaca.
             </CardDescription>
           </div>
-          
+
           {totalUnread > 0 && (
             <Button
               onClick={handleMarkAllRead}
@@ -89,7 +89,7 @@ const NotificationsPage: React.FC = () => {
             </Button>
           )}
         </CardHeader>
-        
+
         <CardContent className="p-0">
           {loading ? (
             <div className="flex items-center justify-center p-12">

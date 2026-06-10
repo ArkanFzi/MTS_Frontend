@@ -7,8 +7,11 @@ export interface RegisterPayload {
 }
 
 export interface RegisterResponse {
+  status: string;
   message: string;
-  user: import('@/types').User;
+  data: {
+    user: import('@/types').User;
+  };
 }
 
 export interface RegisterFormProps {

@@ -7,7 +7,7 @@ export interface Post {
   category_id: string;
   title: string;
   body: string;
-  status: 'draft' | 'published' | 'archived';
+  status: 'open' | 'closed';
   view_count: number;
   vote_score: number;
   is_answered: boolean;
@@ -39,11 +39,10 @@ export interface UpdatePostPayload {
 }
 
 export interface PostListResponse {
-  status: string;
-  message: string;
-  data: Post[];
-  meta: {
+  success: boolean;
+  data: {
     current_page: number;
+    data: Post[];
     last_page: number;
     per_page: number;
     total: number;

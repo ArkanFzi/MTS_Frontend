@@ -1,25 +1,24 @@
 import type { Category, Tag, User } from "../../../../types";
 
-
 export interface TagPost {
-  id: string; // UUID format
+  id: string;
   title: string;
-  slug: string;
-  summary: string;
-  votes_count: number;
-  comments_count: number;
-  views_count: number;
+  body: string;
+  vote_score: number;
+  comments_count?: number;
+  view_count: number;
   created_at: string;
   user: User;
   category: Category;
   tags: Tag[];
 }
 
-export interface TagDetailData {
-  tag: Tag;
-  posts: {
+export interface TagPostsResponse {
+  status: string;
+  message: string;
+  data: TagPost[];
+  meta: {
     current_page: number;
-    data: TagPost[];
     last_page: number;
     per_page: number;
     total: number;

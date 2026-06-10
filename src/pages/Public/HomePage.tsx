@@ -9,7 +9,8 @@ export default function HomePage() {
     queryFn: () => getPosts(1),
   });
 
-  const posts = data?.data || [];
+  const paginator = data?.data;
+  const posts = paginator?.data || [];
 
   return (
     <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6">
@@ -39,7 +40,7 @@ export default function HomePage() {
               <div className="flex flex-col items-center gap-1 min-w-[50px]">
                 <div className="flex items-center gap-1 text-[#D4AF37]">
                   <ArrowUp className="w-4 h-4" />
-                  <span className="text-sm font-bold">{post.votes_count || 0}</span>
+                  <span className="text-sm font-bold">{post.vote_score || 0}</span>
                 </div>
                 <span className="text-[10px] text-gray-500">votes</span>
               </div>
@@ -71,7 +72,7 @@ export default function HomePage() {
                     </span>
                     <span className="flex items-center gap-1">
                       <Eye className="w-3.5 h-3.5" />
-                      {post.views_count || 0}
+                      {post.view_count || 0}
                     </span>
                     {post.user && (
                       <span className="text-gray-400">by {post.user.username}</span>

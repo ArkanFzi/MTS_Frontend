@@ -1,14 +1,16 @@
 // src/features/User/F26_NotificationSystem/types/index.ts
 
-// Kita gunakan interface lokal atau relative path agar aman dari kendala path alias
-export interface BaseNotification {
+// Matches backend notifications table: id, user_id, actor_id, type, reference_id, reference_type, is_read, created_at
+export interface NotificationItem {
   id: string;
+  user_id: string;
+  actor_id: string | null;
   type: string;
-  notifiable_type: string;
-  notifiable_id: string;
-  read_at: string | null;
+  reference_id: string | null;
+  reference_type: string | null;
+  is_read: boolean;
   created_at: string;
-  updated_at: string;
+  actor?: NotificationActor | null;
 }
 
 export interface NotificationActor {
@@ -17,20 +19,10 @@ export interface NotificationActor {
   avatar_url: string | null;
 }
 
-export interface NotificationPayload {
-  message: string;
-  link?: string;
-  actor?: NotificationActor;
-  post_id?: string;
-  comment_id?: string;
-}
-
-// Menghilangkan warisan yang bertubrukan dan menggunakan payload terdefinisi rapi
-export interface NotificationItem extends Omit<BaseNotification, 'data'> {
-  data: NotificationPayload;
-}
-
 export interface MarkReadResponse {
+  success: boolean;
+}
+
+export interface MarkAllReadResponse {
   message: string;
-  unread_count: number;
 }

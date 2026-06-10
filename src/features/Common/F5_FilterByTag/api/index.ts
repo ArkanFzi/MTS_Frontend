@@ -1,8 +1,7 @@
 import axios from '../../../../lib/axios';
-import type { TagDetailData } from '../types';
-import type { BaseApiResponse } from '../../../../types';
+import type { TagPostsResponse } from '../types';
 
-export const getPostsByTag = async (slug: string, page = 1): Promise<BaseApiResponse<TagDetailData>> => {
+export const getPostsByTag = async (slug: string, page = 1): Promise<TagPostsResponse> => {
   const response = await axios.get(`/api/explore/tag/${slug}`, {
     params: { page }
   });

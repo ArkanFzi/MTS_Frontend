@@ -1,31 +1,38 @@
 // src/pages/Public/TagFilterPage.tsx
 
-import { useEffect, useState, useCallback, useMemo } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { ErrorBoundary, useErrorBoundary } from 'react-error-boundary';
+import { useEffect, useState, useCallback, useMemo } from "react";
+import { useParams, useSearchParams } from "react-router-dom";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ErrorBoundary, useErrorBoundary } from "react-error-boundary";
 
-import ErrorFallback from '../../components/ErrorFallback/ErrorFallback';
-import TagHeader from '../../features/Common/F5_FilterByTag/components/TagHeader';
-import TagPostCard from '../../features/Common/F5_FilterByTag/components/TagPostCard';
-import TagInfoSidebar from '../../features/Common/F5_FilterByTag/components/TagInfoSidebar';
-import type { TagPost, TagInfo, TagPostsResponse } from '../../features/Common/F5_FilterByTag/types';
-import { getPostsByTag } from '../../features/Common/F5_FilterByTag/api';
-import { Skeleton } from '../../components/ui/skeleton';
+import ErrorFallback from "../../components/ErrorFallback/ErrorFallback";
+import TagHeader from "../../features/Common/F5_FilterByTag/components/TagHeader";
+import TagPostCard from "../../features/Common/F5_FilterByTag/components/TagPostCard";
+import TagInfoSidebar from "../../features/Common/F5_FilterByTag/components/TagInfoSidebar";
+import type {
+  TagPost,
+  TagInfo,
+  TagPostsResponse,
+} from "../../features/Common/F5_FilterByTag/types";
+import { getPostsByTag } from "../../features/Common/F5_FilterByTag/api";
+import { Skeleton } from "../../components/ui/skeleton";
 
-type SortTab = 'newest' | 'bountied' | 'unanswered';
+type SortTab = "newest" | "bountied" | "unanswered";
 
 const TABS: { key: SortTab; label: string }[] = [
-  { key: 'newest', label: 'Newest' },
-  { key: 'bountied', label: 'Bountied' },
-  { key: 'unanswered', label: 'Unanswered' },
+  { key: "newest", label: "Newest" },
+  { key: "bountied", label: "Bountied" },
+  { key: "unanswered", label: "Unanswered" },
 ];
 
 function PostListSkeleton() {
   return (
     <div className="flex flex-col gap-4">
       {[1, 2, 3].map((i) => (
-        <div key={i} className="flex gap-4 p-5 bg-[#161618] border border-[#2A2A2C] rounded-lg">
+        <div
+          key={i}
+          className="flex gap-4 p-5 bg-[#161618] border border-[#2A2A2C] rounded-lg"
+        >
           <div className="flex flex-col items-center gap-2 min-w-[70px]">
             <Skeleton className="w-8 h-6" />
             <Skeleton className="w-16 h-12" />
@@ -61,10 +68,14 @@ function Pagination({
   const delta = 2;
 
   for (let i = 1; i <= last; i++) {
-    if (i === 1 || i === last || (i >= current - delta && i <= current + delta)) {
+    if (
+      i === 1 ||
+      i === last ||
+      (i >= current - delta && i <= current + delta)
+    ) {
       pages.push(i);
-    } else if (pages[pages.length - 1] !== '...') {
-      pages.push('...');
+    } else if (pages[pages.length - 1] !== "...") {
+      pages.push("...");
     }
   }
 
@@ -79,14 +90,14 @@ function Pagination({
       </button>
 
       {pages.map((p, i) =>
-        typeof p === 'number' ? (
+        typeof p === "number" ? (
           <button
             key={i}
             onClick={() => onPageChange(p)}
             className={`px-3 py-1.5 text-xs font-medium border rounded transition-colors min-w-[32px] ${
               p === current
-                ? 'bg-[#D4AF37] text-black border-[#D4AF37] font-bold'
-                : 'border-[#2A2A2C] text-gray-400 hover:text-white hover:border-gray-600 bg-transparent'
+                ? "bg-[#D4AF37] text-black border-[#D4AF37] font-bold"
+                : "border-[#2A2A2C] text-gray-400 hover:text-white hover:border-gray-600 bg-transparent"
             }`}
           >
             {p}
@@ -95,7 +106,7 @@ function Pagination({
           <span key={i} className="px-1 text-gray-500">
             ...
           </span>
-        )
+        ),
       )}
 
       <button
@@ -116,16 +127,20 @@ function TagFilterContent() {
 
   const [posts, setPosts] = useState<TagPost[]>([]);
   const [tag, setTag] = useState<TagInfo | null>(null);
-  const [categories, setCategories] = useState<{ id: string; name: string; slug: string }[]>([]);
-  const [meta, setMeta] = useState<TagPostsResponse['meta'] | null>(null);
+  const [categories, setCategories] = useState<
+    { id: string; name: string; slug: string }[]
+  >([]);
+  const [meta, setMeta] = useState<TagPostsResponse["meta"] | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [page, setPage] = useState<number>(1);
-  const [activeTab, setActiveTab] = useState<SortTab>('newest');
-  const [activeCategory, setActiveCategory] = useState<string>(searchParams.get('category') || '');
+  const [activeTab, setActiveTab] = useState<SortTab>("newest");
+  const [activeCategory, setActiveCategory] = useState<string>(
+    searchParams.get("category") || "",
+  );
 
   const activeCategoryName = useMemo(() => {
     const cat = categories.find((c) => c.slug === activeCategory);
-    return cat?.name || '';
+    return cat?.name || "";
   }, [categories, activeCategory]);
 
   // Reset when slug changes
@@ -134,8 +149,8 @@ function TagFilterContent() {
     setTag(null);
     setCategories([]);
     setPage(1);
-    setActiveTab('newest');
-    setActiveCategory(searchParams.get('category') || '');
+    setActiveTab("newest");
+    setActiveCategory(searchParams.get("category") || "");
   }, [slug]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchTagContent = useCallback(async () => {
@@ -144,15 +159,20 @@ function TagFilterContent() {
     setLoading(true);
 
     try {
-      const res = await getPostsByTag(slug, page, activeTab, activeCategory || undefined);
+      const res = await getPostsByTag(
+        slug,
+        page,
+        activeTab,
+        activeCategory || undefined,
+      );
 
-      if (res.status === 'success') {
+      if (res.status === "success") {
         setPosts(res.data);
         setTag(res.tag);
         setCategories(res.categories || []);
         setMeta(res.meta);
       } else {
-        throw new Error(res.message || 'Terjadi kesalahan sistem.');
+        throw new Error(res.message || "Terjadi kesalahan sistem.");
       }
     } catch (err: any) {
       showBoundary(err);
@@ -184,7 +204,7 @@ function TagFilterContent() {
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
@@ -208,8 +228,8 @@ function TagFilterContent() {
               onClick={() => handleTabChange(tab.key)}
               className={`px-4 py-2.5 text-sm font-medium transition-colors relative ${
                 activeTab === tab.key
-                  ? 'text-[#D4AF37]'
-                  : 'text-gray-400 hover:text-gray-200'
+                  ? "text-[#D4AF37]"
+                  : "text-gray-400 hover:text-gray-200"
               }`}
             >
               {tab.label}
@@ -227,9 +247,9 @@ function TagFilterContent() {
         {!loading && posts.length === 0 && (
           <div className="text-center py-20 border border-dashed border-[#2A2A2C] rounded-xl">
             <p className="text-gray-500">
-              {activeTab === 'unanswered'
-                ? 'Tidak ada pertanyaan yang belum terjawab untuk tag ini.'
-                : 'Belum ada postingan untuk tag ini.'}
+              {activeTab === "unanswered"
+                ? "Tidak ada pertanyaan yang belum terjawab untuk tag ini."
+                : "Belum ada postingan untuk tag ini."}
             </p>
           </div>
         )}
@@ -237,10 +257,7 @@ function TagFilterContent() {
         {!loading && posts.length > 0 && (
           <div className="flex flex-col gap-3">
             {posts.map((post, index) => (
-              <TagPostCard
-                key={post.id}
-                post={post}
-              />
+              <TagPostCard key={post.id} post={post} />
             ))}
           </div>
         )}
@@ -256,8 +273,20 @@ function TagFilterContent() {
       </div>
 
       {/* ── Right Sidebar ── */}
-      <aside className="w-[320px] flex-shrink-0 hidden xl:block">
-        <TagInfoSidebar tag={tag} totalPosts={meta?.total || 0} activeCategoryName={activeCategoryName} />
+      <aside className="w-[320px] flex-shrink-0 hidden xl:block sticky top-8 self-start">
+        <TagInfoSidebar
+          tag={tag}
+          totalPosts={meta?.total || 0}
+          activeCategoryName={activeCategoryName}
+          // ⚡ Tambahkan 3 props baru ini untuk mengalirkan data ke sidebar
+          relatedCategories={categories.map((cat) => ({
+            ...cat,
+            // Menghitung berapa banyak postingan di page saat ini yang memakai kategori ini
+            count: posts.filter((p) => p.category?.id === cat.id).length,
+          }))}
+          activeCategorySlug={activeCategory}
+          onCategorySelect={handleCategoryChange}
+        />
       </aside>
     </div>
   );

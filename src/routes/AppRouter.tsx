@@ -50,8 +50,9 @@ import AdminDashboardPage from '../pages/Admin/AdminDashboardPage';
 import TagCategoryPage from '../pages/Admin/TagCategoryPage';
 import UserDirectoryPage from '../pages/Admin/UserDirectoryPage';
 import RoleManagementPage from '../pages/Admin/RoleManagementPage';
-import BadgeMasterPage from '../pages/Admin/BadgeMasterPage';
+import { BadgeMasterPage } from "../pages/Admin/BadgeMasterPage";
 import AuditTimelinePage from '../pages/Admin/AuditTimelinePage';
+
 
 export default function AppRouter() {
   return (

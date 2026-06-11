@@ -1,19 +1,19 @@
 // ─── src/features/User/F28_ProfileSettings/components/SettingsForm.tsx ───
-// Dokumen Verifikasi: Arsitektur Frontend -> features/User/F28_ProfileSettings/components/
-// Referensi UI: Panel kanan dengan formulir username, email, dan bio
-
 import React, { useEffect, useState } from "react";
-import { useForm } from "react-hook-form"; // Library formulir populer
-import { Input } from "@/components/ui/input"; // Sesuai tema UI
-import { Button } from "@/components/ui/button"; // Sesuai tema Emas #D4AF37
-import { Textarea } from "@/components/ui/textarea"; // Untuk Bio / Expertise
-import { Label } from "@/components/ui/label";
-import { Card } from "@/components/ui/card"; // Sesuai tema Obsidian Black #161618
-import { useMutation, useQueryClient } from "@tanstack/react-query"; // Sesuai rekomendasi React Query
+import { useForm } from "react-hook-form";
+
+// FIX: Mengubah semua import UI Shadcn menggunakan relative path (mundur 4 tingkat)
+import { Input } from "../../../../components/ui/input";
+import { Button } from "../../../../components/ui/button";
+import { Textarea } from "../../../../components/ui/textarea";
+import { Label } from "../../../../components/ui/label";
+import { Card } from "../../../../components/ui/card";
+import { useToast } from "../../../../components/ui/use-toast";
+
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { AxiosError } from "axios";
 import { updateProfile } from "../api";
-import { ProfileData, UpdateProfilePayload } from "../types";
-import { ToastAction } from "@/components/ui/toast";
-import { useToast } from "@/components/ui/use-toast"; // Asumsi sistem toast standar
+import { type ProfileData, type UpdateProfilePayload, type ApiResponse } from "../types";
 
 interface SettingsFormProps {
   profileData: ProfileData;
@@ -24,140 +24,134 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ profileData }) => {
   const { toast } = useToast();
   const [globalError, setGlobalError] = useState<string | null>(null);
 
-  // Inisialisasi formulir dengan data profil saat ini
   const {
     register,
     handleSubmit,
-    setValue,
     formState: { errors, isDirty },
     reset,
   } = useForm<UpdateProfilePayload>({
     defaultValues: {
       username: profileData.username,
       bio: profileData.bio || "",
-      // email tidak termasuk dalam payload update, karena readonly di UI
     },
   });
 
-  // Mutasi untuk mengupdate profil
-  const mutation = useMutation({
+  useEffect(() => {
+    reset({
+      username: profileData.username,
+      bio: profileData.bio || "",
+    });
+  }, [profileData, reset]);
+
+  const mutation = useMutation<
+    ApiResponse<ProfileData>,
+    AxiosError<ApiResponse<unknown>>,
+    UpdateProfilePayload
+  >({
     mutationFn: updateProfile,
     onSuccess: (response) => {
-      // Perbarui cache React Query agar data profil global diperbarui
       queryClient.setQueryData(["profileData"], response);
-      // Reset state form, field yang sekarang dianggap "bersih"
-      reset(
-        {
-          username: response.data.username,
-          bio: response.data.bio || "",
-          // avatar_url ditangani di komponen AvatarUploader
-        },
-        { keepValues: true },
-      );
       setGlobalError(null);
       toast({
         title: "Profil Diperbarui",
         description: "Detail public identity Anda telah berhasil disimpan.",
-        variant: "default",
       });
     },
-    onError: (error: any) => {
-      // Tangani error validasi dari Laravel
-      const apiErrors = error?.response?.data?.errors;
-      if (apiErrors) {
-        // Tampilkan error tingkat global untuk menyederhanakan
-        setGlobalError(
-          error?.response?.data?.message || "Gagal menyimpan profil.",
-        );
-      } else {
-        setGlobalError("Terjadi kesalahan yang tidak terduga.");
-      }
+    onError: (error) => {
+      const backendMessage = error.response?.data?.message;
+      setGlobalError(backendMessage || "Gagal menyimpan profil.");
     },
   });
 
   const onSubmit = (data: UpdateProfilePayload) => {
-    // Hanya kirimkan data jika formulir "kotor" (diubah)
-    if (isDirty) {
-      setGlobalError(null);
-      mutation.mutate(data);
-    }
+    setGlobalError(null);
+    mutation.mutate(data);
   };
 
   return (
-    <Card className="p-8 bg-obsidian-black border-none h-full flex flex-col">
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 flex-grow">
+    <Card className="p-8 bg-[#161618] border border-zinc-800/60 shadow-xl rounded-xl h-full flex flex-col justify-between backdrop-blur-sm">
+      <form
+        id="profile-settings-form"
+        onSubmit={handleSubmit(onSubmit)}
+        className="space-y-6"
+      >
         {/* Username */}
-        <div className="space-y-1.5">
-          <Label htmlFor="username" className="text-sm font-medium text-white">
+        <div className="space-y-2">
+          <Label
+            htmlFor="username"
+            className="text-xs font-semibold uppercase tracking-wider text-zinc-400"
+          >
             Username
           </Label>
           <Input
             id="username"
             type="text"
-            className="bg-obsidian-black border-zinc-700 text-white focus:ring-gold focus:border-gold"
+            className="bg-[#121214] border-zinc-800 text-white rounded-lg px-4 py-3 h-11 focus-visible:ring-1 focus-visible:ring-[#D4AF37] focus-visible:border-[#D4AF37] transition-all duration-200 placeholder-zinc-600"
+            placeholder="Masukkan username baru..."
             {...register("username", {
               required: "Username wajib diisi.",
               minLength: { value: 3, message: "Username minimal 3 karakter." },
             })}
           />
           {errors.username && (
-            <p className="text-xs text-red-500 mt-1">
+            <p className="text-xs text-red-400 font-medium mt-1">
               {errors.username.message}
             </p>
           )}
         </div>
 
-        {/* Email Address - Readonly Sesuai UI */}
-        <div className="space-y-1.5">
-          <Label htmlFor="email" className="text-sm font-medium text-white">
+        {/* Email Address - Readonly */}
+        <div className="space-y-2">
+          <Label
+            htmlFor="email"
+            className="text-xs font-semibold uppercase tracking-wider text-zinc-400"
+          >
             Email Address
           </Label>
           <Input
             id="email"
             type="email"
             readOnly
-            className="bg-obsidian-black border-zinc-700 text-zinc-500 cursor-not-allowed"
-            defaultValue={profileData.email} // Pre-fill dengan data readonly
+            className="bg-[#1c1c1e] border-zinc-800/40 text-zinc-500 cursor-not-allowed rounded-lg px-4 py-3 h-11 shadow-inner select-none"
+            defaultValue={profileData.email}
           />
-          <p className="text-xs text-zinc-400 mt-1">
-            Email cannot be changed directly.
+          <p className="text-[11px] text-zinc-500 italic">
+            Email terikat dengan akun keamanan Anda dan tidak dapat diubah
+            langsung.
           </p>
         </div>
 
-        {/* Bio / Expertise - Textarea Sesuai UI */}
-        <div className="space-y-1.5">
-          <Label htmlFor="bio" className="text-sm font-medium text-white">
+        {/* Bio / Expertise */}
+        <div className="space-y-2">
+          <Label
+            htmlFor="bio"
+            className="text-xs font-semibold uppercase tracking-wider text-zinc-400"
+          >
             Bio / Expertise
           </Label>
           <Textarea
             id="bio"
-            className="bg-obsidian-black border-zinc-700 text-white min-h-[120px] focus:ring-gold focus:border-gold"
+            className="bg-[#121214] border-zinc-800 text-white rounded-lg p-4 min-h-[140px] focus-visible:ring-1 focus-visible:ring-[#D4AF37] focus-visible:border-[#D4AF37] transition-all duration-200 placeholder-zinc-600 resize-none text-sm leading-relaxed"
             {...register("bio")}
-            placeholder="A short bio about yourself..."
+            placeholder="Tulis sepatah kata mengenai keahlian atau latar belakang Anda..."
           />
-          {errors.bio && (
-            <p className="text-xs text-red-500 mt-1">{errors.bio.message}</p>
-          )}
         </div>
 
-        {/* Error Global */}
         {globalError && (
-          <p className="text-xs text-red-500 bg-red-950 p-2 rounded w-full text-center">
+          <div className="text-xs text-red-400 bg-red-950/20 px-4 py-3 rounded-lg border border-red-900/40 text-center animate-fade-in">
             {globalError}
-          </p>
+          </div>
         )}
       </form>
 
-      {/* Tombol Submit di Kanan Bawah Sesuai UI */}
-      <div className="flex justify-end mt-8">
+      <div className="flex justify-end mt-8 border-t border-zinc-800/60 pt-6">
         <Button
           type="submit"
-          form="profile-form" // Mengikat tombol ke form di luar
-          disabled={!isDirty || mutation.isPending} // Hanya aktif jika diubah
-          className="bg-gold hover:bg-gold-dark text-obsidian-black px-8 py-2 font-semibold"
-          onClick={handleSubmit(onSubmit)}
+          form="profile-settings-form"
+          disabled={!isDirty || mutation.isPending}
+          className="bg-[#D4AF37] hover:bg-[#bfa12d] disabled:bg-zinc-800 disabled:text-zinc-500 text-[#121214] font-bold text-xs uppercase tracking-widest px-8 h-11 rounded-lg shadow-lg shadow-[#D4AF37]/5 transition-all duration-300 transform active:scale-[0.98] cursor-pointer"
         >
-          {mutation.isPending ? "Saving..." : "Save Profile"}
+          {mutation.isPending ? "Memproses..." : "Save Profile"}
         </Button>
       </div>
     </Card>

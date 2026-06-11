@@ -9,12 +9,14 @@ interface TrendingPostCardProps {
   rank: number;
 }
 
+//function formatCount untuk mengubah angka menjadi format ribuan atau jutaan
 function formatCount(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1).replace(/\.0$/, '')}M`;
   if (n >= 1_000) return `${(n / 1_000).toFixed(1).replace(/\.0$/, '')}k`;
   return String(n);
 }
 
+//function timeAgo untuk mengubah tanggal menjadi format waktu yang lalu
 function timeAgo(dateString: string): string {
   const seconds = Math.floor((Date.now() - new Date(dateString).getTime()) / 1000);
   if (seconds < 60) return 'just now';

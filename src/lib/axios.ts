@@ -13,21 +13,35 @@ const axios = Axios.create({
         'Content-Type': 'application/json',
     },
     withCredentials: true,
+    withXSRFToken: true,          // ← Axios otomatis baca XSRF-TOKEN cookie & kirim sebagai X-XSRF-TOKEN header
+    xsrfCookieName: 'XSRF-TOKEN', // nama cookie dari Laravel
+    xsrfHeaderName: 'X-XSRF-TOKEN', // nama header yang dibaca Laravel
 });
 
+let csrfInitialized = false;
 let csrfPromise: Promise<void> | null = null;
 
 const ensureCsrfCookie = async (): Promise<void> => {
-    if (!document.cookie.split('; ').some((c) => c.startsWith('XSRF-TOKEN='))) {
-        if (!csrfPromise) {
-            csrfPromise = axios.get('/sanctum/csrf-cookie').then(() => {
-                csrfPromise = null;
-            }).catch(() => {
-                csrfPromise = null;
-            });
-        }
-        await csrfPromise;
+    // Jika sudah pernah diinisialisasi di sesi ini, skip
+    if (csrfInitialized) return;
+
+    // Cek apakah XSRF-TOKEN ada di cookie
+    const hasToken = document.cookie.split('; ').some((c) => c.startsWith('XSRF-TOKEN='));
+    if (hasToken) {
+        csrfInitialized = true;
+        return;
     }
+
+    // Fetch CSRF cookie dari Sanctum (hanya sekali jika ada concurrent requests)
+    if (!csrfPromise) {
+        csrfPromise = axios.get('/sanctum/csrf-cookie').then(() => {
+            csrfInitialized = true;
+            csrfPromise = null;
+        }).catch(() => {
+            csrfPromise = null;
+        });
+    }
+    await csrfPromise;
 };
 
 axios.interceptors.request.use(async (config) => {
@@ -36,6 +50,7 @@ axios.interceptors.request.use(async (config) => {
     }
     return config;
 });
+
 
 const isNetworkError = (error: AxiosError): boolean => {
     return !error.response && (

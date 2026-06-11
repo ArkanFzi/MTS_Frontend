@@ -1,10 +1,7 @@
 import axios from "../../../../lib/axios";
+import type { LoginPayload, LoginResponse } from "../types";
 
-
-export const loginUser = async (data: any) => {
-    // Sanctum CSRF Protection
-    await axios.get('/sanctum/csrf-cookie'); 
-    // Backend API Anda menerima: email, password
-    const response = await axios.post('/api/auth/login', data);
-    return response.data;
+export const loginUser = async (data: LoginPayload): Promise<LoginResponse> => {
+  const response = await axios.post('/api/auth/login', data);
+  return response.data;
 };

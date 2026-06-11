@@ -1,9 +1,8 @@
 import { Link } from "react-router-dom";
 import { Lock, Mail, Key, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { useFormik } from "formik";
+import * as Yup from "yup";
 
 import { Button } from "../../../../components/ui/button";
 import {
@@ -18,28 +17,29 @@ import { Input } from "../../../../components/ui/input";
 import { Label } from "../../../../components/ui/label";
 import type { LoginFormProps } from "../types";
 
-// ✅ Validasi Zod
-const loginSchema = z.object({
-  email: z.string().email("Format email tidak valid"),
-  password: z.string().min(1, "Password wajib diisi"),
-  rememberMe: z.boolean().default(false),
+// ✅ Yup validation schema
+const loginValidationSchema = Yup.object({
+  email: Yup.string().email("Format email tidak valid").required("Email wajib diisi"),
+  password: Yup.string().required("Password wajib diisi"),
+  rememberMe: Yup.boolean().default(false),
 });
 
-type LoginSchema = z.infer<typeof loginSchema>;
-
-
+interface LoginFormValues {
+  email: string;
+  password: string;
+  rememberMe: boolean;
+}
 
 export function LoginForm({ onSubmit, isLoading, errorMsg }: LoginFormProps) {
   const [showPassword, setShowPassword] = useState(false);
 
-  const { register, handleSubmit, formState: { errors } } = useForm<LoginSchema>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: { email: "", password: "", rememberMe: false }
+  const formik = useFormik<LoginFormValues>({
+    initialValues: { email: "", password: "", rememberMe: false },
+    validationSchema: loginValidationSchema,
+    onSubmit: (values) => {
+      onSubmit(values.email, values.password, values.rememberMe);
+    },
   });
-
-  const handleFormSubmit = (data: LoginSchema) => {
-    onSubmit(data.email, data.password, data.rememberMe);
-  };
 
   return (
     <Card className="w-full rounded-4xl max-w-sm h-fit bg-[#1d1d1f]/60 backdrop-blur-md border border-1 border-[#856e23] shadow-sm px-3 py-8">
@@ -58,7 +58,7 @@ export function LoginForm({ onSubmit, isLoading, errorMsg }: LoginFormProps) {
         </div>
       </CardHeader>
 
-      <form onSubmit={handleSubmit(handleFormSubmit)}>
+      <form onSubmit={formik.handleSubmit}>
         <CardContent>
           <div className="flex flex-col gap-5">
             {/* ALERT ERROR BACKEND DARI PROPS */}
@@ -78,11 +78,11 @@ export function LoginForm({ onSubmit, isLoading, errorMsg }: LoginFormProps) {
                   id="email"
                   type="email"
                   placeholder="expert@mautanyasuhu.com"
-                  className={`h-10 pl-9 bg-muted border ${errors.email ? 'border-red-500' : 'border-[#3f3f3f]'} text-foreground rounded-xl placeholder:text-muted-foreground/50 border-1 focus:bg-background focus-visible:border-[#D4AF37] focus-visible:ring-1 focus-visible:ring-[#856e23] transition-all`}
-                  {...register("email")}
+                  className={`h-10 pl-9 bg-muted border ${formik.touched.email && formik.errors.email ? 'border-red-500' : 'border-[#3f3f3f]'} text-foreground rounded-xl placeholder:text-muted-foreground/50 border-1 focus:bg-background focus-visible:border-[#D4AF37] focus-visible:ring-1 focus-visible:ring-[#856e23] transition-all`}
+                  {...formik.getFieldProps("email")}
                 />
               </div>
-              {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email.message}</p>}
+              {formik.touched.email && formik.errors.email && <p className="text-red-400 text-xs mt-1">{formik.errors.email}</p>}
             </div>
             
             <div className="grid gap-2">
@@ -100,8 +100,8 @@ export function LoginForm({ onSubmit, isLoading, errorMsg }: LoginFormProps) {
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
-                  className={`h-10 pl-9 bg-muted border ${errors.password ? 'border-red-500' : 'border-[#3f3f3f]'} text-foreground rounded-xl placeholder:text-muted-foreground/50 border-1 focus:bg-background focus-visible:border-[#D4AF37] focus-visible:ring-1 focus-visible:ring-[#856e23] focus-visible:ring-offset-0 transition-all`}
-                  {...register("password")}
+                  className={`h-10 pl-9 bg-muted border ${formik.touched.password && formik.errors.password ? 'border-red-500' : 'border-[#3f3f3f]'} text-foreground rounded-xl placeholder:text-muted-foreground/50 border-1 focus:bg-background focus-visible:border-[#D4AF37] focus-visible:ring-1 focus-visible:ring-[#856e23] focus-visible:ring-offset-0 transition-all`}
+                  {...formik.getFieldProps("password")}
                 />
                 <Button
                   type="button"
@@ -112,7 +112,7 @@ export function LoginForm({ onSubmit, isLoading, errorMsg }: LoginFormProps) {
                   {showPassword ? <EyeOff className="h-4 w-4 text-[#D4AF37]" /> : <Eye className="h-4 w-4" />}
                 </Button>
               </div>
-              {errors.password && <p className="text-red-400 text-xs mt-1">{errors.password.message}</p>}
+              {formik.touched.password && formik.errors.password && <p className="text-red-400 text-xs mt-1">{formik.errors.password}</p>}
             </div>
 
             <div className="flex items-center gap-2 pt-1">
@@ -120,7 +120,10 @@ export function LoginForm({ onSubmit, isLoading, errorMsg }: LoginFormProps) {
                 id="remember"
                 type="checkbox"
                 className="h-4 w-4 rounded border-zinc-700 bg-transparent text-black accent-[#D4AF37] cursor-pointer"
-                {...register("rememberMe")}
+                checked={formik.values.rememberMe}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                name="rememberMe"
               />
               <label htmlFor="remember" className="text-sm font-medium cursor-pointer select-none text-muted-foreground">
                 Ingat Saya

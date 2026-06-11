@@ -1,25 +1,55 @@
-import type { Category, Tag, User } from "../../../../types";
-
+// src/features/Common/F5_FilterByTag/types/index.ts
 
 export interface TagPost {
-  id: string; // UUID format
+  id: string;
   title: string;
-  slug: string;
-  summary: string;
-  votes_count: number;
+  body: string;
+  vote_score: number;
   comments_count: number;
-  views_count: number;
+  view_count: number;
+  is_answered: boolean;
   created_at: string;
-  user: User;
-  category: Category;
-  tags: Tag[];
+  user: {
+    id: string;
+    username: string;
+    avatar_url: string | null;
+  };
+  category: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+  tags: {
+    id: string;
+    name: string;
+    slug: string;
+    color: string;
+  }[];
 }
 
-export interface TagDetailData {
-  tag: Tag;
-  posts: {
+export interface TagInfo {
+  id: string;
+  name: string;
+  slug: string;
+  color: string;
+  usage_count: number;
+  created_at: string;
+}
+
+export interface CategoryOption {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+export interface TagPostsResponse {
+  status: string;
+  message: string;
+  data: TagPost[];
+  tag: TagInfo | null;
+  categories: CategoryOption[];
+  meta: {
     current_page: number;
-    data: TagPost[];
     last_page: number;
     per_page: number;
     total: number;

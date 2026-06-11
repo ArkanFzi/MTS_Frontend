@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarImage, AvatarFallback } from '../../../../components/ui/avatar';
 import { Button } from '../../../../components/ui/button';
 import type { NotificationItem } from '../types';
-import { Bell, CheckCircle2, MessageSquare, ThumbsUp, Award } from 'lucide-react';
+import { Bell, CheckCircle2, MessageSquare, ThumbsUp, Award, UserCheck } from 'lucide-react';
 import TechnicalTimestamp from '../../../../components/shared/TechnicalTimestamp';
 
 interface NotificationRowProps {
@@ -26,6 +26,8 @@ function buildMessage(notification: NotificationItem): string {
       return `${actorName} memberikan vote pada postingan Anda.`;
     case 'badge_earned':
       return `Selamat! Anda mendapatkan badge baru.`;
+    case 'profile_completed':
+      return `Profil Anda sekarang lengkap!`;
     default:
       return `${actorName} berinteraksi dengan konten Anda.`;
   }
@@ -39,6 +41,8 @@ function buildLink(notification: NotificationItem): string | null {
       return `/posts/${notification.reference_id}`;
     case 'comment':
       return `/posts/${notification.reference_id}`; // navigate to the post
+    case 'App\\Models\\Auth\\User':
+      return '/settings/profile';
     default:
       return null;
   }
@@ -71,6 +75,9 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({ notification, 
     }
     if (type.includes('badge')) {
       return <Award className="h-4 w-4 text-[#D4AF37]" />;
+    }
+    if (type === 'profile_completed') {
+      return <UserCheck className="h-4 w-4 text-cyan-500" />;
     }
     return <Bell className="h-4 w-4 text-zinc-400" />;
   };

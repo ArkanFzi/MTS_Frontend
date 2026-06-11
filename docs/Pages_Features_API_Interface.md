@@ -78,7 +78,7 @@ export interface Post {
   category_id: string;
   title: string;
   body: string;
-  status: 'draft' | 'published';
+  status: 'open' | 'closed';  // Status aktual: 'open' (aktif) atau 'closed' (ditutup)
   view_count: number;
   vote_score: number;
   is_answered: boolean;
@@ -151,11 +151,14 @@ export interface ModerationLog {
 // ─── Tipe dari tabel notifications ───
 export interface Notification {
   id: string;
-  user_id: string;
-  type: string;
-  data: Record<string, unknown>; // JSON payload
-  read_at: string | null;
+  user_id: string;       // Penerima notifikasi
+  actor_id: string | null;  // User yang memicu aksi
+  type: string;          // 'upvote_post', 'new_comment', 'badge_awarded', dll
+  reference_id: string | null;
+  reference_type: string | null;  // 'post', 'comment', 'badge', dll
+  is_read: boolean;      // Status baca (default: false)
   created_at: string;
+  actor?: User;          // Relasi eager load
 }
 
 // ─── Tipe dari tabel post_edit_history ───
@@ -195,15 +198,16 @@ export interface PaginatedResponse<T> {
   total: number;
 }
 
-// ─── Token & Auth ───
-export interface AuthToken {
-  token: string;
-  token_type: 'Bearer';
-}
-
+// ─── Auth (Sanctum SPA Cookie-Based) ───
+// TIDAK ADA token yang dikirim — sesi dikelola via HttpOnly cookie otomatis.
+// Frontend Axios: withCredentials: true
+// Backend: $middleware->statefulApi()
 export interface AuthResponse {
-  user: User;
-  token: string;
+  status: string;   // 'success' | 'error'
+  message: string;
+  data: {
+    user: User & { roles: string[] };
+  };
 }
 ```
 
@@ -216,7 +220,7 @@ export interface AuthResponse {
 ### PAGE 1 — RegisterPage (`/register`)
 **File:** `src/pages/Auth/RegisterPage.tsx`
 **Features:** `F1_Register`
-**Layout:** `PublicLayout`
+**Layout:** `AppLayout` (unified — GuestRoute redirect jika sudah login)
 
 #### API yang Dipanggil:
 | # | Method | Endpoint | Guard | Deskripsi |
@@ -261,7 +265,7 @@ export interface RegisterFormErrors {
 ### PAGE 2 — LoginPage (`/login`)
 **File:** `src/pages/Auth/LoginPage.tsx`
 **Features:** `F2_Login`
-**Layout:** `PublicLayout`
+**Layout:** `AppLayout` (GuestRoute)
 
 #### API yang Dipanggil:
 | # | Method | Endpoint | Guard | Deskripsi |
@@ -298,7 +302,7 @@ export interface LoginFormErrors {
 
 ### KOMPONEN GLOBAL — LogoutButton (bukan halaman)
 **File:** `features/Auth/F3_Logout/components/LogoutButton.tsx`
-**Dipakai di:** Semua Layout (`UserLayout`, `AdminLayout`, `ModeratorLayout`)
+**Dipakai di:** Semua halaman via `AppLayout` (unified sidebar)
 
 #### API yang Dipanggil:
 | # | Method | Endpoint | Guard | Deskripsi |
@@ -322,7 +326,7 @@ export interface LogoutResponse {
 ### PAGE 3 — HomePage (`/`)
 **File:** `src/pages/Public/HomePage.tsx`
 **Features:** `F16_Post` (feed) + `F7_TrendingPopularPost` + `F5_FilterByTag` + `F22_VoteSystem` + `F23_LikeSystem`
-**Layout:** `PublicLayout`
+**Layout:** `AppLayout` (GuestRoute)
 
 #### API yang Dipanggil:
 | # | Method | Endpoint | Guard | Deskripsi |
@@ -389,7 +393,7 @@ export interface LikeResponse {
 ### PAGE 4 — PostDetailPage (`/posts/:postId`)
 **File:** `src/pages/Public/PostDetailPage.tsx`
 **Features:** `F16_Post` + `F17_Comment` + `F18_MarkAcceptedAnswer` + `F20_NestedCommentReply` + `F22_VoteSystem` + `F23_LikeSystem` + `F30_UserReport`
-**Layout:** `PublicLayout`
+**Layout:** `AppLayout` (GuestRoute)
 
 #### API yang Dipanggil:
 | # | Method | Endpoint | Guard | Deskripsi |
@@ -461,7 +465,7 @@ export interface CreateReportPayload {
 ### PAGE 5 — SearchPage (`/search`)
 **File:** `src/pages/Public/SearchPage.tsx`
 **Features:** `F4_SearchPost`
-**Layout:** `PublicLayout`
+**Layout:** `AppLayout` (GuestRoute)
 
 #### API yang Dipanggil:
 | # | Method | Endpoint | Guard | Query Param |
@@ -507,7 +511,7 @@ export interface SearchResultItem {
 ### PAGE 6 — TagFilterPage (`/tags/:slug`)
 **File:** `src/pages/Public/TagFilterPage.tsx`
 **Features:** `F5_FilterByTag`
-**Layout:** `PublicLayout`
+**Layout:** `AppLayout` (GuestRoute)
 
 #### API yang Dipanggil:
 | # | Method | Endpoint | Guard | Deskripsi |
@@ -533,7 +537,7 @@ export interface TagWithPosts {
 ### PAGE 7 — CategoryFilterPage (`/category/:slug`)
 **File:** `src/pages/Public/CategoryFilterPage.tsx`
 **Features:** `F6_FilterByCategory`
-**Layout:** `PublicLayout`
+**Layout:** `AppLayout` (GuestRoute)
 
 #### API yang Dipanggil:
 | # | Method | Endpoint | Guard | Deskripsi |
@@ -559,7 +563,7 @@ export interface CategoryWithPosts {
 ### PAGE 8 — TrendingPage (`/trending`)
 **File:** `src/pages/Public/TrendingPage.tsx`
 **Features:** `F7_TrendingPopularPost`
-**Layout:** `PublicLayout`
+**Layout:** `AppLayout` (GuestRoute)
 
 #### API yang Dipanggil:
 | # | Method | Endpoint | Guard | Query Param |
@@ -593,7 +597,7 @@ export interface TrendingPost {
 ### PAGE 9 — LeaderboardPage (`/leaderboard`)
 **File:** `src/pages/Public/LeaderboardPage.tsx`
 **Features:** `F27_GamificationLeaderboard`
-**Layout:** `PublicLayout`
+**Layout:** `AppLayout` (GuestRoute)
 
 #### API yang Dipanggil:
 | # | Method | Endpoint | Guard | Deskripsi |
@@ -625,7 +629,7 @@ export interface LeaderboardEntry {
 ### PAGE 10 — TagsListPage (`/tags`)
 **File:** `src/pages/Public/TagsListPage.tsx`
 **Features:** `F12_TagMaster` (read-only view)
-**Layout:** `PublicLayout`
+**Layout:** `AppLayout` (GuestRoute)
 
 #### API yang Dipanggil:
 | # | Method | Endpoint | Guard | Deskripsi |
@@ -641,7 +645,7 @@ export interface LeaderboardEntry {
 ### PAGE 11 — CreatePostPage (`/posts/new`)
 **File:** `src/pages/User/CreatePostPage.tsx`
 **Features:** `F16_Post` (Create)
-**Layout:** `UserLayout`
+**Layout:** `AppLayout` (ProtectedRoute — auth)
 
 #### API yang Dipanggil:
 | # | Method | Endpoint | Guard | Deskripsi |
@@ -658,7 +662,7 @@ export interface CreatePostPayload {
   body: string;
   category_id: string;
   tags: string[];  // array nama tag (bukan ID)
-  status: 'draft' | 'published';
+  status: 'open' | 'closed';
 }
 
 // Payload untuk mengedit post
@@ -671,7 +675,7 @@ export interface UpdatePostPayload {
 
 // Payload update status
 export interface UpdatePostStatusPayload {
-  status: 'draft' | 'published';
+  status: 'open' | 'closed';
 }
 
 // Response setelah berhasil create
@@ -689,7 +693,7 @@ export interface CreatePostResponse {
 ### PAGE 12 — EditPostPage (`/posts/:postId/edit`)
 **File:** `src/pages/User/EditPostPage.tsx`
 **Features:** `F16_Post` (Edit)
-**Layout:** `UserLayout`
+**Layout:** `AppLayout` (ProtectedRoute — auth)
 
 #### API yang Dipanggil:
 | # | Method | Endpoint | Guard | Deskripsi |
@@ -705,21 +709,21 @@ export interface CreatePostResponse {
 ### PAGE 13 — MyPostsPage (`/me/posts`)
 **File:** `src/pages/User/MyPostsPage.tsx`
 **Features:** `F16_Post` (My Posts)
-**Layout:** `UserLayout`
+**Layout:** `AppLayout` (ProtectedRoute — auth)
 
 #### API yang Dipanggil:
 | # | Method | Endpoint | Guard | Deskripsi |
 |---|--------|----------|-------|-----------|
 | 1 | `GET` | `/api/me/posts` | 🔒 Sanctum | Semua post milik user yang login |
 | 2 | `DELETE` | `/api/posts/{post}` | 🔒 Sanctum | Hapus post sendiri |
-| 3 | `PATCH` | `/api/posts/{post}/status` | 🔒 Sanctum | Toggle draft/published |
+| 3 | `PATCH` | `/api/posts/{post}/status` | 🔒 Sanctum | Toggle open/closed |
 
 ---
 
 ### PAGE 14 — BookmarksPage (`/me/bookmarks`)
 **File:** `src/pages/User/BookmarksPage.tsx`
 **Features:** `F24_BookmarkPost`
-**Layout:** `UserLayout`
+**Layout:** `AppLayout` (ProtectedRoute — auth)
 
 #### API yang Dipanggil:
 | # | Method | Endpoint | Guard | Deskripsi |
@@ -755,7 +759,7 @@ export interface BookmarkToggleResponse {
 ### PAGE 15 — NotificationsPage (`/me/notifications`)
 **File:** `src/pages/User/NotificationsPage.tsx`
 **Features:** `F26_NotificationSystem`
-**Layout:** `UserLayout`
+**Layout:** `AppLayout` (ProtectedRoute — auth)
 
 #### API yang Dipanggil:
 | # | Method | Endpoint | Guard | Deskripsi |
@@ -796,7 +800,7 @@ export interface MarkReadResponse {
 ### PAGE 16 — ProfileSettingsPage (`/me/settings`)
 **File:** `src/pages/User/ProfileSettingsPage.tsx`
 **Features:** `F28_ProfileSettings`
-**Layout:** `UserLayout`
+**Layout:** `AppLayout` (ProtectedRoute — auth)
 
 #### API yang Dipanggil:
 | # | Method | Endpoint | Guard | Deskripsi |
@@ -843,7 +847,7 @@ export interface UpdatePasswordPayload {
 ### PAGE 17 — PublicProfilePage (`/profile/:username`)
 **File:** `src/pages/User/PublicProfilePage.tsx`
 **Features:** `F25_FollowUser` + *(data profil via settings endpoint)*
-**Layout:** `PublicLayout`
+**Layout:** `AppLayout` (GuestRoute)
 
 #### API yang Dipanggil:
 | # | Method | Endpoint | Guard | Deskripsi |
@@ -879,7 +883,7 @@ export interface FollowUser {
 ### PAGE 18 — MyBadgesPage (`/me/badges`)
 **File:** `src/pages/User/MyBadgesPage.tsx`
 **Features:** `F29_BadgeAchievement`
-**Layout:** `UserLayout`
+**Layout:** `AppLayout` (ProtectedRoute — auth)
 
 #### API yang Dipanggil:
 | # | Method | Endpoint | Guard | Deskripsi |
@@ -910,7 +914,7 @@ export interface EarnedBadge {
 ### PAGE ✨ — PostEditHistoryPage (`/posts/:postId/history`)
 **File:** `src/pages/User/PostEditHistoryPage.tsx`
 **Features:** `F19_PostEditHistory`
-**Layout:** `UserLayout`
+**Layout:** `AppLayout` (ProtectedRoute — auth)
 
 #### API yang Dipanggil:
 | # | Method | Endpoint | Guard | Deskripsi |
@@ -944,7 +948,7 @@ export interface PostEditHistoryItem {
 ### PAGE ✨ — CommentEditHistoryPage (`/comments/:commentId/history`)
 **File:** `src/pages/User/CommentEditHistoryPage.tsx`
 **Features:** `F21_CommentEditHistory`
-**Layout:** `UserLayout`
+**Layout:** `AppLayout` (ProtectedRoute — auth)
 
 #### API yang Dipanggil:
 | # | Method | Endpoint | Guard | Deskripsi |
@@ -978,7 +982,7 @@ export interface CommentEditHistoryItem {
 ### PAGE 19 — ReportQueuePage (`/moderator/reports`)
 **File:** `src/pages/Moderator/ReportQueuePage.tsx`
 **Features:** `F13_ContentReportQueue`
-**Layout:** `ModeratorLayout`
+**Layout:** `AppLayout` (ProtectedRoute — mod+admin)
 
 #### API yang Dipanggil:
 | # | Method | Endpoint | Guard | Deskripsi |
@@ -1014,7 +1018,7 @@ export type ReportStatus = 'pending' | 'resolved' | 'rejected';
 ### PAGE 20 — ActionLogPage (`/moderator/logs`)
 **File:** `src/pages/Moderator/ActionLogPage.tsx`
 **Features:** `F14_ModeratorActionLog`
-**Layout:** `ModeratorLayout`
+**Layout:** `AppLayout` (ProtectedRoute — mod+admin)
 
 #### API yang Dipanggil:
 | # | Method | Endpoint | Guard | Deskripsi |
@@ -1035,7 +1039,7 @@ export interface ModActionLog extends import('@/types').ModerationLog {
 ### PAGE 21 — BanManagementPage (`/moderator/bans`)
 **File:** `src/pages/Moderator/BanManagementPage.tsx`
 **Features:** `F15_UserBanSanction`
-**Layout:** `ModeratorLayout`
+**Layout:** `AppLayout` (ProtectedRoute — mod+admin)
 
 #### API yang Dipanggil:
 | # | Method | Endpoint | Guard | Deskripsi |
@@ -1079,7 +1083,7 @@ export interface BanResponse {
 ### PAGE 22 — ModTagCategoryPage (`/moderator/content`)
 **File:** `src/pages/Moderator/ModTagCategoryPage.tsx`
 **Features:** `F10_CategoryMaster` + `F12_TagMaster`
-**Layout:** `ModeratorLayout`
+**Layout:** `AppLayout` (ProtectedRoute — mod+admin)
 
 #### API yang Dipanggil:
 | # | Method | Endpoint | Guard | Deskripsi |
@@ -1098,7 +1102,7 @@ export interface BanResponse {
 ### PAGE 23 — EditHistoryPage (`/moderator/history`)
 **File:** `src/pages/Moderator/EditHistoryPage.tsx`
 **Features:** `F19_PostEditHistory` + `F21_CommentEditHistory`
-**Layout:** `ModeratorLayout`
+**Layout:** `AppLayout` (ProtectedRoute — mod+admin)
 
 #### API yang Dipanggil:
 | # | Method | Endpoint | Guard | Deskripsi |
@@ -1115,7 +1119,7 @@ export interface BanResponse {
 ### PAGE 24 — AdminDashboardPage (`/admin`)
 **File:** `src/pages/Admin/AdminDashboardPage.tsx`
 **Features:** `F8_RoleAndPermission` + `F9_UserManagement` (stats)
-**Layout:** `AdminLayout`
+**Layout:** `AppLayout` (ProtectedRoute — admin only)
 
 #### API yang Dipanggil:
 | # | Method | Endpoint | Guard | Deskripsi |
@@ -1156,7 +1160,7 @@ export interface PointsSummary {
 ### PAGE 25 — TagCategoryPage (`/admin/content`)
 **File:** `src/pages/Admin/TagCategoryPage.tsx`
 **Features:** `F10_CategoryMaster` + `F12_TagMaster`
-**Layout:** `AdminLayout`
+**Layout:** `AppLayout` (ProtectedRoute — admin only)
 
 #### API yang Dipanggil (via Admin prefix):
 | # | Method | Endpoint | Guard | Deskripsi |
@@ -1197,7 +1201,7 @@ export interface TagPayload {
 ### PAGE 26 — UserDirectoryPage (`/admin/users`)
 **File:** `src/pages/Admin/UserDirectoryPage.tsx`
 **Features:** `F9_UserManagement`
-**Layout:** `AdminLayout`
+**Layout:** `AppLayout` (ProtectedRoute — admin only)
 
 #### API yang Dipanggil:
 | # | Method | Endpoint | Guard | Deskripsi |
@@ -1237,7 +1241,7 @@ export interface AdminResetPasswordPayload {
 ### PAGE 27 — RoleManagementPage (`/admin/roles`)
 **File:** `src/pages/Admin/RoleManagementPage.tsx`
 **Features:** `F8_RoleAndPermission`
-**Layout:** `AdminLayout`
+**Layout:** `AppLayout` (ProtectedRoute — admin only)
 
 #### API yang Dipanggil:
 | # | Method | Endpoint | Guard | Deskripsi |
@@ -1278,7 +1282,7 @@ export interface AssignRolePayload {
 ### PAGE 28 — BadgeMasterPage (`/admin/badges`)
 **File:** `src/pages/Admin/BadgeMasterPage.tsx`
 **Features:** `F11_BadgeMaster`
-**Layout:** `AdminLayout`
+**Layout:** `AppLayout` (ProtectedRoute — admin only)
 
 #### API yang Dipanggil:
 | # | Method | Endpoint | Guard | Deskripsi |
@@ -1309,7 +1313,7 @@ export interface BadgePayload {
 ### PAGE 29 — AuditTimelinePage (`/admin/audit`)
 **File:** `src/pages/Admin/AuditTimelinePage.tsx`
 **Features:** `F14_ModeratorActionLog` (admin view)
-**Layout:** `AdminLayout`
+**Layout:** `AppLayout` (ProtectedRoute — admin only)
 
 #### API yang Dipanggil:
 | # | Method | Endpoint | Guard | Deskripsi |
@@ -1363,8 +1367,8 @@ export interface BadgePayload {
 | `PUT /moderator/reports/{id}` | ReportQueuePage |
 | `GET /moderator/logs` | ActionLogPage |
 | `GET /moderator/bans` | BanManagementPage |
-| `POST /moderator/bans/{id}/warn |
-| POST | /api/moderator/bans/{id}/ban` | BanManagementPage |
+| `POST /moderator/bans/{id}/warn` | BanManagementPage |
+| `POST /moderator/bans/{id}/ban` | BanManagementPage |
 | `POST /moderator/bans/{id}/unban` | BanManagementPage |
 | `GET /moderator/posts/{post}/history` | PostEditHistoryPage, EditHistoryPage |
 | `GET /moderator/comments/{comment}/history` | CommentEditHistoryPage, EditHistoryPage |

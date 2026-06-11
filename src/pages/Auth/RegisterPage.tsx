@@ -1,39 +1,35 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { RegisterForm } from "../../features/Auth/F1_Register/components/RegisterForm";
 import { registerUser } from "../../features/Auth/F1_Register/api";
-import type { RegisterPayload } from "../../features/Auth/F1_Register/types"; // ← Tipe eksplisit
+import type { RegisterPayload } from "../../features/Auth/F1_Register/types";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("");
 
-  // ← Hapus logika agreeTerms dari sini. Page hanya terima data bersih dari form.
-  const handleRegister = async (data: RegisterPayload) => {
-    setErrorMsg("");
-    setIsLoading(true);
-
-    try {
-      await registerUser(data);
+  const mutation = useMutation({
+    mutationFn: (data: RegisterPayload) => registerUser(data),
+    onSuccess: () => {
       toast.success("Registration Successful! Please login.");
       navigate("/login");
-    } catch (error: any) {
+    },
+    onError: (error: any) => {
       const message = error.response?.data?.message || "Registration failed.";
-      setErrorMsg(message);
       toast.error(message);
-    } finally {
-      setIsLoading(false);
-    }
+    },
+  });
+
+  const handleRegister = (data: RegisterPayload) => {
+    mutation.mutate(data);
   };
 
   return (
     <div className="grid min-h-screen w-screen place-items-center p-4 bg-[#09090B]">
       <RegisterForm
         onSubmit={handleRegister}
-        isLoading={isLoading}
-        errorMsg={errorMsg}
+        isLoading={mutation.isPending}
+        errorMsg={mutation.isError ? (mutation.error as any)?.response?.data?.message || "Registration failed." : ""}
       />
     </div>
   );

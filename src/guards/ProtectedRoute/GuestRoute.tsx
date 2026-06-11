@@ -1,11 +1,11 @@
-// src/guards/GuestRoute.tsx
 import { Navigate, Outlet } from 'react-router-dom';
 import type { GuestRouteProps } from './type';
+import { useAuthStore } from '../../store/useAuthStore';
 
 export default function GuestRoute({ redirectPath = '/' }: GuestRouteProps) {
-  const token = localStorage.getItem('auth_token');
+  const { user } = useAuthStore();
 
-  if (token) {
+  if (user) {
     return <Navigate to={redirectPath} replace />;
   }
 

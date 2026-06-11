@@ -1,15 +1,9 @@
 // src/features/User/F26_NotificationSystem/api/index.ts
-import axios from 'axios';
-import type { NotificationItem, MarkReadResponse } from '../types';
+import axios from '../../../../lib/axios';
+import type { NotificationItem, MarkAllReadResponse } from '../types';
 
-// Interface penampung pembungkus API lokal
-export interface ApiLocalResponse<T> {
-  success: boolean;
-  message: string;
-  data: T;
-}
-
-export interface PaginatedLocalResponse<T> {
+// Matches Laravel LengthAwarePaginator JSON shape
+export interface PaginatedResponse<T> {
   data: T[];
   current_page: number;
   last_page: number;
@@ -17,30 +11,17 @@ export interface PaginatedLocalResponse<T> {
   total: number;
 }
 
-const getAuthHeader = () => {
-  const token = localStorage.getItem('token');
-  return {
-    Authorization: `Bearer ${token}`,
-  };
-};
-
-export const fetchNotifications = async (page = 1): Promise<PaginatedLocalResponse<NotificationItem>> => {
-  const response = await axios.get(`/api/notifications?page=${page}`, {
-    headers: getAuthHeader(),
-  });
+export const fetchNotifications = async (page = 1): Promise<PaginatedResponse<NotificationItem>> => {
+  const response = await axios.get('/api/notifications', { params: { page } });
   return response.data;
 };
 
-export const markAsRead = async (id: string): Promise<ApiLocalResponse<null>> => {
-  const response = await axios.patch(`/api/notifications/${id}/read`, {}, {
-    headers: getAuthHeader(),
-  });
+export const markAsRead = async (id: string): Promise<{ success: boolean }> => {
+  const response = await axios.patch(`/api/notifications/${id}/read`);
   return response.data;
 };
 
-export const markAllNotificationsAsRead = async (): Promise<MarkReadResponse> => {
-  const response = await axios.patch('/api/notifications/mark-all-read', {}, {
-    headers: getAuthHeader(),
-  });
+export const markAllNotificationsAsRead = async (): Promise<MarkAllReadResponse> => {
+  const response = await axios.patch('/api/notifications/mark-all-read');
   return response.data;
 };

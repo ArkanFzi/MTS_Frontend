@@ -1,3 +1,5 @@
+// src/features/Common/F5_FilterByTag/api/index.ts
+
 import axios from '../../../../lib/axios';
 import type { TagPostsResponse } from '../types';
 
@@ -8,7 +10,7 @@ export const getPostsByTag = async (
   category?: string
 ): Promise<TagPostsResponse> => {
   const response = await axios.get(`/api/explore/tag/${slug}`, {
-    params: { page, sort, ...(category ? { category } : {}) },
+    params: { page, sort, category }
   });
   return response.data;
 };

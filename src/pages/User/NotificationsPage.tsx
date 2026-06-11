@@ -1,4 +1,3 @@
-// src/pages/User/NotificationsPage.tsx
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
@@ -22,8 +21,11 @@ const NotificationsPage: React.FC = () => {
         const res = await fetchNotifications(1);
 
         if (isMounted) {
-          setNotifications(res.data);
-          const unreadCount = res.data.filter((item: NotificationItem) => !item.is_read).length;
+          // res is the paginator directly: { data: [...], current_page, last_page, ... }
+          const notificationArray = res.data || [];
+          setNotifications(notificationArray);
+          
+          const unreadCount = notificationArray.filter((item: NotificationItem) => !item.is_read).length;
           setTotalUnread(unreadCount);
         }
       } catch (error) {
@@ -66,12 +68,12 @@ const NotificationsPage: React.FC = () => {
   };
 
   return (
-    <div className="container max-w-4xl mx-auto py-8 px-4">
+    <div className="container max-w-5xl mx-auto py-8 px-4">
       <Card className="bg-[#161618] border border-zinc-800 shadow-xl">
         <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 pb-6 border-b border-zinc-800">
           <div className="space-y-1">
-            <CardTitle className="text-xl font-bold tracking-tight text-zinc-100 flex items-center gap-2">
-              <Bell className="h-5 w-5 text-[#D4AF37]" /> Inbox Notifikasi
+            <CardTitle className="text-xl font-semibold text-zinc-100 flex items-center gap-2">
+              <Bell className="h-5 w-5 text-[#D4AF37]" />Inbox Notifikasi
             </CardTitle>
             <CardDescription className="text-zinc-400 text-sm">
               Kamu memiliki {totalUnread} notifikasi baru yang belum dibaca.
@@ -95,7 +97,7 @@ const NotificationsPage: React.FC = () => {
             <div className="flex items-center justify-center p-12">
               <LoadingSpinner />
             </div>
-          ) : notifications.length === 0 ? (
+          ) : !notifications || notifications.length === 0 ? ( // 🟢 PERBAIKAN: Validasi gerbang aman jika data belum siap
             <div className="flex flex-col items-center justify-center text-center p-12 space-y-3">
               <Bell className="h-12 w-12 text-zinc-700 stroke-[1.5]" />
               <p className="text-zinc-400 text-sm">Kotak masukmu bersih. Tidak ada notifikasi saat ini.</p>

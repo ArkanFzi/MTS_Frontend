@@ -1,8 +1,18 @@
 // src/features/User/F24_BookmarkPost/types/index.ts
-import type { Post } from '../../F16_Post/types/index';
 
-export interface BookmarkPayload {
-  post_id: string;
+export interface BookmarkUser {
+  id: string;
+  username: string;
+  avatar_url?: string;
+}
+
+export interface BookmarkedPost {
+  id: string;
+  title: string;
+  excerpt: string;
+  slug: string;
+  created_at: string;
+  user: BookmarkUser; // backend loads post.user (not post.author)
 }
 
 export interface BookmarkItem {
@@ -10,25 +20,11 @@ export interface BookmarkItem {
   user_id: string;
   post_id: string;
   created_at: string;
-  post?: Post;
+  updated_at: string;
+  post: BookmarkedPost;
 }
 
 export interface ToggleBookmarkResponse {
-  success: boolean;
   message: string;
-  data: {
-    is_bookmarked: boolean;
-  };
-}
-
-export interface BookmarkListResponse {
-  status: string;
-  message: string;
-  data: BookmarkItem[];
-  meta: {
-    current_page: number;
-    last_page: number;
-    per_page: number;
-    total: number;
-  };
+  status: string; // 'bookmarked' | 'unbookmarked'
 }

@@ -1,3 +1,5 @@
+// src/pages/Public/TagFilterPage.tsx
+
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -44,7 +46,6 @@ function PostListSkeleton() {
   );
 }
 
-// Simple pagination component
 function Pagination({
   current,
   last,
@@ -122,7 +123,6 @@ function TagFilterContent() {
   const [activeTab, setActiveTab] = useState<SortTab>('newest');
   const [activeCategory, setActiveCategory] = useState<string>(searchParams.get('category') || '');
 
-  // Derive active category name for sidebar
   const activeCategoryName = useMemo(() => {
     const cat = categories.find((c) => c.slug === activeCategory);
     return cat?.name || '';
@@ -169,7 +169,6 @@ function TagFilterContent() {
     setActiveCategory(categorySlug);
     setPage(1);
     setPosts([]);
-    // Update URL
     if (categorySlug) {
       setSearchParams({ category: categorySlug });
     } else {
@@ -241,7 +240,6 @@ function TagFilterContent() {
               <TagPostCard
                 key={post.id}
                 post={post}
-                index={(page - 1) * (meta?.per_page || 10) + index + 1}
               />
             ))}
           </div>

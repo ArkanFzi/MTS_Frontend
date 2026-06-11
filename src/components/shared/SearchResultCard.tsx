@@ -1,5 +1,8 @@
+// src/components/shared/SearchResultCard.tsx
+
 import { Link } from 'react-router-dom';
 import { MessageSquare, Eye, ArrowUp, ArrowDown } from 'lucide-react';
+
 import type { SearchResultItem } from '../../features/Common/F4_SearchPost/types';
 import { Card } from '../ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
@@ -12,11 +15,11 @@ interface SearchResultCardProps {
 function timeAgo(dateStr: string): string {
   const now = Date.now();
   const then = new Date(dateStr).getTime();
-  const diff = now - then;
-  const mins = Math.floor(diff / 60_000);
-  if (mins < 1) return 'Just now';
-  if (mins < 60) return `${mins} min ago`;
-  const hours = Math.floor(mins / 60);
+  const seconds = Math.floor((now - then) / 1000);
+  if (seconds < 60) return `${seconds}s ago`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
   if (hours < 24) return `${hours}h ago`;
   const days = Math.floor(hours / 24);
   if (days < 30) return `${days}d ago`;
@@ -27,7 +30,7 @@ export function SearchResultCard({ post }: SearchResultCardProps) {
   return (
     <Link to={`/posts/${post.id}`}>
       <Card className="flex flex-col sm:flex-row gap-5 p-5 bg-[#161618] border-[#2A2A2C] hover:border-[#D4AF37]/30 transition-colors cursor-pointer">
-        
+
         {/* ── Left: Vote Counter ── */}
         <div className="flex flex-col items-center sm:items-end justify-start min-w-[80px] gap-2 text-sm">
           <div className="flex items-center gap-1">
@@ -54,46 +57,36 @@ export function SearchResultCard({ post }: SearchResultCardProps) {
             <Badge variant="outline" className="text-[11px] border-[#2A2A2C] text-gray-400">
               {post.category.name}
             </Badge>
-            {post.is_answered && (
-              <Badge className="bg-green-950/50 text-green-400 border-green-900 text-[10px] h-5 font-bold uppercase tracking-wider">
-                Sudah Dijawab
-              </Badge>
-            )}
             <span className="text-[11px] text-gray-500">{timeAgo(post.created_at)}</span>
           </div>
-          
-          <h3 className="text-base font-semibold text-white hover:text-[#D4AF37] transition-colors line-clamp-2">
+
+          <h3 className="text-base font-semibold text-white group-hover:text-[#D4AF37] transition-colors line-clamp-1">
             {post.title}
           </h3>
-          
-          <p className="text-sm text-gray-400 line-clamp-2 leading-relaxed">
+
+          <p className="text-sm text-gray-400 line-clamp-2">
             {post.body}
           </p>
-          
-          <div className="flex flex-wrap items-center justify-between mt-2 gap-4">
-            <div className="flex gap-2 flex-wrap">
-              {post.tags.slice(0, 4).map((tag) => (
-                <Badge 
-                  key={tag.id} 
-                  variant="outline"
-                  className="text-[11px] bg-[#1A1A1C] border-[#2A2A2C] font-medium"
-                  style={tag.color ? { color: tag.color } : undefined}
-                >
-                  #{tag.name}
-                </Badge>
-              ))}
-            </div>
-            
-            <div className="flex items-center gap-2">
+
+          <div className="flex items-center gap-3 mt-2">
+            {post.tags?.slice(0, 4).map((tag) => (
+              <span
+                key={tag.id}
+                className="text-[11px] font-fira-code"
+                style={{ color: tag.color || '#D4AF37' }}
+              >
+                #{tag.name}
+              </span>
+            ))}
+
+            <div className="flex items-center gap-2 ml-auto">
               <Avatar className="h-5 w-5 border border-[#2A2A2C]">
                 <AvatarImage src={post.user.avatar_url || ''} />
-                <AvatarFallback className="bg-[#D4AF37] text-black text-[9px] font-bold">
+                <AvatarFallback className="bg-[#0B0B0C] text-[10px] text-[#D4AF37]">
                   {post.user.username.substring(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <span className="text-xs text-gray-400">
-                {post.user.username}
-              </span>
+              <span className="text-[11px] text-gray-500">{post.user.username}</span>
             </div>
           </div>
         </div>

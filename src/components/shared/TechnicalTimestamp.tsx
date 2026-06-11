@@ -1,4 +1,5 @@
-import React from 'react'
+// src/components/shared/TechnicalTimestamp.tsx
+import React from 'react';
 
 interface TechnicalTimestampProps {
   timestamp: string;

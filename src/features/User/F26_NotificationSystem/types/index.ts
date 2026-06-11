@@ -19,10 +19,6 @@ export interface NotificationActor {
   avatar_url: string | null;
 }
 
-export interface MarkReadResponse {
-  success: boolean;
-}
-
 export interface MarkAllReadResponse {
   message: string;
 }

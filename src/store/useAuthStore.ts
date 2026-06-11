@@ -7,7 +7,8 @@ import type { User } from '../types';
 
 interface AuthState {
   user: User | null;
-  login: (userData: User) => void;
+  token: string | null;
+  login: (userData: User, token?: string) => void;
   logout: () => void;
 }
 
@@ -23,14 +24,17 @@ const getInitialUser = (): User | null => {
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: getInitialUser(),
+  token: localStorage.getItem('token'),
 
-  login: (userData) => {
+  login: (userData, token = '') => {
     localStorage.setItem('user_data', JSON.stringify(userData));
-    set({ user: userData });
+    if (token) localStorage.setItem('token', token);
+    set({ user: userData, token: token || null });
   },
 
   logout: () => {
     localStorage.removeItem('user_data');
-    set({ user: null });
+    localStorage.removeItem('token');
+    set({ user: null, token: null });
   },
 }));

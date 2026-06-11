@@ -1,8 +1,9 @@
-import { Calendar, Users, Star, MessageCircle, AlertCircle } from 'lucide-react';
-import type { TagInfo } from '../types';
+// src/features/Common/F5_FilterByTag/components/TagInfoSidebar.tsx
+
 import { Card } from '../../../../components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '../../../../components/ui/avatar';
-import { Button } from '../../../../components/ui/button';
+import { Badge } from '../../../../components/ui/badge';
+import { Info, Hash, FolderOpen } from 'lucide-react';
+import type { TagInfo } from '../types';
 
 interface TagInfoSidebarProps {
   tag: TagInfo | null;
@@ -10,160 +11,79 @@ interface TagInfoSidebarProps {
   activeCategoryName?: string;
 }
 
-// Mock top contributors (placeholder until backend provides real data)
-const MOCK_TOP_SUHU = [
-  {
-    id: '1',
-    username: 'DanAbramov_Fan',
-    avatar_url: null,
-    reputation: 4502,
-    answers: 142,
-  },
-  {
-    id: '2',
-    username: 'HookMaster',
-    avatar_url: null,
-    reputation: 3890,
-    answers: 98,
-  },
-];
-
-function formatDate(dateStr: string): string {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-}
-
-function formatNumber(n: number): string {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return n.toLocaleString('en-US');
-  return String(n);
-}
-
 export default function TagInfoSidebar({ tag, totalPosts, activeCategoryName }: TagInfoSidebarProps) {
   if (!tag) return null;
 
+  const tagColor = tag.color || '#D4AF37';
+
   return (
-    <div className="flex flex-col gap-4 sticky top-4">
-      {/* ── Tag Information Card ── */}
-      <Card className="border-[#2A2A2C] bg-[#161618] py-0">
-        <div className="p-4 border-b border-[#2A2A2C]">
-          <h3 className="text-sm font-bold text-gray-300">Tag Information</h3>
+    <div className="space-y-4">
+      {/* Tag Info Card */}
+      <Card className="border-[#2A2A2C] bg-[#161618] p-5">
+        <div className="flex items-center gap-2 mb-3">
+          <div
+            className="p-1.5 rounded-md flex items-center justify-center"
+            style={{ backgroundColor: `${tagColor}1A`, color: tagColor }}
+          >
+            <Info className="w-4 h-4" />
+          </div>
+          <h3 className="font-semibold text-white text-sm">About this tag</h3>
         </div>
 
-        <div className="p-4 space-y-4">
-          {/* Description */}
-          <p className="text-sm text-gray-400 leading-relaxed">
-            Kumpulan diskusi, pertanyaan, dan panduan seputar teknologi{' '}
-            <span className="text-white font-medium">{tag.name}</span>.
-          </p>
-
-          {/* Separator */}
-          <div className="border-t border-[#2A2A2C]" />
-
-          {/* Created */}
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center gap-2 text-gray-500">
-              <Calendar className="w-3.5 h-3.5" />
-              <span>Created</span>
-            </div>
-            <span className="text-white font-medium">{formatDate(tag.created_at)}</span>
+        <div className="space-y-3 text-sm">
+          <div className="flex justify-between">
+            <span className="text-gray-500">Tag name</span>
+            <Badge
+              variant="outline"
+              className="text-[11px] border-[#2A2A2C] font-fira-code"
+              style={{ color: tagColor, borderColor: `${tagColor}40` }}
+            >
+              <Hash className="w-3 h-3 mr-1" />
+              {tag.name}
+            </Badge>
           </div>
-
-          {/* Followers / Usage */}
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center gap-2 text-gray-500">
-              <Users className="w-3.5 h-3.5" />
-              <span>Followers</span>
-            </div>
-            <span className="text-white font-medium">{formatNumber(tag.usage_count)}</span>
+          <div className="flex justify-between">
+            <span className="text-gray-500">Total posts</span>
+            <span className="text-white font-medium">{totalPosts.toLocaleString('en-US')}</span>
           </div>
-
-          {/* Total Posts */}
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center gap-2 text-gray-500">
-              <MessageCircle className="w-3.5 h-3.5" />
-              <span>Posts</span>
+          {tag.usage_count !== undefined && (
+            <div className="flex justify-between">
+              <span className="text-gray-500">Usage count</span>
+              <span className="text-white font-medium">{tag.usage_count}</span>
             </div>
-            <span className="text-[#D4AF37] font-bold font-fira-code">{totalPosts}</span>
-          </div>
+          )}
         </div>
       </Card>
 
-      {/* ── Category Rules Card ── */}
-      {activeCategoryName && (
-        <Card className="border-[#2A2A2C] bg-[#161618] py-0">
-          <div className="p-4 border-b border-[#2A2A2C] flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-[#D4AF37]" />
-            <h3 className="text-sm font-bold text-gray-300">{activeCategoryName} Rules</h3>
-          </div>
+      {/* Top Contributors (placeholder) */}
+      <Card className="border-[#2A2A2C] bg-[#161618] p-5">
+        <h3 className="font-semibold text-white text-sm mb-3">Top Suhu</h3>
+        <p className="text-xs text-gray-500">Contributor rankings coming soon.</p>
+      </Card>
 
-          <div className="p-4 space-y-3">
-            <div className="flex items-start gap-2.5">
-              <span className="text-[#D4AF37] text-xs font-bold mt-0.5">1</span>
-              <p className="text-sm text-gray-400 leading-relaxed">
-                Include specific version or engine details in your question title.
-              </p>
-            </div>
-            <div className="flex items-start gap-2.5">
-              <span className="text-[#D4AF37] text-xs font-bold mt-0.5">2</span>
-              <p className="text-sm text-gray-400 leading-relaxed">
-                Provide code examples or schemas when asking for help.
-              </p>
-            </div>
-            <div className="flex items-start gap-2.5">
-              <span className="text-[#D4AF37] text-xs font-bold mt-0.5">3</span>
-              <p className="text-sm text-gray-400 leading-relaxed">
-                Avoid opinion-based questions without specific technical context.
-              </p>
-            </div>
+      {/* Category Rules (shown when category is active) */}
+      {activeCategoryName && (
+        <Card className="border-[#2A2A2C] bg-[#161618] p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <FolderOpen className="w-4 h-4 text-[#D4AF37]" />
+            <h3 className="font-semibold text-white text-sm">{activeCategoryName} Rules</h3>
           </div>
+          <ul className="space-y-2 text-xs text-gray-400">
+            <li className="flex items-start gap-2">
+              <span className="text-[#D4AF37] font-bold mt-0.5">1.</span>
+              <span>Keep discussions relevant to both {tag.name} and {activeCategoryName}.</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-[#D4AF37] font-bold mt-0.5">2.</span>
+              <span>Provide code examples when asking technical questions.</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-[#D4AF37] font-bold mt-0.5">3.</span>
+              <span>Mark the best answer to help future readers.</span>
+            </li>
+          </ul>
         </Card>
       )}
-
-      {/* ── Top Suhu Card ── */}
-      <Card className="border-[#2A2A2C] bg-[#161618] py-0">
-        <div className="p-4 border-b border-[#2A2A2C]">
-          <h3 className="text-sm font-bold text-gray-300">Top Suhu (Last 30 Days)</h3>
-        </div>
-
-        <div className="p-4 space-y-4">
-          {MOCK_TOP_SUHU.map((user) => (
-            <div key={user.id} className="flex items-center gap-3">
-              <Avatar className="h-9 w-9 border border-[#2A2A2C]">
-                {user.avatar_url ? (
-                  <AvatarImage src={user.avatar_url} alt={user.username} />
-                ) : null}
-                <AvatarFallback className="bg-[#D4AF37] text-black text-xs font-bold">
-                  {user.username.substring(0, 2).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-
-              <div className="flex-1 min-w-0">
-                <span className="text-sm font-semibold text-blue-400 hover:text-blue-300 cursor-pointer truncate block">
-                  {user.username}
-                </span>
-                <div className="flex items-center gap-1 text-[11px] text-[#D4AF37]">
-                  <Star className="w-3 h-3 fill-[#D4AF37]" />
-                  <span className="font-medium">{formatNumber(user.reputation)} Rep</span>
-                </div>
-              </div>
-
-              <div className="bg-[#0B0B0C] border border-[#2A2A2C] px-2.5 py-1 rounded text-[11px] text-gray-300 font-medium whitespace-nowrap">
-                {user.answers} answers
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="px-4 pb-4">
-          <Button
-            variant="outline"
-            className="w-full border-[#2A2A2C] text-gray-300 hover:bg-[#1A1A1C] hover:text-white text-xs h-9 bg-transparent"
-          >
-            View All Experts
-          </Button>
-        </div>
-      </Card>
     </div>
   );
 }

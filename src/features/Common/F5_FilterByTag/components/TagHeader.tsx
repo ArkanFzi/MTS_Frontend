@@ -1,14 +1,10 @@
+// src/features/Common/F5_FilterByTag/components/TagHeader.tsx
+
 import { Link } from 'react-router-dom';
 import { Hash, Bell, PenSquare, FolderOpen } from 'lucide-react';
-import type { TagInfo } from '../types';
+import type { TagInfo, CategoryOption } from '../types';
 import { Badge } from '../../../../components/ui/badge';
 import { Button } from '../../../../components/ui/button';
-
-interface CategoryOption {
-  id: string;
-  name: string;
-  slug: string;
-}
 
 interface TagHeaderProps {
   tag: TagInfo | null;

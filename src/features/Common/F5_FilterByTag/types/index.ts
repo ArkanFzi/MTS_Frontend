@@ -1,4 +1,4 @@
-import type { Category, Tag, User } from "../../../../types";
+// src/features/Common/F5_FilterByTag/types/index.ts
 
 export interface TagPost {
   id: string;
@@ -9,18 +9,37 @@ export interface TagPost {
   view_count: number;
   is_answered: boolean;
   created_at: string;
-  user: User;
-  category: Category;
-  tags: Tag[];
+  user: {
+    id: string;
+    username: string;
+    avatar_url: string | null;
+  };
+  category: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+  tags: {
+    id: string;
+    name: string;
+    slug: string;
+    color: string;
+  }[];
 }
 
 export interface TagInfo {
   id: string;
   name: string;
   slug: string;
-  color: string | null;
+  color: string;
   usage_count: number;
   created_at: string;
+}
+
+export interface CategoryOption {
+  id: string;
+  name: string;
+  slug: string;
 }
 
 export interface TagPostsResponse {
@@ -28,7 +47,7 @@ export interface TagPostsResponse {
   message: string;
   data: TagPost[];
   tag: TagInfo | null;
-  categories: { id: string; name: string; slug: string }[];
+  categories: CategoryOption[];
   meta: {
     current_page: number;
     last_page: number;

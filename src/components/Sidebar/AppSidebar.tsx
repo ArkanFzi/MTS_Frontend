@@ -1,6 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
-  Home, TrendingUp, Tag, Trophy, Search,
+  Home, TrendingUp, Tag, Trophy, Search, FolderOpen,
   BookMarked, Bell, FileText, Award, Settings,
   LogOut, PenSquare, LogIn, UserPlus, FolderOpen,
   Shield, ShieldAlert, Users, LayoutDashboard, Tags, BadgeCheck, ClipboardList,

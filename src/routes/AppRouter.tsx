@@ -1,3 +1,4 @@
+// src/routes/AppRouter.tsx
 import { Routes, Route } from 'react-router-dom';
 
 // ─── Layouts ───

@@ -4,8 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchBookmarks } from '../../features/User/F24_BookmarkPost/api';
 import LoadingSpinner from '../../components/shared/LoadingSpinner';
 import BookmarkToggle from '../../features/User/F24_BookmarkPost/components/BookmarkToggle';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card'; 
-import { BookMarked, Search, FolderHeart, User } from 'lucide-react'; // 🟢 1. Mengubah import dari Bookmark menjadi BookMarked
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card';
+import { BookMarked, Search, FolderHeart, User } from 'lucide-react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 
@@ -33,8 +33,7 @@ export default function BookmarksPage() {
   const filteredBookmarks = bookmarks.filter((item) => {
     const query = formik.values.searchQuery.toLowerCase();
     const matchTitle = item.post?.title?.toLowerCase().includes(query);
-    const matchNotes = item.notes?.toLowerCase().includes(query);
-    return matchTitle || matchNotes;
+    return matchTitle;
   });
 
   // Handle State Loading Utama
@@ -118,7 +117,7 @@ export default function BookmarksPage() {
                         <User className="h-2.5 w-2.5 text-zinc-400" />
                       </div>
                       <span>
-                        Disimpan dari <span className="text-zinc-300 font-bold hover:underline cursor-pointer">@{item.post?.author?.username || 'suhu'}</span>
+                        Disimpan dari <span className="text-zinc-300 font-bold hover:underline cursor-pointer">@{item.post?.user?.username || 'suhu'}</span>
                       </span>
                     </div>
 
@@ -131,16 +130,6 @@ export default function BookmarksPage() {
                     <p className="text-xs text-zinc-400 line-clamp-2 leading-relaxed">
                       {item.post?.excerpt}
                     </p>
-
-                    {/* Tampilan Catatan Tambahan User */}
-                    {item.notes && (
-                      <div className="mt-3 bg-[#0B0B0C] border-l-2 border-[#D4AF37] px-3 py-2 text-xs text-zinc-400 rounded-sm shadow-inner">
-                        <span className="text-zinc-500 block text-[10px] uppercase font-bold tracking-wider mb-0.5 font-mono">
-                          Catatan Pengingatmu:
-                        </span>
-                        {item.notes}
-                      </div>
-                    )}
                   </div>
 
                   {/* Aksi Lepas/Hapus Bookmark */}

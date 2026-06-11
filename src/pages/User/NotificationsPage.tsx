@@ -21,11 +21,11 @@ const NotificationsPage: React.FC = () => {
         const res = await fetchNotifications(1);
 
         if (isMounted) {
-          // 🟢 PERBAIKAN: Ambil array dari res.data.data karena struktur respons berformat pagination Laravel
-          const notificationArray = res.data?.data || [];
+          // res is the paginator directly: { data: [...], current_page, last_page, ... }
+          const notificationArray = res.data || [];
           setNotifications(notificationArray);
           
-          const unreadCount = notificationArray.filter((item: NotificationItem) => item.read_at === null).length;
+          const unreadCount = notificationArray.filter((item: NotificationItem) => !item.is_read).length;
           setTotalUnread(unreadCount);
         }
       } catch (error) {

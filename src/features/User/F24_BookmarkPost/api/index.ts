@@ -1,36 +1,21 @@
-// TODO: API calls for F24_BookmarkPost
 // src/features/User/F24_BookmarkPost/api/index.ts
-import axios from 'axios';
-import type { BookmarkItem } from '../types';
+import axios from '../../../../lib/axios';
+import type { BookmarkItem, ToggleBookmarkResponse } from '../types';
 
 /**
- * 🟢 UNTUK REACT QUERY (useQuery)
- * Mengambil semua daftar postingan yang telah di-bookmark oleh user aktif.
+ * Fetch all bookmarks for the authenticated user.
+ * Backend returns: { message, data: BookmarkItem[] }
  */
-export const fetchBookmarks = async (): Promise<{ data: BookmarkItem[] }> => {
-  const token = localStorage.getItem('token');
-  
-  const response = await axios.get('/api/bookmarks', {
-    headers: { 
-      Authorization: `Bearer ${token}` 
-    }
-  });
+export const fetchBookmarks = async (): Promise<{ message: string; data: BookmarkItem[] }> => {
+  const response = await axios.get('/api/bookmarks');
   return response.data;
 };
 
 /**
- * 🟢 UNTUK REACT QUERY (useMutation) & FORMIK + YUP
- * Menambahkan atau menghapus bookmark (Toggle) berdasarkan ID Postingan.
- * Menerima parameter `notes` opsional yang di-validasi oleh Yup di komponen Formik.
- * * @param postId - ID dari postingan yang ingin disimpan/dihapus
- * @param notes - Catatan tambahan dari form input Formik
+ * Toggle bookmark for a given post.
+ * Backend route: POST /api/bookmarks/toggle  body: { post_id }
  */
-export const toggleBookmark = async (postId: string, notes?: string): Promise<void> => {
-  const token = localStorage.getItem('token');
-  
-  await axios.post(`/api/posts/${postId}/bookmark`, { notes }, {
-    headers: { 
-      Authorization: `Bearer ${token}` 
-    }
-  });
+export const toggleBookmark = async (postId: string): Promise<ToggleBookmarkResponse> => {
+  const response = await axios.post('/api/bookmarks/toggle', { post_id: postId });
+  return response.data;
 };

@@ -1,6 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
-  Home, TrendingUp, Tag, Trophy, Search,
+  Home, TrendingUp, Tag, Trophy, Search, FolderOpen,
   BookMarked, Bell, FileText, Award, Settings,
   LogOut, PenSquare, LogIn, UserPlus,
   Shield, ShieldAlert, Users, LayoutDashboard, Tags, BadgeCheck, ClipboardList,
@@ -24,6 +24,7 @@ const exploreItems: NavItem[] = [
   { name: 'Search Posts', path: '/search', icon: <Search className="h-4 w-4" /> },
   { name: 'Trending', path: '/trending', icon: <TrendingUp className="h-4 w-4" /> },
   { name: 'All Tags', path: '/tags', icon: <Tag className="h-4 w-4" /> },
+  { name: 'Categories', path: '/categories', icon: <FolderOpen className="h-4 w-4" /> },
   { name: 'Leaderboard', path: '/leaderboard', icon: <Trophy className="h-4 w-4" /> },
 ];
 

@@ -1,6 +1,6 @@
 // src/pages/Public/PostDetailPage.tsx
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Eye, Calendar, MessageCircle, Edit3, Trash2, Loader2,
   ArrowLeft, Share2,

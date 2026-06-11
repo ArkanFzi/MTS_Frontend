@@ -75,7 +75,8 @@ export default function HomePage() {
   const displayPosts = page === 1 ? entries : allPosts;
 
   return (
-    <div className="flex gap-6 py-8 px-6 max-w-6xl mx-auto">
+    /* PERUBAHAN DI SINI: Menambahkan `items-start` pada container flex utama */
+    <div className="flex items-start gap-6 py-8 px-6 max-w-6xl mx-auto">
       {/* ── Main Feed ── */}
       <div className="flex-1 min-w-0">
         <div className="mb-6">
@@ -127,7 +128,8 @@ export default function HomePage() {
       </div>
 
       {/* ── Right Sidebar: Trending ── */}
-      <aside className="w-[320px] flex-shrink-0 hidden xl:block">
+      {/* Tetap menggunakan sticky top-8 self-start */}
+      <aside className="w-[320px] flex-shrink-0 hidden xl:block sticky top-8 self-start">
         <TrendingSidebar />
       </aside>
     </div>

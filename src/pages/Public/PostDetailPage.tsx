@@ -2,8 +2,8 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import {
-  Eye, Calendar, MessageCircle, Edit3, Trash2, Loader2,
-  ArrowLeft, Share2,
+  Edit3, Trash2, Loader2,
+  ArrowLeft, Share2, Flag,
 } from 'lucide-react';
 
 import { getPostDetail, deletePost } from '../../features/User/F16_Post/api';
@@ -12,7 +12,6 @@ import CommentList from '../../features/User/F17_Comment/components/CommentList'
 import BookmarkToggle from '../../features/User/F24_BookmarkPost/components/BookmarkToggle';
 import TrendingSidebar from '../../features/Common/F7_TrendingPopularPost/components/TrendingSidebar';
 
-import { Card } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { Skeleton } from '../../components/ui/skeleton';
@@ -25,20 +24,53 @@ function timeAgo(dateStr: string): string {
   const then = new Date(dateStr).getTime();
   const diff = now - then;
   const mins = Math.floor(diff / 60_000);
-  if (mins < 1) return 'Just now';
-  if (mins < 60) return `${mins} min ago`;
+  if (mins < 1) return 'baru saja';
+  if (mins < 60) return `${mins} mnt lalu`;
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24) return `${hours} jam lalu`;
   const days = Math.floor(hours / 24);
-  if (days < 30) return `${days}d ago`;
-  return `${Math.floor(days / 30)}mo ago`;
+  if (days < 30) return `${days} hari lalu`;
+  return `${Math.floor(days / 30)} bulan lalu`;
+}
+
+function formatCount(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;
+  return String(n);
+}
+
+/** Render body with code block support (``` blocks → styled <pre>) */
+function PostBody({ body }: { body: string }) {
+  const parts = body.split(/(```[\s\S]*?```)/g);
+  return (
+    <div className="text-[15px] text-gray-200 leading-[1.8] space-y-4">
+      {parts.map((part, i) => {
+        if (part.startsWith('```') && part.endsWith('```')) {
+          const code = part.slice(3, -3);
+          // Strip optional language identifier on first line
+          const firstNewline = code.indexOf('\n');
+          const content = firstNewline > 0 && firstNewline < 30 ? code.slice(firstNewline + 1) : code;
+          return (
+            <pre
+              key={i}
+              className="bg-[#1A1A1C] border border-[#2A2A2C] rounded-lg p-4 overflow-x-auto text-sm font-mono text-gray-300 leading-relaxed"
+            >
+              <code>{content.trim()}</code>
+            </pre>
+          );
+        }
+        return part ? (
+          <p key={i} className="whitespace-pre-wrap">{part}</p>
+        ) : null;
+      })}
+    </div>
+  );
 }
 
 export default function PostDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const queryClient = useQueryClient();
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['post', id],
@@ -65,19 +97,11 @@ export default function PostDetailPage() {
     return (
       <div className="flex gap-6 py-8 px-6 max-w-6xl mx-auto">
         <div className="flex-1 min-w-0 space-y-6">
-          <Skeleton className="w-24 h-6 rounded-full" />
-          <Skeleton className="w-3/4 h-8" />
-          <Skeleton className="w-full h-4" />
-          <Skeleton className="w-full h-4" />
-          <Skeleton className="w-2/3 h-4" />
-          <div className="flex gap-2">
-            <Skeleton className="w-20 h-6 rounded-full" />
-            <Skeleton className="w-20 h-6 rounded-full" />
-          </div>
+          <Skeleton className="w-3/4 h-10" />
+          <div className="flex gap-2"><Skeleton className="w-24 h-6 rounded-full" /><Skeleton className="w-24 h-6 rounded-full" /></div>
+          <Skeleton className="w-full h-4" /><Skeleton className="w-full h-4" /><Skeleton className="w-2/3 h-4" />
         </div>
-        <aside className="w-[320px] flex-shrink-0 hidden xl:block">
-          <TrendingSidebar />
-        </aside>
+        <aside className="w-[320px] flex-shrink-0 hidden xl:block"><TrendingSidebar /></aside>
       </div>
     );
   }
@@ -88,24 +112,16 @@ export default function PostDetailPage() {
       <div className="flex gap-6 py-8 px-6 max-w-6xl mx-auto">
         <div className="flex-1 text-center py-20">
           <p className="text-gray-400 text-lg mb-4">Postingan tidak ditemukan atau telah dihapus.</p>
-          <Button
-            variant="outline"
-            onClick={() => navigate('/')}
-            className="border-[#2A2A2C] text-gray-400 hover:bg-[#161618]"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Kembali ke Beranda
+          <Button variant="outline" onClick={() => navigate('/')} className="border-[#2A2A2C] text-gray-400 hover:bg-[#161618]">
+            <ArrowLeft className="w-4 h-4 mr-2" />Kembali ke Beranda
           </Button>
         </div>
       </div>
     );
   }
 
-  // Extract top-level comments (parent_id === null) from the post data
   const allComments: Comment[] = (post as any).comments || [];
   const topLevelComments = allComments.filter((c) => !c.parent_id);
-
-  // Sort: accepted answer first, then by vote_score desc
   topLevelComments.sort((a, b) => {
     if (a.is_accepted && !b.is_accepted) return -1;
     if (!a.is_accepted && b.is_accepted) return 1;
@@ -115,175 +131,118 @@ export default function PostDetailPage() {
   return (
     <div className="flex gap-6 py-8 px-6 max-w-6xl mx-auto">
       {/* ── Main Content ── */}
-      <div className="flex-1 min-w-0 space-y-6">
+      <div className="flex-1 min-w-0">
 
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-xs text-gray-500">
-          <Link to="/" className="hover:text-[#D4AF37] transition-colors">Beranda</Link>
-          <span>/</span>
-          <span className="text-gray-400 line-clamp-1">{post.title}</span>
+        {/* ── Title ── */}
+        <h1 className="text-[26px] font-bold text-white leading-snug mb-4">
+          {post.title}
+        </h1>
+
+        {/* ── Tags + Metadata Row ── */}
+        <div className="flex items-center justify-between flex-wrap gap-3 mb-8">
+          <div className="flex items-center gap-2 flex-wrap">
+            {post.category && (
+              <Link to={`/categories`}>
+                <Badge variant="outline" className="text-xs bg-[#1E1E20] text-gray-400 border-[#2A2A2C] px-3 py-1 h-auto hover:border-[#D4AF37]/40 transition-colors">
+                  {post.category.name}
+                </Badge>
+              </Link>
+            )}
+            {post.tags?.map((tag) => (
+              <Link key={tag.id} to={`/tags/${tag.slug}`}>
+                <Badge variant="outline" className="text-xs bg-[#1E1E20] text-gray-400 border-[#2A2A2C] px-3 py-1 h-auto hover:border-[#D4AF37]/40 hover:text-[#D4AF37] transition-colors">
+                  {tag.name}
+                </Badge>
+              </Link>
+            ))}
+          </div>
+          <span className="text-xs text-gray-500">
+            Ditanyakan {timeAgo(post.created_at)} &bull; Dilihat {formatCount(post.view_count)} kali
+          </span>
         </div>
 
-        {/* ── Post Card ── */}
-        <Card className="border-[#2A2A2C] bg-[#161618]">
-          <div className="p-6">
-            <div className="flex gap-5">
-              {/* Vote */}
-              <VoteControl
-                targetId={post.id}
-                targetType="post"
-                initialScore={post.vote_score}
-                className="pt-1"
-              />
+        {/* ── Question Body with Vote ── */}
+        <div className="flex gap-5 mb-6">
+          <VoteControl
+            targetId={post.id}
+            targetType="post"
+            initialScore={post.vote_score}
+            className="pt-1"
+          />
+          <div className="flex-1 min-w-0">
+            <PostBody body={post.body} />
+          </div>
+        </div>
 
-              {/* Content */}
-              <div className="flex-1 min-w-0">
-                {/* Status badges */}
-                <div className="flex items-center gap-2 mb-3 flex-wrap">
-                  {post.is_answered && (
-                    <Badge className="bg-green-950/50 text-green-400 border-green-900 text-[10px] h-5 font-bold uppercase tracking-wider">
-                      Sudah Dijawab
-                    </Badge>
-                  )}
-                  <Badge
-                    variant="outline"
-                    className={`text-[10px] h-5 ${
-                      post.status === 'open'
-                        ? 'border-blue-900 text-blue-400'
-                        : 'border-gray-700 text-gray-500'
-                    }`}
-                  >
-                    {post.status === 'open' ? 'Open' : 'Closed'}
-                  </Badge>
-                </div>
+        {/* ── Action Buttons Row ── */}
+        <div className="flex items-center gap-3 mb-8 pb-6 border-b border-[#2A2A2C]">
+          {user && <BookmarkToggle postId={post.id} />}
+          <button
+            onClick={() => navigator.clipboard.writeText(window.location.href)}
+            className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-[#D4AF37] transition-colors px-2 py-1.5 rounded hover:bg-[#1A1A1C]"
+          >
+            <Share2 className="w-3.5 h-3.5" />
+            Bagikan
+          </button>
+          {user && !isOwner && (
+            <button className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-red-400 transition-colors px-2 py-1.5 rounded hover:bg-[#1A1A1C]">
+              <Flag className="w-3.5 h-3.5" />
+              Report
+            </button>
+          )}
+          {isOwner && (
+            <>
+              <button
+                onClick={() => navigate(`/posts/${post.id}/edit`)}
+                className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-[#D4AF37] transition-colors px-2 py-1.5 rounded hover:bg-[#1A1A1C]"
+              >
+                <Edit3 className="w-3.5 h-3.5" />
+                Edit
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleteMutation.isPending}
+                className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-red-400 transition-colors px-2 py-1.5 rounded hover:bg-[#1A1A1C] disabled:opacity-50"
+              >
+                {deleteMutation.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                Hapus
+              </button>
+            </>
+          )}
 
-                {/* Title */}
-                <h1 className="text-xl font-bold text-white leading-snug mb-4">
-                  {post.title}
-                </h1>
-
-                {/* Body */}
-                <div className="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap mb-5">
-                  {post.body}
-                </div>
-
-                {/* Tags */}
-                <div className="flex items-center gap-2 flex-wrap mb-5">
-                  {post.category && (
-                    <Badge
-                      variant="outline"
-                      className="text-[11px] bg-[#1A1A1C] text-gray-400 border-[#2A2A2C] px-2.5 py-0.5 h-auto"
-                    >
-                      {post.category.name}
-                    </Badge>
-                  )}
-                  {post.tags?.map((tag) => (
-                    <Link key={tag.id} to={`/tags/${tag.slug}`}>
-                      <Badge
-                        variant="outline"
-                        className="text-[11px] bg-[#1A1A1C] text-[#D4AF37] border-[#2A2A2C] px-2.5 py-0.5 h-auto hover:border-[#D4AF37]/50 cursor-pointer transition-colors"
-                      >
-                        #{tag.name}
-                      </Badge>
-                    </Link>
-                  ))}
-                </div>
-
-                {/* Metadata */}
-                <div className="flex items-center gap-4 text-xs text-gray-500 pb-4 border-b border-[#2A2A2C]">
-                  <span className="flex items-center gap-1.5">
-                    <Eye className="w-3.5 h-3.5" />
-                    {post.view_count.toLocaleString()} views
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <Calendar className="w-3.5 h-3.5" />
-                    {timeAgo(post.created_at)}
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <MessageCircle className="w-3.5 h-3.5" />
-                    {allComments.length} komentar
-                  </span>
-                </div>
-
-                {/* Author + Actions */}
-                <div className="flex items-center justify-between pt-4">
-                  {post.user && (
-                    <Link
-                      to={`/profile/${post.user.id}`}
-                      className="flex items-center gap-2.5 hover:opacity-80 transition-opacity"
-                    >
-                      <Avatar className="h-8 w-8">
-                        {post.user.avatar_url ? (
-                          <AvatarImage src={post.user.avatar_url} alt={post.user.username} />
-                        ) : null}
-                        <AvatarFallback className="bg-[#D4AF37] text-black text-[11px] font-bold">
-                          {post.user.username.substring(0, 2).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="text-sm font-medium text-white hover:text-[#D4AF37] transition-colors">
-                          {post.user.username}
-                        </p>
-                        <p className="text-[10px] text-gray-500">
-                          {post.user.reputation_points} poin
-                        </p>
-                      </div>
-                    </Link>
-                  )}
-
-                  {/* Owner actions */}
-                  <div className="flex items-center gap-2">
-                    {user && (
-                      <BookmarkToggle postId={post.id} />
-                    )}
-                    <button
-                      onClick={() => navigator.clipboard.writeText(window.location.href)}
-                      className="p-2 text-gray-500 hover:text-[#D4AF37] transition-colors rounded-md hover:bg-[#2A2A2C]"
-                      title="Share link"
-                    >
-                      <Share2 className="w-4 h-4" />
-                    </button>
-                    {isOwner && (
-                      <>
-                        <button
-                          onClick={() => navigate(`/posts/${post.id}/edit`)}
-                          className="p-2 text-gray-500 hover:text-[#D4AF37] transition-colors rounded-md hover:bg-[#2A2A2C]"
-                          title="Edit"
-                        >
-                          <Edit3 className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={handleDelete}
-                          disabled={deleteMutation.isPending}
-                          className="p-2 text-gray-500 hover:text-red-400 transition-colors rounded-md hover:bg-[#2A2A2C] disabled:opacity-50"
-                          title="Delete"
-                        >
-                          {deleteMutation.isPending ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                          ) : (
-                            <Trash2 className="w-4 h-4" />
-                          )}
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </div>
+          {/* Author badge — right-aligned */}
+          {post.user && (
+            <Link
+              to={`/profile/${post.user.id}`}
+              className="flex items-center gap-2.5 ml-auto hover:opacity-80 transition-opacity"
+            >
+              <Avatar className="h-9 w-9">
+                {post.user.avatar_url ? (
+                  <AvatarImage src={post.user.avatar_url} alt={post.user.username} />
+                ) : null}
+                <AvatarFallback className="bg-[#D4AF37] text-black text-[11px] font-bold">
+                  {post.user.username.substring(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <p className="text-sm font-semibold text-white hover:text-[#D4AF37] transition-colors">
+                  {post.user.username}
+                </p>
+                <p className="text-[11px] text-gray-500">
+                  Rep: {post.user.reputation_points.toLocaleString()}
+                </p>
               </div>
-            </div>
-          </div>
-        </Card>
+            </Link>
+          )}
+        </div>
 
-        {/* ── Comments Section ── */}
-        <Card className="border-[#2A2A2C] bg-[#161618]">
-          <div className="p-6">
-            <CommentList
-              postId={post.id}
-              comments={topLevelComments}
-              postOwnerId={post.user_id}
-              acceptedAnswerId={post.accepted_answer_id}
-            />
-          </div>
-        </Card>
+        {/* ── Answers / Comments Section ── */}
+        <CommentList
+          postId={post.id}
+          comments={topLevelComments}
+          postOwnerId={post.user_id}
+          acceptedAnswerId={post.accepted_answer_id}
+        />
       </div>
 
       {/* ── Right Sidebar ── */}

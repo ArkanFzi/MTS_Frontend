@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import {
   Home, TrendingUp, Tag, Trophy, Search, FolderOpen,
   BookMarked, Bell, FileText, Award, Settings,
-  LogOut, PenSquare, LogIn, UserPlus, FolderOpen,
+  LogOut, PenSquare, LogIn, UserPlus,
   Shield, ShieldAlert, Users, LayoutDashboard, Tags, BadgeCheck, ClipboardList,
 } from 'lucide-react';
 import { Button } from '../ui/button';

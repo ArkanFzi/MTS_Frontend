@@ -1,6 +1,5 @@
 import React from "react";
 
-// Struktur data statis untuk keperluan visual render
 interface Badge {
   id: string;
   name: string;
@@ -15,86 +14,68 @@ interface BadgeCardProps {
 }
 
 export const BadgeCard: React.FC<BadgeCardProps> = ({ badge }) => {
-  // ATURAN STYLING DI SINI: Modifikasi warna tema di bawah ini untuk mengubah visual badge
+  // Pemetaan warna teks nama badge & efek kilau dot murni sesuai gambar UI/UX Anda
   const tierStyles = {
     gold: {
-      bg: "bg-amber-50 hover:bg-amber-100/70 border-amber-300",
-      badgeBg: "bg-amber-500 text-white shadow-sm shadow-amber-500/20",
-      text: "text-amber-800",
-      dot: "bg-amber-400",
+      textName: "text-amber-400 font-bold",
+      dot: "bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.8)]",
     },
     silver: {
-      bg: "bg-slate-50 hover:bg-slate-100/70 border-slate-300",
-      badgeBg: "bg-slate-400 text-white shadow-sm shadow-slate-400/20",
-      text: "text-slate-800",
-      dot: "bg-slate-300",
+      textName: "text-slate-300 font-bold",
+      dot: "bg-slate-400 shadow-[0_0_8px_rgba(148,163,184,0.8)]",
     },
     bronze: {
-      bg: "bg-orange-50 hover:bg-orange-100/70 border-orange-200",
-      badgeBg: "bg-orange-600 text-white shadow-sm shadow-orange-600/20",
-      text: "text-orange-800",
-      dot: "bg-orange-500",
+      textName: "text-orange-400 font-bold",
+      dot: "bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.8)]",
     },
     platinum: {
-      bg: "bg-indigo-50 hover:bg-indigo-100/70 border-indigo-300",
-      badgeBg:
-        "bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md shadow-indigo-500/20",
-      text: "text-indigo-900",
-      dot: "bg-indigo-400",
+      textName: "text-indigo-400 font-bold",
+      dot: "bg-indigo-400 shadow-[0_0_8px_rgba(129,140,248,0.8)]",
     },
   };
 
   const style = tierStyles[badge.tier] || tierStyles.bronze;
 
   return (
-    <div
-      className={`p-5 rounded-xl border transition-all duration-200 flex flex-col justify-between h-full ${style.bg}`}
-    >
-      <div>
-        {/* Header Kartu: Nama Badge & Animasi Dot */}
-        <div className="flex items-center justify-between gap-3 mb-3">
-          <div className="flex items-center gap-2">
-            <span
-              className={`px-3 py-1 rounded-md text-xs font-bold tracking-wide uppercase flex items-center gap-1.5 ${style.badgeBg}`}
-            >
-              <span
-                className={`w-2 h-2 rounded-full ${style.dot} animate-pulse`}
-              />
-              {badge.name}
-            </span>
-          </div>
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-            {badge.tier}
-          </span>
+    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 py-4 px-2 hover:bg-zinc-900/30 transition-colors duration-150">
+      {/* Kolon Kiri: Dot Indikator + Nama Badge + Deskripsi */}
+      <div className="flex items-start md:items-center gap-4 flex-1">
+        {/* Kontainer Nama Badge (Teks Polos + Dot sesuai Gambar) */}
+        <div className="flex items-center gap-2 min-w-[150px] shrink-0">
+          <span className={`w-2 h-2 rounded-full ${style.dot}`} />
+          <span className={`text-sm ${style.textName}`}>{badge.name}</span>
         </div>
 
-        {/* Deskripsi Aturan Badge */}
-        <p className="text-sm text-slate-600 font-normal leading-relaxed mb-4">
+        {/* Teks Deskripsi Aturan */}
+        <p className="text-xs text-zinc-400 font-normal leading-relaxed max-w-2xl">
           {badge.description}
         </p>
       </div>
 
-      {/* Bagian Bawah Kartu: Kriteria Pemicu Kondisi */}
-      <div className="pt-3 border-t border-dashed border-slate-200 flex items-center justify-between text-xs text-slate-500">
-        <span className="font-mono bg-white/80 px-2 py-1 rounded border border-slate-200">
-          {badge.condition_type}
-        </span>
-        <span className="font-semibold text-slate-700">
-          Min.{" "}
-          <span className="text-base font-bold text-slate-900">
-            {badge.condition_value}
+      {/* Kolon Kanan: Tipe Kondisi + Batas Nilai + Tombol Kontrol */}
+      <div className="flex items-center justify-between md:justify-end gap-6 min-w-[300px] shrink-0">
+        {/* Metadata Kriteria */}
+        <div className="flex items-center gap-3 text-xs">
+          <span className="font-mono text-zinc-500 bg-black/40 px-2 py-0.5 rounded border border-zinc-800/60">
+            {badge.condition_type}
           </span>
-        </span>
-      </div>
+          <span className="text-zinc-500 text-[11px]">
+            Min.{" "}
+            <span className="text-xs font-bold text-zinc-200">
+              {badge.condition_value}
+            </span>
+          </span>
+        </div>
 
-      {/* Tombol Aksi Admin */}
-      <div className="mt-4 pt-3 flex justify-end gap-2 border-t border-slate-100">
-        <button className="px-3 py-1.5 text-xs font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
-          Ubah
-        </button>
-        <button className="px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors">
-          Hapus
-        </button>
+        {/* Tombol Manipulasi Data */}
+        <div className="flex items-center gap-2">
+          <button className="px-2.5 py-1.5 text-[11px] font-semibold text-zinc-400 bg-zinc-900 border border-zinc-800 rounded-md hover:bg-zinc-800 hover:text-white transition-colors">
+            Ubah
+          </button>
+          <button className="px-2.5 py-1.5 text-[11px] font-semibold text-red-400 bg-red-950/10 border border-red-900/20 rounded-md hover:bg-red-950/30 transition-colors">
+            Hapus
+          </button>
+        </div>
       </div>
     </div>
   );

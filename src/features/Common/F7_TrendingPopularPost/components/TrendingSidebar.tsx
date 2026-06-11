@@ -9,10 +9,10 @@ import { Skeleton } from '../../../../components/ui/skeleton';
 export default function TrendingSidebar() {
   const { data, isLoading } = useQuery({
     queryKey: ['trending', 'sidebar'],
-    queryFn: () => getTrendingPosts('trending', 5),
+    queryFn: () => getTrendingPosts('trending', 2),
   });
 
-  const posts = data?.data?.slice(0, 5) || [];
+  const posts = data?.data?.slice(0, 2) || []; //untuk memberikan 
 
   return (
     <Card className="border-[#2A2A2C] bg-[#161618] py-0 sticky top-4">

@@ -7,18 +7,18 @@ export interface UpdateProfilePayload {
   username?: string;
   email?: string;
   bio?: string;
-  avatar_url?: string;
+  avatar?: File; // File upload — backend validates as image|mimes:jpg,jpeg,png,webp|max:2048
 }
 
 export interface UpdatePasswordPayload {
-  current_password: string;
-  password: string;
-  password_confirmation: string;
+  old_password: string;
+  new_password: string;
+  new_password_confirmation: string;
 }
 
 export interface ProfileResponse {
   success: boolean;
-  message: string;
+  message?: string; // Backend show() doesn't return message
   data: Profile;
 }
 

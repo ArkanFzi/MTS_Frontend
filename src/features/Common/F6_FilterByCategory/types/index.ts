@@ -62,6 +62,7 @@ export interface CategoryTagOption {
   name: string;
   slug: string;
   color: string | null;
+  count?: number;
 }
 
 export interface CategoryPostsResponse {

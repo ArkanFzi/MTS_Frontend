@@ -97,7 +97,7 @@ export default function CategoryInfoSidebar({
               return (
                 <Link
                   key={tag.id}
-                  to={`/categories/${categorySlug}?tag=${tag.slug}`}
+                  to={`/tags/${tag.slug}?category=${categorySlug}`}
                   className={`flex items-center justify-between px-3 py-2 text-xs rounded transition-all text-left ${
                     isActive
                       ? 'bg-[#2A2A2C] text-[#D4AF37] font-semibold'

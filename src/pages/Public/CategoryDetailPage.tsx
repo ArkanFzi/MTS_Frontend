@@ -276,8 +276,11 @@ function CategoryDetailContent() {
           totalPosts={meta?.total || 0}
           activeTagName={activeTagName}
           relatedTags={tags.map((tag) => ({
-            ...tag,
-            count: posts.filter((p) => p.tags.some((pt) => pt.id === tag.id)).length,
+            id: tag.id,
+            name: tag.name,
+            slug: tag.slug,
+            color: tag.color,
+            count: tag.count ?? 0,
           }))}
           activeTagSlug={activeTag}
           categorySlug={slug || ''}

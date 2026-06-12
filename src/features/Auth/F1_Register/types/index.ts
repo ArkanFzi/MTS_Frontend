@@ -1,4 +1,6 @@
 // src/features/Auth/F1_Register/types/index.ts
+import type { User } from '../../../../types';
+
 export interface RegisterPayload {
   username: string;
   email: string;
@@ -10,7 +12,7 @@ export interface RegisterResponse {
   status: string;
   message: string;
   data: {
-    user: import('@/types').User;
+    user: User;
   };
 }
 

@@ -25,6 +25,7 @@ import TrendingPage from '../pages/Public/TrendingPage';
 import TagsListPage from '../pages/Public/TagsListPage';
 import TagFilterPage from '../pages/Public/TagFilterPage';
 import CategoriesListPage from '../pages/Public/CategoriesListPage';
+import CategoryDetailPage from '../pages/Public/CategoryDetailPage';
 import LeaderboardPage from '../pages/Public/LeaderboardPage';
 import PublicProfilePage from '../pages/User/PublicProfilePage';
 
@@ -50,8 +51,9 @@ import AdminDashboardPage from '../pages/Admin/AdminDashboardPage';
 import TagCategoryPage from '../pages/Admin/TagCategoryPage';
 import UserDirectoryPage from '../pages/Admin/UserDirectoryPage';
 import RoleManagementPage from '../pages/Admin/RoleManagementPage';
-import BadgeMasterPage from '../pages/Admin/BadgeMasterPage';
+import { BadgeMasterPage } from "../pages/Admin/BadgeMasterPage";
 import AuditTimelinePage from '../pages/Admin/AuditTimelinePage';
+
 
 export default function AppRouter() {
   return (
@@ -89,6 +91,7 @@ export default function AppRouter() {
         <Route path="/tags" element={<TagsListPage />} />
         <Route path="/tags/:slug" element={<TagFilterPage />} />
         <Route path="/categories" element={<CategoriesListPage />} />
+        <Route path="/categories/:slug" element={<CategoryDetailPage />} />
         <Route path="/leaderboard" element={<LeaderboardPage />} />
         <Route path="/profile/:id" element={<PublicProfilePage />} />
 

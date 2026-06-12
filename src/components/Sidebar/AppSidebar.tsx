@@ -245,11 +245,14 @@ export default function AppSidebar() {
   const logoutMutation = useMutation({
     mutationFn: logoutUser,
     onSuccess: () => {
+      // Clear all cached queries to prevent stale data leaking to next user session
+      queryClient.clear();
       logout();
       toast.success("Logged out successfully.");
       navigate("/login");
     },
     onError: () => {
+      queryClient.clear();
       logout();
       navigate("/login");
     },

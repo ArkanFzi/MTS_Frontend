@@ -6,12 +6,15 @@ import type { NotificationItem } from '../../features/User/F26_NotificationSyste
 import { fetchNotifications, markAsRead, markAllNotificationsAsRead } from '../../features/User/F26_NotificationSystem/api';
 import { NotificationRow } from '../../features/User/F26_NotificationSystem/components/NotificationRow';
 import { Bell, CheckCheck } from 'lucide-react';
+import { useAuthStore } from '../../store/useAuthStore';
 
 const NotificationsPage: React.FC = () => {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [totalUnread, setTotalUnread] = useState<number>(0);
+  const { user } = useAuthStore();
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     let isMounted = true;
 
@@ -40,7 +43,8 @@ const NotificationsPage: React.FC = () => {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [user?.id]); // Re-fetch when user changes
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const handleMarkOneRead = async (id: string) => {
     try {

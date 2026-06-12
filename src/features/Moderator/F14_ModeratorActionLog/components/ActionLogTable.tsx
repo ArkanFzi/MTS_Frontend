@@ -1,5 +1,4 @@
 // src/features/Moderator/F14_ModeratorActionLog/components/ActionLogTable.tsx
-import React from 'react';
 import { ShieldAlert, EyeOff, Ban, CheckCircle2, Clock } from 'lucide-react';
 
 // Struktur data lokal untuk keperluan UI

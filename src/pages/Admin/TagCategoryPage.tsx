@@ -1,5 +1,5 @@
 // src/pages/Admin/TagCategoryPage.tsx
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card';
 import { Plus, Trash2, Edit2, Tag, FolderGit } from 'lucide-react';
 

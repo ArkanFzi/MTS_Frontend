@@ -53,7 +53,7 @@ export default function AdminDashboardPage() {
   });
 
   const stats = statsData?.data;
-  const topEarners = pointsData?.data || [];
+  const topEarners = Array.isArray(pointsData?.data) ? pointsData.data : [];
 
   if (statsLoading) {
     return (

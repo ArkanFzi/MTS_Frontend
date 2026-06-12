@@ -8,7 +8,7 @@ import {
 import { toast } from 'sonner';
 
 import { getBadges, createBadge, updateBadge, deleteBadge } from '../../features/Admin/F11_BadgeMaster/api';
-import type { Badge, BadgeTier, CreateBadgePayload } from '../../features/Admin/F11_BadgeMaster/types';
+import type { Badge, CreateBadgePayload } from '../../features/Admin/F11_BadgeMaster/types';
 import BadgeFormModal from '../../features/Admin/F11_BadgeMaster/components/BadgeFormModal';
 import { Skeleton } from '../../components/ui/skeleton';
 

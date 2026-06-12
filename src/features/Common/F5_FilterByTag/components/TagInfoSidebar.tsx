@@ -3,6 +3,7 @@
 import { Card } from '../../../../components/ui/card';
 import { Badge } from '../../../../components/ui/badge';
 import { Info, Hash, FolderOpen, ChevronRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import type { TagInfo } from '../types';
 
 // Interface untuk menampung kategori unik yang diekstrak dari postingan
@@ -22,6 +23,7 @@ interface TagInfoSidebarProps {
   relatedCategories?: RelatedCategory[];
   activeCategorySlug?: string;
   onCategorySelect?: (slug: string) => void;
+  tagSlug?: string;
 }
 
 export default function TagInfoSidebar({ 
@@ -30,7 +32,8 @@ export default function TagInfoSidebar({
   activeCategoryName,
   relatedCategories = [],
   activeCategorySlug,
-  onCategorySelect
+  onCategorySelect,
+  tagSlug
 }: TagInfoSidebarProps) {
   
   if (!tag) return null;
@@ -110,9 +113,9 @@ export default function TagInfoSidebar({
             relatedCategories.map((cat) => {
               const isActive = activeCategorySlug === cat.slug;
               return (
-                <button
+                <Link
                   key={cat.id}
-                  onClick={() => onCategorySelect?.(cat.slug)}
+                  to={`/categories/${cat.slug}?tag=${tagSlug || tag.slug}`}
                   className={`flex items-center justify-between px-3 py-2 text-xs rounded transition-all text-left ${
                     isActive 
                       ? 'bg-[#2A2A2C] text-[#D4AF37] font-semibold' 
@@ -131,7 +134,7 @@ export default function TagInfoSidebar({
                   >
                     {cat.count}
                   </Badge>
-                </button>
+                </Link>
               );
             })
           ) : (

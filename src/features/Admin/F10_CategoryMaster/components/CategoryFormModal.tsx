@@ -1,5 +1,5 @@
 // src/features/Admin/F10_CategoryMaster/components/CategoryFormModal.tsx
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useFormik } from 'formik';
 import { X, Save } from 'lucide-react';
 
@@ -23,6 +23,7 @@ export default function CategoryFormModal({ isOpen, onClose, onSubmit, initialDa
   });
 
   // Sinkronisasi data ketika sedang mode EDIT
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (initialData) {
       formik.setValues(initialData);

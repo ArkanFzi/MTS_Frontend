@@ -21,9 +21,7 @@ export function CardDemo({
   title,
   desc,
   actionText,
-  actionUrl,
   btnText,
-  btnUrl,
 }: CardDemoType) {
   return (
     <Card>

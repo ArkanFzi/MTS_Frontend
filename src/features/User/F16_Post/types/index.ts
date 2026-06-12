@@ -1,5 +1,6 @@
 // src/features/User/F16_Post/types/index.ts
 import type { Category, Tag, User } from '../../../../types';
+import type { Comment } from '../../F17_Comment/types';
 
 export interface Post {
   id: string;
@@ -52,7 +53,7 @@ export interface PostListResponse {
 export interface PostDetailResponse {
   success: boolean;
   message: string;
-  data: Post;
+  data: PostDetail;
 }
 
 export interface PostMutationResponse {

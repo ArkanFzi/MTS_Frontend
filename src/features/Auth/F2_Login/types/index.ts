@@ -1,3 +1,5 @@
+import type { User } from '../../../../types';
+
 export interface LoginPayload {
   email: string;
   password: string;
@@ -7,7 +9,7 @@ export interface LoginResponse {
   status: string;
   message: string;
   data: {
-    user: import('@/types').User;
+    user: User;
   };
 }
 

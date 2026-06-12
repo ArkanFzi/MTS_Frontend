@@ -1,13 +1,13 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
-  Home, TrendingUp, Tag, Trophy, Search, FolderOpen,
+  Home, TrendingUp, Tag, Trophy, Search,
   BookMarked, Bell, FileText, Award, Settings,
   LogOut, PenSquare, LogIn, UserPlus,
   Shield, ShieldAlert, Users, LayoutDashboard, Tags, BadgeCheck, ClipboardList,
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useAuthStore } from '../../store/useAuthStore';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { logoutUser } from '../../features/Auth/F3_Logout/api';
 import { toast } from 'sonner';
 import type { ReactNode } from 'react';
@@ -87,15 +87,19 @@ function NavGroup({ label, items }: { label: string; items: NavItem[] }) {
 export default function AppSidebar() {
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
+  const queryClient = useQueryClient();
 
   const logoutMutation = useMutation({
     mutationFn: logoutUser,
     onSuccess: () => {
+      // Clear all cached queries to prevent stale data leaking to next user session
+      queryClient.clear();
       logout();
       toast.success('Logged out successfully.');
       navigate('/login');
     },
     onError: () => {
+      queryClient.clear();
       logout();
       navigate('/login');
     },

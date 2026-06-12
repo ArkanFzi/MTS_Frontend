@@ -1,6 +1,6 @@
 // src/pages/Public/PostDetailPage.tsx
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import {
   Edit3, Trash2, Loader2,
   ArrowLeft, Share2, Flag,
@@ -120,7 +120,7 @@ export default function PostDetailPage() {
     );
   }
 
-  const allComments: Comment[] = (post as any).comments || [];
+  const allComments: Comment[] = post.comments || [];
   const topLevelComments = allComments.filter((c) => !c.parent_id);
   topLevelComments.sort((a, b) => {
     if (a.is_accepted && !b.is_accepted) return -1;

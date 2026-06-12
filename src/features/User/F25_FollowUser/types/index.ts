@@ -23,3 +23,26 @@ export interface FollowListResponse {
   message: string;
   data: FollowerItem[];
 }
+
+export interface UserProfileData {
+  id: string;
+  username: string;
+  email: string;
+  avatar_url: string | null;
+  bio: string | null;
+  reputation_points: number;
+  level: number;
+  is_banned: boolean;
+  roles: string[];
+  posts_count: number;
+  followers_count: number;
+  following_count: number;
+  is_following?: boolean;
+  created_at: string;
+}
+
+export interface UserProfileResponse {
+  status: string;
+  message: string;
+  data: UserProfileData;
+}

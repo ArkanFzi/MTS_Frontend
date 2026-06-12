@@ -1,5 +1,4 @@
 // src/pages/User/BookmarksPage.tsx
-import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchBookmarks } from '../../features/User/F24_BookmarkPost/api';
 import LoadingSpinner from '../../components/shared/LoadingSpinner';

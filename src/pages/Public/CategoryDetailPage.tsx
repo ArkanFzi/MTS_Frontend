@@ -1,4 +1,4 @@
-// src/pages/Public/TagFilterPage.tsx
+// src/pages/Public/CategoryDetailPage.tsx
 
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
@@ -6,15 +6,16 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { ErrorBoundary, useErrorBoundary } from "react-error-boundary";
 
 import ErrorFallback from "../../components/ErrorFallback/ErrorFallback";
-import TagHeader from "../../features/Common/F5_FilterByTag/components/TagHeader";
-import TagPostCard from "../../features/Common/F5_FilterByTag/components/TagPostCard";
-import TagInfoSidebar from "../../features/Common/F5_FilterByTag/components/TagInfoSidebar";
+import CategoryHeader from "../../features/Common/F6_FilterByCategory/components/CategoryHeader";
+import CategoryPostCard from "../../features/Common/F6_FilterByCategory/components/CategoryPostCard";
+import CategoryInfoSidebar from "../../features/Common/F6_FilterByCategory/components/CategoryInfoSidebar";
 import type {
-  TagPost,
-  TagInfo,
-  TagPostsResponse,
-} from "../../features/Common/F5_FilterByTag/types";
-import { getPostsByTag } from "../../features/Common/F5_FilterByTag/api";
+  CategoryPost,
+  CategoryInfo,
+  CategoryTagOption,
+  CategoryPostsResponse,
+} from "../../features/Common/F6_FilterByCategory/types";
+import { getPostsByCategory } from "../../features/Common/F6_FilterByCategory/api";
 import { Skeleton } from "../../components/ui/skeleton";
 
 type SortTab = "newest" | "bountied" | "unanswered";
@@ -120,58 +121,55 @@ function Pagination({
   );
 }
 
-function TagFilterContent() {
+function CategoryDetailContent() {
   const { slug } = useParams<{ slug: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
   const { showBoundary } = useErrorBoundary();
 
-  const [posts, setPosts] = useState<TagPost[]>([]);
-  const [tag, setTag] = useState<TagInfo | null>(null);
-  const [categories, setCategories] = useState<
-    { id: string; name: string; slug: string }[]
-  >([]);
-  const [meta, setMeta] = useState<TagPostsResponse["meta"] | null>(null);
+  const [posts, setPosts] = useState<CategoryPost[]>([]);
+  const [category, setCategory] = useState<CategoryInfo | null>(null);
+  const [tags, setTags] = useState<CategoryTagOption[]>([]);
+  const [meta, setMeta] = useState<CategoryPostsResponse["meta"] | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [page, setPage] = useState<number>(1);
   const [activeTab, setActiveTab] = useState<SortTab>("newest");
-  const [activeCategory, setActiveCategory] = useState<string>(
-    searchParams.get("category") || "",
+  const [activeTag, setActiveTag] = useState<string>(
+    searchParams.get("tag") || "",
   );
 
-  const activeCategoryName = useMemo(() => {
-    const cat = categories.find((c) => c.slug === activeCategory);
-    return cat?.name || "";
-  }, [categories, activeCategory]);
+  const activeTagName = useMemo(() => {
+    const tag = tags.find((t) => t.slug === activeTag);
+    return tag?.name || "";
+  }, [tags, activeTag]);
 
-  // Reset state when slug changes
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     setPosts([]);
-    setTag(null);
-    setCategories([]);
+    setCategory(null);
+    setTags([]);
     setPage(1);
     setActiveTab("newest");
-    setActiveCategory(searchParams.get("category") || "");
+    setActiveTag(searchParams.get("tag") || "");
   }, [slug]); // eslint-disable-line react-hooks/exhaustive-deps
   /* eslint-enable react-hooks/set-state-in-effect */
 
-  const fetchTagContent = useCallback(async () => {
+  const fetchCategoryContent = useCallback(async () => {
     if (!slug) return;
 
     setLoading(true);
 
     try {
-      const res = await getPostsByTag(
+      const res = await getPostsByCategory(
         slug,
         page,
         activeTab,
-        activeCategory || undefined,
+        activeTag || undefined,
       );
 
       if (res.status === "success") {
         setPosts(res.data);
-        setTag(res.tag);
-        setCategories(res.categories || []);
+        setCategory(res.category);
+        setTags(res.tags || []);
         setMeta(res.meta);
       } else {
         throw new Error(res.message || "Terjadi kesalahan sistem.");
@@ -181,21 +179,20 @@ function TagFilterContent() {
     } finally {
       setLoading(false);
     }
-  }, [slug, page, activeTab, activeCategory, showBoundary]);
+  }, [slug, page, activeTab, activeTag, showBoundary]);
 
-  // Fetch tag content when dependencies change
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
-    fetchTagContent();
-  }, [fetchTagContent]);
+    fetchCategoryContent();
+  }, [fetchCategoryContent]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
-  const handleCategoryChange = (categorySlug: string) => {
-    setActiveCategory(categorySlug);
+  const handleTagChange = (tagSlug: string) => {
+    setActiveTag(tagSlug);
     setPage(1);
     setPosts([]);
-    if (categorySlug) {
-      setSearchParams({ category: categorySlug });
+    if (tagSlug) {
+      setSearchParams({ tag: tagSlug });
     } else {
       setSearchParams({});
     }
@@ -216,16 +213,14 @@ function TagFilterContent() {
     <div className="flex gap-6 py-8 px-6 max-w-6xl mx-auto">
       {/* ── Main Content ── */}
       <div className="flex-1 min-w-0">
-        {/* Header */}
-        <TagHeader
-          tag={tag}
+        <CategoryHeader
+          category={category}
           totalPosts={meta?.total || 0}
-          categories={categories}
-          activeCategory={activeCategory}
-          onCategoryChange={handleCategoryChange}
+          tags={tags}
+          activeTag={activeTag}
+          onTagChange={handleTagChange}
         />
 
-        {/* Tabs */}
         <div className="flex items-center gap-1 border-b border-[#2A2A2C] mb-5">
           {TABS.map((tab) => (
             <button
@@ -245,16 +240,14 @@ function TagFilterContent() {
           ))}
         </div>
 
-        {/* Loading */}
         {loading && <PostListSkeleton />}
 
-        {/* Posts */}
         {!loading && posts.length === 0 && (
           <div className="text-center py-20 border border-dashed border-[#2A2A2C] rounded-xl">
             <p className="text-gray-500">
               {activeTab === "unanswered"
-                ? "Tidak ada pertanyaan yang belum terjawab untuk tag ini."
-                : "Belum ada postingan untuk tag ini."}
+                ? "Tidak ada pertanyaan yang belum terjawab untuk kategori ini."
+                : "Belum ada postingan untuk kategori ini."}
             </p>
           </div>
         )}
@@ -262,12 +255,11 @@ function TagFilterContent() {
         {!loading && posts.length > 0 && (
           <div className="flex flex-col gap-3">
             {posts.map((post) => (
-              <TagPostCard key={post.id} post={post} />
+              <CategoryPostCard key={post.id} post={post} />
             ))}
           </div>
         )}
 
-        {/* Pagination */}
         {meta && !loading && (
           <Pagination
             current={meta.current_page}
@@ -278,28 +270,27 @@ function TagFilterContent() {
       </div>
 
       {/* ── Right Sidebar ── */}
-       <aside className="w-[320px] flex-shrink-0 hidden xl:block sticky top-8 self-start">
-        <TagInfoSidebar
-          tag={tag}
+      <aside className="w-[320px] flex-shrink-0 hidden xl:block sticky top-8 self-start">
+        <CategoryInfoSidebar
+          category={category}
           totalPosts={meta?.total || 0}
-          activeCategoryName={activeCategoryName}
-          relatedCategories={categories.map((cat) => ({
-            ...cat,
-            count: posts.filter((p) => p.category?.id === cat.id).length,
+          activeTagName={activeTagName}
+          relatedTags={tags.map((tag) => ({
+            ...tag,
+            count: posts.filter((p) => p.tags.some((pt) => pt.id === tag.id)).length,
           }))}
-          activeCategorySlug={activeCategory}
-          onCategorySelect={handleCategoryChange}
-          tagSlug={slug}
+          activeTagSlug={activeTag}
+          categorySlug={slug || ''}
         />
       </aside>
     </div>
   );
 }
 
-export default function TagFilterPage() {
+export default function CategoryDetailPage() {
   return (
     <ErrorBoundary FallbackComponent={ErrorFallback}>
-      <TagFilterContent />
+      <CategoryDetailContent />
     </ErrorBoundary>
   );
 }

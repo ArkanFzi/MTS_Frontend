@@ -14,20 +14,48 @@ interface NotificationRowProps {
 
 // Helper: build human-readable message from notification type + actor
 function buildMessage(notification: NotificationItem): string {
-  const actorName = notification.actor?.username || 'Someone';
+  const actorName = notification.actor?.username || 'Sistem';
   switch (notification.type) {
+    // Interaksi Konten
+    case 'like_post':
+      return `${actorName} menyukai postingan Anda.`;
+    case 'like_comment':
+      return `${actorName} menyukai komentar Anda.`;
+    case 'upvote_post':
+      return `${actorName} memberikan upvote pada postingan Anda.`;
+    case 'upvote_comment':
+      return `${actorName} memberikan upvote pada komentar Anda.`;
     case 'new_comment':
-    case 'new_answer':
-      return `${actorName} menjawab pertanyaan Anda.`;
-    case 'accepted_answer':
+      return `${actorName} memberikan jawaban pada postingan Anda.`;
+    case 'comment_reply':
+      return `${actorName} membalas komentar Anda.`;
+    case 'answer_accepted':
       return `${actorName} menerima jawaban Anda.`;
-    case 'new_vote':
-    case 'new_like':
-      return `${actorName} memberikan vote pada postingan Anda.`;
-    case 'badge_earned':
-      return `Selamat! Anda mendapatkan badge baru.`;
+    
+    // Sosial
+    case 'followed':
+      return `${actorName} mulai mengikuti Anda.`;
+    
+    // Sistem & Profil
+    case 'complete_profile_reminder':
+      return `Selamat datang! Jangan lupa lengkapi profil Anda.`;
     case 'profile_completed':
-      return `Profil Anda sekarang lengkap!`;
+      return `Profil Anda sekarang lengkap! Terima kasih.`;
+    case 'badge_awarded':
+      return `Selamat! Anda mendapatkan badge baru.`;
+
+    // Moderasi & Admin
+    case 'new_report':
+      return `${actorName} melaporkan sebuah konten.`;
+    case 'report_updated':
+      return `Laporan Anda telah diproses oleh moderator.`;
+    case 'user_banned':
+      return `Akun Anda telah di-ban oleh moderator.`;
+    case 'user_warned':
+      return `Anda mendapatkan peringatan dari moderator.`;
+    case 'role_assigned':
+      return `Role Anda telah diperbarui oleh admin.`;
+
     default:
       return `${actorName} berinteraksi dengan konten Anda.`;
   }
@@ -36,13 +64,31 @@ function buildMessage(notification: NotificationItem): string {
 // Helper: resolve link from reference_type + reference_id
 function buildLink(notification: NotificationItem): string | null {
   if (!notification.reference_id) return null;
+  
+  if (notification.type === 'complete_profile_reminder' || notification.type === 'profile_completed') {
+    return '/settings/profile';
+  }
+  
+  if (notification.type === 'followed') {
+    return `/profile/${notification.reference_id}`;
+  }
+
+  if (notification.type === 'new_report' || notification.type === 'report_updated') {
+    return `/moderator/reports`;
+  }
+
   switch (notification.reference_type) {
     case 'post':
       return `/posts/${notification.reference_id}`;
     case 'comment':
-      return `/posts/${notification.reference_id}`; // navigate to the post
+      // Jika reference ter-load dari backend, dan punya post_id:
+      if (notification.reference && notification.reference.post_id) {
+        return `/posts/${notification.reference.post_id}`;
+      }
+      return `/posts/${notification.reference_id}`;
+    case 'user':
     case 'App\\Models\\Auth\\User':
-      return '/settings/profile';
+      return `/profile/${notification.reference_id}`;
     default:
       return null;
   }

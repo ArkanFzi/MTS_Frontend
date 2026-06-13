@@ -5,6 +5,7 @@ import { CornerDownRight, Loader2 } from 'lucide-react';
 import type { Reply } from '../types';
 import { createReply } from '../api';
 import VoteControl from '../../F22_VoteSystem/components/VoteControl';
+import LikeButton from '../../F23_LikeSystem/components/LikeButton';
 import { Avatar, AvatarFallback, AvatarImage } from '../../../../components/ui/avatar';
 import { Button } from '../../../../components/ui/button';
 import { useAuthStore } from '../../../../store/useAuthStore';
@@ -111,6 +112,12 @@ function ReplyItem({ reply, postId, maxDepth, currentDepth }: {
             targetType="comment"
             initialScore={reply.vote_score}
             className="flex-row gap-2"
+          />
+          <LikeButton 
+            targetId={reply.id} 
+            targetType="comment" 
+            initialIsLiked={reply.is_liked}
+            initialLikesCount={reply.likes_count}
           />
           {user && currentDepth < maxDepth && (
             <button

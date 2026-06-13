@@ -11,6 +11,7 @@ export interface NotificationItem {
   is_read: boolean;
   created_at: string;
   actor?: NotificationActor | null;
+  reference?: Record<string, unknown> | null;
 }
 
 export interface NotificationActor {

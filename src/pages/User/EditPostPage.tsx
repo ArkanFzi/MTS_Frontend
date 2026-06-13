@@ -1,7 +1,8 @@
 // src/pages/User/EditPostPage.tsx
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, AlertCircle } from 'lucide-react';
+import { useAuthStore } from '../../store/useAuthStore';
 import { getPostDetail } from '../../features/User/F16_Post/api';
 import EditPostForm from '../../features/User/F16_Post/components/EditPostForm';
 import { Card } from '../../components/ui/card';
@@ -9,6 +10,7 @@ import { Skeleton } from '../../components/ui/skeleton';
 
 export default function EditPostPage() {
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuthStore();
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['post', id],
@@ -17,6 +19,25 @@ export default function EditPostPage() {
   });
 
   const post = data?.data;
+
+  const isModOrAdmin = user?.role === 'moderator' || user?.role === 'admin';
+  const postAgeMinutes = post ? (Date.now() - new Date(post.created_at).getTime()) / 60000 : 0;
+  const isEditExpired = !isModOrAdmin && postAgeMinutes > 30;
+
+  if (post && isEditExpired) {
+    return (
+      <div className="max-w-3xl mx-auto py-8 px-6 text-center py-20">
+        <AlertCircle className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
+        <h2 className="text-xl font-bold text-white mb-2">Batas Waktu Edit Habis</h2>
+        <p className="text-gray-400 mb-6">
+          Postingan hanya dapat diedit dalam waktu 30 menit pertama setelah dibuat.
+        </p>
+        <Link to={`/posts/${post.id}`} className="text-[#D4AF37] hover:underline text-sm inline-block">
+          Kembali ke Postingan
+        </Link>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (

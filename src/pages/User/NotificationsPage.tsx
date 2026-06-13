@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import LoadingSpinner from '../../components/shared/LoadingSpinner';
@@ -6,69 +7,39 @@ import type { NotificationItem } from '../../features/User/F26_NotificationSyste
 import { fetchNotifications, markAsRead, markAllNotificationsAsRead } from '../../features/User/F26_NotificationSystem/api';
 import { NotificationRow } from '../../features/User/F26_NotificationSystem/components/NotificationRow';
 import { Bell, CheckCheck } from 'lucide-react';
-import { useAuthStore } from '../../store/useAuthStore';
 
 const NotificationsPage: React.FC = () => {
-  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [totalUnread, setTotalUnread] = useState<number>(0);
-  const { user } = useAuthStore();
+  const queryClient = useQueryClient();
 
-  /* eslint-disable react-hooks/set-state-in-effect */
-  useEffect(() => {
-    let isMounted = true;
+  const { data, isLoading } = useQuery({
+    queryKey: ['notifications', 1],
+    queryFn: () => fetchNotifications(1),
+  });
 
-    const loadNotifications = async () => {
-      try {
-        if (isMounted) setLoading(true);
-        const res = await fetchNotifications(1);
+  const notifications: NotificationItem[] = data?.data ?? [];
+  const totalUnread = notifications.filter((item) => !item.is_read).length;
 
-        if (isMounted) {
-          // res is the paginator directly: { data: [...], current_page, last_page, ... }
-          const notificationArray = res.data || [];
-          setNotifications(notificationArray);
-          
-          const unreadCount = notificationArray.filter((item: NotificationItem) => !item.is_read).length;
-          setTotalUnread(unreadCount);
-        }
-      } catch (error) {
-        console.error('Gagal memuat notifikasi:', error);
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    };
+  const markOneMutation = useMutation({
+    mutationFn: (id: string) => markAsRead(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    },
+  });
 
-    loadNotifications();
+  const markAllMutation = useMutation({
+    mutationFn: () => markAllNotificationsAsRead(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    },
+  });
 
-    return () => {
-      isMounted = false;
-    };
-  }, [user?.id]); // Re-fetch when user changes
-  /* eslint-enable react-hooks/set-state-in-effect */
-
-  const handleMarkOneRead = async (id: string) => {
-    try {
-      await markAsRead(id);
-      setNotifications((prev) =>
-        prev.map((item) => (item.id === id ? { ...item, is_read: true } : item))
-      );
-      setTotalUnread((prev) => Math.max(0, prev - 1));
-    } catch (error) {
-      console.error('Gagal memperbarui status notifikasi:', error);
-    }
+  const handleMarkOneRead = (id: string) => {
+    markOneMutation.mutate(id);
   };
 
-  const handleMarkAllRead = async () => {
+  const handleMarkAllRead = () => {
     if (totalUnread === 0) return;
-    try {
-      await markAllNotificationsAsRead();
-      setNotifications((prev) =>
-        prev.map((item) => ({ ...item, is_read: true }))
-      );
-      setTotalUnread(0);
-    } catch (error) {
-      console.error('Gagal memperbarui seluruh status notifikasi:', error);
-    }
+    markAllMutation.mutate();
   };
 
   return (
@@ -89,6 +60,7 @@ const NotificationsPage: React.FC = () => {
               onClick={handleMarkAllRead}
               variant="outline"
               size="sm"
+              disabled={markAllMutation.isPending}
               className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100 flex items-center gap-2"
             >
               <CheckCheck className="h-4 w-4" /> Tandai semua dibaca
@@ -97,11 +69,11 @@ const NotificationsPage: React.FC = () => {
         </CardHeader>
 
         <CardContent className="p-0">
-          {loading ? (
+          {isLoading ? (
             <div className="flex items-center justify-center p-12">
               <LoadingSpinner />
             </div>
-          ) : !notifications || notifications.length === 0 ? ( // 🟢 PERBAIKAN: Validasi gerbang aman jika data belum siap
+          ) : notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center text-center p-12 space-y-3">
               <Bell className="h-12 w-12 text-zinc-700 stroke-[1.5]" />
               <p className="text-zinc-400 text-sm">Kotak masukmu bersih. Tidak ada notifikasi saat ini.</p>

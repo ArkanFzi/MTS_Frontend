@@ -1,8 +1,15 @@
+<<<<<<< HEAD
   import { Link } from 'react-router-dom';
   import { useQuery } from '@tanstack/react-query';
   import { Loader2, Hash, Tag } from 'lucide-react';
   import { getAllTags } from '../../features/Common/F5_FilterByTag/api';
   import ResponsiveLayout from '../../components/shared/ResponsiveLayout';
+=======
+import TagGrid from '../../features/Common/F5_FilterByTag/components/TagGrid';
+import { useQuery } from '@tanstack/react-query';
+import { Loader2 } from 'lucide-react';
+import { getAllTags } from '../../features/Common/F5_FilterByTag/api';
+>>>>>>> 71988fb7b4bd73adbd625c7eb17cef447e960735
 
   export default function TagsListPage() {
     const { data, isLoading } = useQuery({
@@ -75,3 +82,10 @@
       </ResponsiveLayout>
     );
   }
+      
+      {Array.isArray(tags) && (
+        <TagGrid tags={tags} />
+      )}
+    </div>
+  );
+}

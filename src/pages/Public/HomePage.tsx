@@ -1,14 +1,13 @@
-// src/pages/Public/HomePage.tsx
-import { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronDown } from "lucide-react";
-import { getPosts } from "../../features/User/F16_Post/api";
-import type { Post } from "../../features/User/F16_Post/types";
-import PostFeedCard from "../../features/User/F16_Post/components/PostFeedCard";
-import TrendingSidebar from "../../features/Common/F7_TrendingPopularPost/components/TrendingSidebar";
-import { Button } from "../../components/ui/button";
-import ResponsiveLayout from "../../components/shared/ResponsiveLayout";
-import { Skeleton } from "../../components/ui/skeleton";
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { ChevronDown } from 'lucide-react';
+import { getPosts } from '../../features/User/F16_Post/api';
+import type { Post } from '../../features/User/F16_Post/types';
+import PostFeedCard from '../../features/User/F16_Post/components/PostFeedCard';
+import TrendingSidebar from '../../features/Common/F7_TrendingPopularPost/components/TrendingSidebar';
+import { Button } from '../../components/ui/button';
+import ResponsiveLayout from '../../components/shared/ResponsiveLayout';
+import { Skeleton } from '../../components/ui/skeleton';
 
 export default function HomePage() {
   const [page, setPage] = useState(1);

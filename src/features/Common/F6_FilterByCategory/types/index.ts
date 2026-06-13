@@ -78,3 +78,5 @@ export interface CategoryPostsResponse {
     total: number;
   };
 }
+
+export type SortTab = "newest" | "bountied" | "unanswered";

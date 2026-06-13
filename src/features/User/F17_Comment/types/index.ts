@@ -14,6 +14,9 @@ export interface Comment {
   user?: User;
   replies?: Comment[];
   replies_count?: number;
+  user_vote?: 'up' | 'down' | null;
+  is_liked?: boolean;
+  likes_count?: number;
 }
 
 export interface CreateCommentPayload {

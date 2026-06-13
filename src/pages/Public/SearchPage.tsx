@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -45,6 +46,20 @@ function ResultsSkeleton() {
     </div>
   );
 }
+=======
+import { useState, useEffect } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { ChevronDown, Search } from 'lucide-react';
+import { fetchSearchPosts, fetchCategories } from '../../features/Common/F4_SearchPost/api';
+import type { SearchResultItem } from '../../features/Common/F4_SearchPost/types';
+import { SearchBar } from '../../features/Common/F4_SearchPost/components/SearchBar';
+import { SearchResultCard } from '../../components/shared/SearchResultCard';
+import { Button } from '../../components/ui/button';
+import SearchFilters from '../../features/Common/F4_SearchPost/components/SearchFilters';
+import { ResultsSkeleton } from '../../features/Common/F4_SearchPost/components/ResultsSkeleton';
+
+>>>>>>> 71988fb7b4bd73adbd625c7eb17cef447e960735
 
 export default function SearchPage() {
   const [searchParams] = useSearchParams();
@@ -133,6 +148,58 @@ export default function SearchPage() {
           </div>
           <p className="text-sm text-gray-400 ml-9">
             Cari postingan, error, atau topik dari komunitas.
+    <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6">
+      {/* ── Header ── */}
+      <div className="mb-6">
+        <div className="flex items-center gap-3 mb-2">
+          <Search className="w-6 h-6 text-[#D4AF37]" />
+          <h1 className="text-2xl font-bold text-white tracking-tight">Search Posts</h1>
+        </div>
+        <p className="text-sm text-gray-400 ml-9">
+          Cari postingan, error, atau topik dari komunitas.
+        </p>
+      </div>
+
+      {/* ── Search Bar ── */}
+      <div className="mb-6">
+        <SearchBar initialValue={query} onSearch={handleSearchSubmit} />
+      </div>
+
+      {/* ── Search Filters ── */}
+      <SearchFilters
+        categories={categories}
+        categoryFilter={categoryFilter}
+        sort={sort}
+        totalFound={totalFound}
+        onCategoryChange={handleCategoryChange}
+        onSortChange={handleSortChange}
+      />
+
+      {/* ── Results ── */}
+      <div className="flex flex-col gap-4">
+        {isLoading && page === 1 && <ResultsSkeleton />}
+
+        {!isLoading && !isError && displayResults.length > 0 && (
+          displayResults.map((post) => (
+            <SearchResultCard key={post.id} post={post} />
+          ))
+        )}
+
+        {!isLoading && !isError && results.length === 0 && (
+          <div className="text-center py-20 border border-dashed border-[#2A2A2C] rounded-xl">
+            {query ? (
+              <p className="text-gray-500">
+                Tidak ada hasil yang ditemukan untuk "<span className="text-white">{query}</span>"
+              </p>
+            ) : (
+              <p className="text-gray-500">Belum ada postingan. Coba cari dengan kata kunci tertentu.</p>
+            )}
+          </div>
+        )}
+
+        {isError && (
+          <p className="text-red-400 text-center py-20">
+            Gagal memuat hasil pencarian. Silakan coba lagi.
           </p>
         </div>
 

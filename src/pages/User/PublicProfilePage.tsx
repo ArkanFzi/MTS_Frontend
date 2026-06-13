@@ -1,7 +1,7 @@
 // src/pages/User/PublicProfilePage.tsx
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Calendar, Award, FileText, Users, TrendingUp, Flag } from 'lucide-react';
+import { Calendar, TrendingUp, Flag } from 'lucide-react';
 import { getUserProfile } from '../../features/User/F25_FollowUser/api';
 import FollowButton from '../../features/User/F25_FollowUser/components/FollowButton';
 import { Avatar, AvatarFallback, AvatarImage } from '../../components/ui/avatar';
@@ -10,33 +10,12 @@ import { Card, CardContent } from '../../components/ui/card';
 import { Skeleton } from '../../components/ui/skeleton';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useState } from 'react';
+import { timeAgo } from '../../lib/utils';
+import { getRoleBadge, getReputationTier } from '../../features/User/F32_PublicProfile/types';
+import ProfileStatsGrid from '../../features/User/F32_PublicProfile/components/ProfileStatsGrid';
 import ReportUserModal from '../../features/User/F30_UserReport/components/ReportUserModal';
 
-function formatNumber(n: number): string {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;
-  return String(n);
-}
 
-function timeAgo(dateStr: string): string {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-}
-
-// Role badge config
-function getRoleBadge(roles: string[]) {
-  if (roles.includes('admin')) return { label: 'Admin', color: 'bg-red-950/50 text-red-400 border-red-900' };
-  if (roles.includes('moderator')) return { label: 'Moderator', color: 'bg-blue-950/50 text-blue-400 border-blue-900' };
-  return { label: 'Member', color: 'bg-[#1A1A1C] text-gray-400 border-[#2A2A2C]' };
-}
-
-function getReputationTier(points: number) {
-  if (points >= 10000) return { label: 'Legendary', color: 'text-[#D4AF37]' };
-  if (points >= 5000) return { label: 'Expert', color: 'text-purple-400' };
-  if (points >= 1000) return { label: 'Advanced', color: 'text-blue-400' };
-  if (points >= 100) return { label: 'Intermediate', color: 'text-green-400' };
-  return { label: 'Beginner', color: 'text-gray-400' };
-}
 
 export default function PublicProfilePage() {
   const { id } = useParams<{ id: string }>();
@@ -156,39 +135,7 @@ export default function PublicProfilePage() {
       </Card>
 
       {/* ── Stats Grid ── */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-        <Card className="border-[#2A2A2C] bg-[#161618]">
-          <CardContent className="p-4 text-center">
-            <Award className="w-5 h-5 text-[#D4AF37] mx-auto mb-2" />
-            <p className="text-xl font-bold text-white font-fira-code">{formatNumber(profile.reputation_points)}</p>
-            <p className="text-[10px] text-gray-500 uppercase tracking-wider mt-1">Reputation</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-[#2A2A2C] bg-[#161618]">
-          <CardContent className="p-4 text-center">
-            <FileText className="w-5 h-5 text-blue-400 mx-auto mb-2" />
-            <p className="text-xl font-bold text-white font-fira-code">{formatNumber(profile.posts_count)}</p>
-            <p className="text-[10px] text-gray-500 uppercase tracking-wider mt-1">Posts</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-[#2A2A2C] bg-[#161618]">
-          <CardContent className="p-4 text-center">
-            <Users className="w-5 h-5 text-green-400 mx-auto mb-2" />
-            <p className="text-xl font-bold text-white font-fira-code">{formatNumber(profile.followers_count)}</p>
-            <p className="text-[10px] text-gray-500 uppercase tracking-wider mt-1">Followers</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-[#2A2A2C] bg-[#161618]">
-          <CardContent className="p-4 text-center">
-            <Users className="w-5 h-5 text-purple-400 mx-auto mb-2" />
-            <p className="text-xl font-bold text-white font-fira-code">{formatNumber(profile.following_count)}</p>
-            <p className="text-[10px] text-gray-500 uppercase tracking-wider mt-1">Following</p>
-          </CardContent>
-        </Card>
-      </div>
+      <ProfileStatsGrid profile={profile} />
 
       {/* Report modal */}
       {showReport && (

@@ -5,14 +5,16 @@ import { toggleLike } from '../api';
 import { useAuthStore } from '../../../../store/useAuthStore';
 
 interface LikeButtonProps {
-  postId: string;
+  targetId: string;
+  targetType: 'post' | 'comment';
   initialIsLiked?: boolean;
   initialLikesCount?: number;
   className?: string;
 }
 
 export default function LikeButton({
-  postId,
+  targetId,
+  targetType,
   initialIsLiked = false,
   initialLikesCount = 0,
   className = '',
@@ -21,10 +23,11 @@ export default function LikeButton({
   const { user } = useAuthStore();
 
   const mutation = useMutation({
-    mutationFn: () => toggleLike({ post_id: postId }),
+    mutationFn: () => toggleLike({ target_id: targetId, target_type: targetType }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['post'] });
       queryClient.invalidateQueries({ queryKey: ['posts'] });
+      queryClient.invalidateQueries({ queryKey: ['comments'] });
     },
   });
 

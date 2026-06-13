@@ -26,3 +26,5 @@ export interface RoleResponse {
   message: string;
   data: Role;
 }
+
+export const SYSTEM_ROLES = ['admin', 'moderator', 'user'];

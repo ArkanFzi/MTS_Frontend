@@ -19,6 +19,10 @@ export interface Post {
   category?: Category;
   tags?: Tag[];
   comments_count?: number;
+  is_liked?: boolean;
+  is_bookmarked?: boolean;
+  likes_count?: number;
+  user_vote?: 'up' | 'down' | null;
 }
 
 export interface PostDetail extends Post {

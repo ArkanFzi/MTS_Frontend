@@ -3,23 +3,14 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Shield, Filter } from 'lucide-react';
 import { getReports, updateReport } from '../../features/Moderator/F13_ReportQueue/api';
-import type { Report } from '../../features/Moderator/F13_ReportQueue/types';
+import type { Report, UpdateReportPayload, FilterStatus } from '../../features/Moderator/F13_ReportQueue/types';
+import { FILTER_OPTIONS } from '../../features/Moderator/F13_ReportQueue/types';
 import ReportListRow from '../../features/Moderator/F13_ReportQueue/components/ReportListRow';
 import ActionReasonModal from '../../features/Moderator/F13_ReportQueue/components/ActionReasonModal';
 import LoadingSpinner from '../../components/shared/LoadingSpinner';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 import { toast } from 'sonner';
-
-type FilterStatus = 'all' | 'pending' | 'reviewed' | 'resolved' | 'dismissed';
-
-const FILTER_OPTIONS: { label: string; value: FilterStatus }[] = [
-  { label: 'All', value: 'all' },
-  { label: 'Pending', value: 'pending' },
-  { label: 'Reviewed', value: 'reviewed' },
-  { label: 'Resolved', value: 'resolved' },
-  { label: 'Dismissed', value: 'dismissed' },
-];
 
 export default function ReportQueuePage() {
   const queryClient = useQueryClient();
@@ -37,8 +28,8 @@ export default function ReportQueuePage() {
   });
 
   const mutation = useMutation({
-    mutationFn: ({ id, status, note }: { id: string; status: string; note?: string }) =>
-      updateReport(id, { status, resolution_note: note }),
+    mutationFn: ({ id, payload }: { id: string; payload: UpdateReportPayload }) =>
+      updateReport(id, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['moderator-reports'] });
       toast.success('Report status updated successfully.');
@@ -49,30 +40,36 @@ export default function ReportQueuePage() {
     },
   });
 
-  const reports = data?.data || [];
-  const meta = data?.meta;
+  const reports = data?.data?.data || [];
+  const meta = data?.data;
 
   const filteredReports = statusFilter === 'all'
     ? reports
-    : reports.filter((r) => r.status === statusFilter);
+    : reports.filter((r: Report) => r.status === statusFilter);
 
-  const pendingCount = reports.filter((r) => r.status === 'pending').length;
+  const pendingCount = reports.filter((r: Report) => r.status === 'pending').length;
 
   const handleAction = (report: Report, action: 'resolved' | 'dismissed') => {
     setModalState({ open: true, report, action });
   };
 
-  const handleSubmitAction = (note: string) => {
+  const handleSubmitAction = (extra: Omit<UpdateReportPayload, 'status'>) => {
     if (!modalState.report) return;
     mutation.mutate({
       id: modalState.report.id,
-      status: modalState.action,
-      note: note || undefined,
+      payload: {
+        status: modalState.action,
+        ...extra,
+      },
     });
   };
 
-  const handleView = () => {
-    // Future: Open detail view or navigate to target
+  const handleView = (report: Report) => {
+    if (report.target_type === 'post') {
+      window.open(`/posts/${report.target_id}`, '_blank');
+    } else {
+      alert(`Fitur view untuk tipe ${report.target_type} dengan ID ${report.target_id} belum tersedia sepenuhnya karena membutuhkan context tambahan.`);
+    }
   };
 
   return (
@@ -151,7 +148,7 @@ export default function ReportQueuePage() {
             </div>
           )}
 
-          {filteredReports.map((report) => (
+          {filteredReports.map((report: Report) => (
             <ReportListRow
               key={report.id}
               report={report}

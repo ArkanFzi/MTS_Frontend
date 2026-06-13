@@ -5,28 +5,27 @@ export interface Report {
   id: string;
   reporter_id: string;
   target_id: string;
-  target_type: string;
+  target_type: 'post' | 'comment' | 'user';
   reason: string;
-  description: string | null;
-  status: 'pending' | 'reviewed' | 'resolved' | 'dismissed';
-  resolved_by: string | null;
+  description?: string;
+  status: 'pending' | 'resolved' | 'dismissed';
   created_at: string;
-  resolved_at: string | null;
+  updated_at: string;
   reporter?: User;
-  resolver?: User | null;
+  target?: Record<string, unknown> | null; // The target (Post, Comment, or User)
 }
 
 export interface UpdateReportPayload {
-  status: string;
-  resolution_note?: string;
+  status: 'resolved' | 'dismissed';
+  action?: 'warn' | 'ban' | 'delete_content' | 'none';
+  reason?: string;
 }
 
 export interface ReportListResponse {
-  status: string;
-  message: string;
-  data: Report[];
-  meta: {
+  success: boolean;
+  data: {
     current_page: number;
+    data: Report[];
     last_page: number;
     per_page: number;
     total: number;
@@ -35,7 +34,6 @@ export interface ReportListResponse {
 
 export interface ReportDetailResponse {
   success: boolean;
-  message: string;
   data: Report;
 }
 
@@ -44,3 +42,13 @@ export interface ReportUpdateResponse {
   message: string;
   data: Report;
 }
+
+export type FilterStatus = 'all' | 'pending' | 'reviewed' | 'resolved' | 'dismissed';
+
+export const FILTER_OPTIONS: { label: string; value: FilterStatus }[] = [
+  { label: 'All', value: 'all' },
+  { label: 'Pending', value: 'pending' },
+  { label: 'Reviewed', value: 'reviewed' },
+  { label: 'Resolved', value: 'resolved' },
+  { label: 'Dismissed', value: 'dismissed' },
+];

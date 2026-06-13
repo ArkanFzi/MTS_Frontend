@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { ErrorBoundary, useErrorBoundary } from "react-error-boundary";
 
 import ErrorFallback from "../../components/ErrorFallback/ErrorFallback";
@@ -16,9 +15,10 @@ import type {
   CategoryPostsResponse,
 } from "../../features/Common/F6_FilterByCategory/types";
 import { getPostsByCategory } from "../../features/Common/F6_FilterByCategory/api";
-import { Skeleton } from "../../components/ui/skeleton";
+import PostListSkeleton from "../../components/shared/PostListSkeleton";
+import Pagination from "../../components/shared/Pagination";
 
-type SortTab = "newest" | "bountied" | "unanswered";
+import type { SortTab } from "../../features/Common/F6_FilterByCategory/types";
 
 const TABS: { key: SortTab; label: string }[] = [
   { key: "newest", label: "Newest" },
@@ -26,100 +26,7 @@ const TABS: { key: SortTab; label: string }[] = [
   { key: "unanswered", label: "Unanswered" },
 ];
 
-function PostListSkeleton() {
-  return (
-    <div className="flex flex-col gap-4">
-      {[1, 2, 3].map((i) => (
-        <div
-          key={i}
-          className="flex gap-4 p-5 bg-[#161618] border border-[#2A2A2C] rounded-lg"
-        >
-          <div className="flex flex-col items-center gap-2 min-w-[70px]">
-            <Skeleton className="w-8 h-6" />
-            <Skeleton className="w-16 h-12" />
-            <Skeleton className="w-16 h-12" />
-          </div>
-          <div className="flex-1 space-y-3">
-            <Skeleton className="w-3/4 h-5" />
-            <Skeleton className="w-full h-4" />
-            <Skeleton className="w-2/3 h-4" />
-            <div className="flex gap-2">
-              <Skeleton className="w-16 h-5 rounded-full" />
-              <Skeleton className="w-16 h-5 rounded-full" />
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
 
-function Pagination({
-  current,
-  last,
-  onPageChange,
-}: {
-  current: number;
-  last: number;
-  onPageChange: (page: number) => void;
-}) {
-  if (last <= 1) return null;
-
-  const pages: (number | string)[] = [];
-  const delta = 2;
-
-  for (let i = 1; i <= last; i++) {
-    if (
-      i === 1 ||
-      i === last ||
-      (i >= current - delta && i <= current + delta)
-    ) {
-      pages.push(i);
-    } else if (pages[pages.length - 1] !== "...") {
-      pages.push("...");
-    }
-  }
-
-  return (
-    <div className="flex items-center justify-center gap-1.5 mt-8 pb-8">
-      <button
-        onClick={() => onPageChange(current - 1)}
-        disabled={current === 1}
-        className="px-3 py-1.5 text-xs font-medium border border-[#2A2A2C] rounded text-gray-400 hover:text-white hover:border-gray-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors bg-transparent"
-      >
-        <ChevronLeft className="w-3.5 h-3.5" />
-      </button>
-
-      {pages.map((p, i) =>
-        typeof p === "number" ? (
-          <button
-            key={i}
-            onClick={() => onPageChange(p)}
-            className={`px-3 py-1.5 text-xs font-medium border rounded transition-colors min-w-[32px] ${
-              p === current
-                ? "bg-[#D4AF37] text-black border-[#D4AF37] font-bold"
-                : "border-[#2A2A2C] text-gray-400 hover:text-white hover:border-gray-600 bg-transparent"
-            }`}
-          >
-            {p}
-          </button>
-        ) : (
-          <span key={i} className="px-1 text-gray-500">
-            ...
-          </span>
-        ),
-      )}
-
-      <button
-        onClick={() => onPageChange(current + 1)}
-        disabled={current === last}
-        className="px-3 py-1.5 text-xs font-medium border border-[#2A2A2C] rounded text-gray-400 hover:text-white hover:border-gray-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors bg-transparent"
-      >
-        <ChevronRight className="w-3.5 h-3.5" />
-      </button>
-    </div>
-  );
-}
 
 function CategoryDetailContent() {
   const { slug } = useParams<{ slug: string }>();

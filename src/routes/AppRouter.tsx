@@ -44,12 +44,12 @@ import CommentEditHistoryPage from '../pages/User/CommentEditHistoryPage';
 import ReportQueuePage from '../pages/Moderator/ReportQueuePage';
 import ActionLogPage from '../pages/Moderator/ActionLogPage';
 import BanManagementPage from '../pages/Moderator/BanManagementPage';
-import ModTagCategoryPage from '../pages/Moderator/ModTagCategoryPage';
 
 // ─── Admin Pages ───
 import AdminDashboardPage from '../pages/Admin/AdminDashboardPage';
 import TagCategoryPage from '../pages/Admin/TagCategoryPage';
 import UserDirectoryPage from '../pages/Admin/UserDirectoryPage';
+import AdminUserDetailPage from '../pages/Admin/AdminUserDetailPage';
 import RoleManagementPage from '../pages/Admin/RoleManagementPage';
 import { BadgeMasterPage } from "../pages/Admin/BadgeMasterPage";
 import AuditTimelinePage from '../pages/Admin/AuditTimelinePage';
@@ -115,7 +115,7 @@ export default function AppRouter() {
           <Route path="/moderator/reports" element={<ReportQueuePage />} />
           <Route path="/moderator/logs" element={<ActionLogPage />} />
           <Route path="/moderator/bans" element={<BanManagementPage />} />
-          <Route path="/moderator/tag-category" element={<ModTagCategoryPage />} />
+          <Route path="/moderator/tag-category" element={<TagCategoryPage />} />
         </Route>
 
         {/* ── Protected: Admin only ──
@@ -123,6 +123,7 @@ export default function AppRouter() {
         <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
           <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
           <Route path="/admin/users" element={<UserDirectoryPage />} />
+          <Route path="/admin/users/:id" element={<AdminUserDetailPage />} />
           <Route path="/admin/roles" element={<RoleManagementPage />} />
           <Route path="/admin/tag-category" element={<TagCategoryPage />} />
           <Route path="/admin/badges" element={<BadgeMasterPage />} />

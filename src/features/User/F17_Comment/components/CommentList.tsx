@@ -1,16 +1,18 @@
 // src/features/User/F17_Comment/components/CommentList.tsx
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2, Reply, CornerDownRight, CheckCircle2 } from 'lucide-react';
+import { Loader2, Reply, CornerDownRight, CheckCircle2, Flag } from 'lucide-react';
 
 import type { Comment } from '../types';
 import { createComment } from '../api';
 import { markAcceptedAnswer } from '../../F18_MarkAcceptedAnswer/api';
 import ReplyForm from './ReplyForm';
 import VoteControl from '../../F22_VoteSystem/components/VoteControl';
+import LikeButton from '../../F23_LikeSystem/components/LikeButton';
 import { Avatar, AvatarFallback, AvatarImage } from '../../../../components/ui/avatar';
 import { Button } from '../../../../components/ui/button';
 import { useAuthStore } from '../../../../store/useAuthStore';
+import ReportModal from '../../F30_UserReport/components/ReportModal';
 
 interface CommentListProps {
   postId: string;
@@ -106,11 +108,12 @@ function AuthorBadge({ username, avatarUrl, reputation, createdAt }: {
 }
 
 // ─── Single Reply ───
-function ReplyItem({ reply, postId, postOwnerId, acceptedAnswerId }: {
+function ReplyItem({ reply, postId, postOwnerId, acceptedAnswerId, onReport }: {
   reply: Comment;
   postId: string;
   postOwnerId: string;
   acceptedAnswerId: string | null;
+  onReport: (id: string) => void;
 }) {
   const { user } = useAuthStore();
   const isPostOwner = user?.id === postOwnerId;
@@ -144,10 +147,27 @@ function ReplyItem({ reply, postId, postOwnerId, acceptedAnswerId }: {
             targetId={reply.id}
             targetType="comment"
             initialScore={reply.vote_score}
+            userVote={reply.user_vote}
             className="flex-row gap-2"
+          />
+          <LikeButton 
+            targetId={reply.id} 
+            targetType="comment" 
+            initialIsLiked={reply.is_liked}
+            initialLikesCount={reply.likes_count}
           />
           {!reply.is_accepted && acceptedAnswerId === null && (
             <AcceptToggle postId={postId} commentId={reply.id} isAccepted={false} isPostOwner={isPostOwner} />
+          )}
+          {user && user.id !== reply.user_id && (
+            <button
+              onClick={() => onReport(reply.id)}
+              className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-red-400 transition-colors ml-auto"
+              title="Laporkan"
+            >
+              <Flag className="w-3.5 h-3.5" />
+              Report
+            </button>
           )}
         </div>
       </div>
@@ -156,11 +176,12 @@ function ReplyItem({ reply, postId, postOwnerId, acceptedAnswerId }: {
 }
 
 // ─── Single Comment / Answer Card ───
-function CommentItem({ comment, postId, postOwnerId, acceptedAnswerId }: {
+function CommentItem({ comment, postId, postOwnerId, acceptedAnswerId, onReport }: {
   comment: Comment;
   postId: string;
   postOwnerId: string;
   acceptedAnswerId: string | null;
+  onReport: (id: string) => void;
 }) {
   const [showReplyForm, setShowReplyForm] = useState(false);
   const { user } = useAuthStore();
@@ -186,6 +207,7 @@ function CommentItem({ comment, postId, postOwnerId, acceptedAnswerId }: {
             targetId={comment.id}
             targetType="comment"
             initialScore={comment.vote_score}
+            userVote={comment.user_vote}
             className="pt-0.5"
           />
 
@@ -198,6 +220,12 @@ function CommentItem({ comment, postId, postOwnerId, acceptedAnswerId }: {
 
             {/* Reply button */}
             <div className="flex items-center gap-4 mt-4">
+              <LikeButton 
+                targetId={comment.id} 
+                targetType="comment" 
+                initialIsLiked={comment.is_liked}
+                initialLikesCount={comment.likes_count}
+              />
               {user && (
                 <button
                   onClick={() => setShowReplyForm(!showReplyForm)}
@@ -209,6 +237,15 @@ function CommentItem({ comment, postId, postOwnerId, acceptedAnswerId }: {
               )}
               {!isAccepted && acceptedAnswerId === null && (
                 <AcceptToggle postId={postId} commentId={comment.id} isAccepted={false} isPostOwner={isPostOwner} />
+              )}
+              {user && user.id !== comment.user_id && (
+                <button
+                  onClick={() => onReport(comment.id)}
+                  className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-red-400 transition-colors ml-auto"
+                >
+                  <Flag className="w-3.5 h-3.5" />
+                  Report
+                </button>
               )}
             </div>
 
@@ -245,6 +282,7 @@ function CommentItem({ comment, postId, postOwnerId, acceptedAnswerId }: {
                 postId={postId}
                 postOwnerId={postOwnerId}
                 acceptedAnswerId={acceptedAnswerId}
+                onReport={onReport}
               />
             ))}
           </div>
@@ -259,6 +297,7 @@ export default function CommentList({ postId, comments, postOwnerId, acceptedAns
   const [commentBody, setCommentBody] = useState('');
   const { user } = useAuthStore();
   const queryClient = useQueryClient();
+  const [reportTarget, setReportTarget] = useState<string | null>(null);
 
   const commentMutation = useMutation({
     mutationFn: () => createComment(postId, { body: commentBody }),
@@ -347,8 +386,18 @@ export default function CommentList({ postId, comments, postOwnerId, acceptedAns
             postId={postId}
             postOwnerId={postOwnerId}
             acceptedAnswerId={acceptedAnswerId}
+            onReport={setReportTarget}
           />
         ))
+      )}
+
+      {user && (
+        <ReportModal
+          open={!!reportTarget}
+          onOpenChange={(open) => !open && setReportTarget(null)}
+          targetId={reportTarget || ''}
+          targetType="comment"
+        />
       )}
     </div>
   );

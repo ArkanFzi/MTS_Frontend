@@ -55,3 +55,5 @@ export interface TagPostsResponse {
     total: number;
   };
 }
+
+export type SortTab = "newest" | "bountied" | "unanswered";

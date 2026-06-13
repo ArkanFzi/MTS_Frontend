@@ -1,9 +1,13 @@
 // src/features/Admin/F9_UserManagement/components/UserTable.tsx
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Shield, ShieldAlert, Ban, MoreHorizontal, Loader2, KeyRound } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Shield, ShieldAlert, Ban, MoreHorizontal, Loader2, KeyRound, AlertTriangle, ExternalLink } from 'lucide-react';
 import type { UserListItem } from '../types';
 import { updateUserRole } from '../api';
+import { useAuthStore } from '../../../../store/useAuthStore';
+import ResetPasswordModal from './ResetPasswordModal';
+import WarnUserModal from '../../../Moderator/F15_UserBanSanction/components/WarnUserModal';
 import { Avatar, AvatarFallback, AvatarImage } from '../../../../components/ui/avatar';
 import { Badge } from '../../../../components/ui/badge';
 import { Button } from '../../../../components/ui/button';
@@ -36,9 +40,14 @@ function getRoleBadge(roles: string[]) {
 }
 
 export default function UserTable({ users }: UserTableProps) {
+  const { user: currentUser } = useAuthStore();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [roleModal, setRoleModal] = useState<{ user: UserListItem; newRole: string } | null>(null);
+  const [warnModalOpen, setWarnModalOpen] = useState<{ id: string; username: string } | null>(null);
+  const [resetModalOpen, setResetModalOpen] = useState<{ id: string; username: string } | null>(null);
 
+  const safeUsers = Array.isArray(users) ? users : [];
   const roleMutation = useMutation({
     mutationFn: ({ id, role }: { id: string; role: string }) => updateUserRole(id, { role }),
     onSuccess: () => {
@@ -75,14 +84,14 @@ export default function UserTable({ users }: UserTableProps) {
             </tr>
           </thead>
           <tbody className="divide-y divide-[#2A2A2C] text-xs">
-            {users.length === 0 ? (
+            {safeUsers.length === 0 ? (
               <tr>
                 <td colSpan={6} className="py-12 text-center text-gray-600 font-mono uppercase tracking-wide">
                   No users found.
                 </td>
               </tr>
             ) : (
-              users.map((user) => {
+              safeUsers.map((user) => {
                 const roleBadge = getRoleBadge(user.roles);
                 return (
                   <tr key={user.id} className="hover:bg-[#1A1A1C] transition-colors">
@@ -154,6 +163,25 @@ export default function UserTable({ users }: UserTableProps) {
                             Set as Admin
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() => navigate(`/admin/users/${user.id}`)}
+                            className="text-blue-400 focus:text-blue-300 focus:bg-blue-950/30"
+                          >
+                            <ExternalLink className="w-3.5 h-3.5 mr-2" />
+                            Manage / Reset Password
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          {currentUser?.role === 'admin' && (
+                            <DropdownMenuItem onClick={() => setResetModalOpen({ id: user.id, username: user.username })}>
+                              <KeyRound className="w-3.5 h-3.5 mr-2 text-blue-400" />
+                              Reset Password
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuItem onClick={() => setWarnModalOpen({ id: user.id, username: user.username })}>
+                            <AlertTriangle className="w-3.5 h-3.5 mr-2 text-amber-500" />
+                            Warn User
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
                           <DropdownMenuItem className="text-red-400">
                             <Ban className="w-3.5 h-3.5 mr-2" />
                             Ban User
@@ -199,6 +227,26 @@ export default function UserTable({ users }: UserTableProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Warn User Modal */}
+      {warnModalOpen && (
+        <WarnUserModal
+          userId={warnModalOpen.id}
+          username={warnModalOpen.username}
+          open={!!warnModalOpen}
+          onOpenChange={(open) => !open && setWarnModalOpen(null)}
+        />
+      )}
+
+      {/* Reset Password Modal */}
+      {resetModalOpen && (
+        <ResetPasswordModal
+          userId={resetModalOpen.id}
+          username={resetModalOpen.username}
+          open={!!resetModalOpen}
+          onOpenChange={(open) => !open && setResetModalOpen(null)}
+        />
+      )}
     </>
   );
 }

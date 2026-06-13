@@ -1,140 +1,150 @@
 // src/features/User/F16_Post/components/PostCardItem.tsx
-import { Link, useNavigate } from 'react-router-dom';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Eye, MessageCircle, Edit3, Trash2, Loader2 } from 'lucide-react';
-import type { Post } from '../types';
-import { deletePost } from '../api';
+import { Link } from 'react-router-dom';
+import { Eye, MessageSquare, Flame, Trash2, Edit2, Loader2 } from 'lucide-react';
 import { Card } from '../../../../components/ui/card';
 import { Badge } from '../../../../components/ui/badge';
-import { useAuthStore } from '../../../../store/useAuthStore';
 
+// Sesuaikan props ini dengan interface asli yang lu miliki jika ada tambahan fields
 interface PostCardItemProps {
-  post: Post;
-}
-
-function timeAgo(dateStr: string): string {
-  const now = Date.now();
-  const then = new Date(dateStr).getTime();
-  const diff = now - then;
-  const mins = Math.floor(diff / 60_000);
-  if (mins < 1) return 'Just now';
-  if (mins < 60) return `${mins} min ago`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  if (days < 30) return `${days}d ago`;
-  return `${Math.floor(days / 30)}mo ago`;
-}
-
-export default function PostCardItem({ post }: PostCardItemProps) {
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const { user } = useAuthStore();
-  const isOwner = user?.id === post.user_id;
-
-  const deleteMutation = useMutation({
-    mutationFn: () => deletePost(post.id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['posts'] });
-      queryClient.invalidateQueries({ queryKey: ['my-posts'] });
-    },
-  });
-
-  const handleDelete = () => {
-    if (window.confirm('Yakin ingin menghapus postingan ini?')) {
-      deleteMutation.mutate();
-    }
+  post: {
+    id: string;
+    title: string;
+    body?: string;
+    category?: { name: string };
+    tags?: { id: string; name: string }[];
+    user?: { username: string };
+    created_at?: string;
+    votes_count?: number;
+    views_count?: number;
+    answers_count?: number;
+    points?: number;
+    is_hot?: boolean;
+    is_solved?: boolean;
   };
+  // Pertahankan props fungsi delete/edit bawaan lu jika dioper dari parent
+  onDelete?: (id: string) => void;
+  deleteMutation?: { isPending: boolean }; 
+}
+
+export default function PostCardItem({ post, onDelete, deleteMutation }: PostCardItemProps) {
+  
+  // ── Fungsi Formatter Mengubah ISO String Menjadi Tanggal Bersih (Contoh: 10 Jun 2026) ──
+  const formattedDate = post.created_at
+    ? new Intl.DateTimeFormat('id-ID', {
+        day: 'numeric',
+        month: 'short', // 'short' menghasilkan teks pendek (Jun, Jul, Ags). Gunakan 'long' jika ingin full (Juni)
+        year: 'numeric'
+      }).format(new Date(post.created_at))
+    : 'Baru saja';
 
   return (
-    <Card className="border-[#2A2A2C] bg-[#161618] hover:border-[#D4AF37]/30 transition-colors">
-      <div className="p-5 space-y-3">
-        {/* Top row */}
-        <div className="flex items-center gap-2">
-          {post.is_answered && (
-            <Badge className="bg-green-950/50 text-green-400 border-green-900 text-[10px] h-5 font-bold uppercase tracking-wider">
-              Terjawab
-            </Badge>
-          )}
-          <Badge
-            variant="outline"
-            className={`text-[10px] h-5 ${
-              post.status === 'open'
-                ? 'border-blue-900 text-blue-400'
-                : 'border-gray-700 text-gray-500'
-            }`}
-          >
-            {post.status === 'open' ? 'Open' : 'Closed'}
-          </Badge>
-          <span className="text-xs text-gray-500 ml-auto">{timeAgo(post.created_at)}</span>
-        </div>
-
-        {/* Title */}
-        <Link to={`/posts/${post.id}`}>
-          <h3 className="text-sm font-semibold text-white hover:text-[#D4AF37] transition-colors line-clamp-2">
-            {post.title}
-          </h3>
-        </Link>
-
-        {/* Category + Tags */}
-        <div className="flex items-center gap-2 flex-wrap">
-          {post.category && (
-            <Badge
-              variant="outline"
-              className="text-[10px] bg-[#1A1A1C] text-gray-400 border-[#2A2A2C] px-2 py-0.5 h-auto"
-            >
-              {post.category.name}
-            </Badge>
-          )}
-          {post.tags?.slice(0, 3).map((tag) => (
-            <Link key={tag.id} to={`/tags/${tag.slug}`}>
-              <Badge
-                variant="outline"
-                className="text-[10px] bg-[#1A1A1C] text-[#D4AF37] border-[#2A2A2C] px-2 py-0.5 h-auto hover:border-[#D4AF37]/50 cursor-pointer"
-              >
-                #{tag.name}
+    <Card className="bg-[#131315] border border-[#2A2A2C] hover:border-zinc-700/60 p-4 transition-all duration-300 group rounded-xl relative overflow-hidden">
+      {/* Efek dekorasi garis hover kiri khas premium */}
+      <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-transparent group-hover:bg-[#D4AF37] transition-colors duration-300" />
+      
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pl-1">
+        
+        {/* ── SEKTOR KIRI: Konten Utama & Label Status ── */}
+        <div className="flex-1 min-w-0 space-y-2">
+          {/* Baris Badge Status */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            {post.is_hot && (
+              <Badge className="bg-red-500/10 text-red-400 border border-red-500/20 text-[10px] font-bold px-2 py-0.5 rounded-md gap-0.5">
+                <Flame className="w-3 h-3 text-red-500 fill-red-500" />
+                Hot
               </Badge>
-            </Link>
-          ))}
+            )}
+            
+            <Badge variant="outline" className="bg-zinc-900/50 text-zinc-400 border-zinc-800 text-[10px] font-medium px-2 py-0.5 rounded-full">
+              {post.category?.name || 'Programming'}
+            </Badge>
+
+            {post.is_solved ? (
+              <Badge className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-medium px-2 py-0.5 rounded-md">
+                Terjawab
+              </Badge>
+            ) : (
+              <Badge className="bg-blue-500/10 text-blue-400 border border-blue-500/20 text-[10px] font-medium px-2 py-0.5 rounded-full">
+                Open
+              </Badge>
+            )}
+          </div>
+
+          {/* Judul Postingan yang Slim & Rapi */}
+          <Link to={`/posts/${post.id}`} className="block">
+            <h2 className="text-base font-semibold text-zinc-100 group-hover:text-[#D4AF37] tracking-tight transition-colors duration-200 line-clamp-1">
+              {post.title}
+            </h2>
+          </Link>
+
+          {/* Meta Data Penulis & Waktu */}
+          <div className="flex items-center gap-2 text-xs text-zinc-500 font-medium">
+            <span className="inline-flex items-center justify-center bg-zinc-800 text-[#D4AF37] w-5 h-5 rounded-md font-bold text-[10px] uppercase">
+              {(post.user?.username || 'US').substring(0, 2)}
+            </span>
+            <span className="text-zinc-300 font-semibold">{post.user?.username || 'user'}</span>
+            <span>•</span>
+            {/* Menampilkan hasil format tanggal bersih */}
+            <span>{formattedDate}</span>
+          </div>
         </div>
 
-        {/* Stats row */}
-        <div className="flex items-center gap-4 text-xs text-gray-500">
-          <span className="flex items-center gap-1">
-            <Eye className="w-3 h-3" /> {post.view_count}
-          </span>
-          <span className="flex items-center gap-1">
-            <MessageCircle className="w-3 h-3" /> {post.comments_count ?? 0}
-          </span>
-          <span className="text-[#D4AF37] font-fira-code font-bold">
-            {post.vote_score} pts
-          </span>
-
-          {/* Owner actions */}
-          {isOwner && (
-            <div className="flex items-center gap-2 ml-auto">
-              <button
-                onClick={() => navigate(`/posts/${post.id}/edit`)}
-                className="text-gray-500 hover:text-[#D4AF37] transition-colors"
-                title="Edit"
-              >
-                <Edit3 className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={handleDelete}
-                disabled={deleteMutation.isPending}
-                className="text-gray-500 hover:text-red-400 transition-colors disabled:opacity-50"
-                title="Delete"
-              >
-                {deleteMutation.isPending ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                ) : (
-                  <Trash2 className="w-3.5 h-3.5" />
-                )}
-              </button>
+        {/* ── SEKTOR KANAN: Kombinasi Metrik Box & Tombol Aksi Kelola ── */}
+        <div className="flex flex-row md:flex-col lg:flex-row items-center gap-4 flex-shrink-0 justify-between md:justify-end border-t border-[#2A2A2C] md:border-t-0 pt-3 md:pt-0">
+          
+          {/* Row Metrik Statis (Votes & Views) */}
+          <div className="flex items-center gap-2">
+            {/* Box Nilai Skor/Votes */}
+            <div className="bg-[#1A1A1C]/60 border border-[#2A2A2C] rounded-lg px-3.5 py-1.5 min-w-[68px] text-center group-hover:bg-[#1A1A1C] transition-colors">
+              <span className="block text-sm font-bold text-[#D4AF37] font-fira-code tabular-nums">
+                {post.points ?? post.votes_count ?? 0}
+              </span>
+              <span className="block text-[9px] text-zinc-500 font-semibold uppercase tracking-wider">
+                Votes
+              </span>
             </div>
-          )}
+
+            {/* Box Total Views */}
+            <div className="bg-[#1A1A1C]/40 border border-[#2A2A2C]/60 rounded-lg px-3.5 py-1.5 min-w-[68px] text-center">
+              <span className="block text-sm font-bold text-zinc-400 font-fira-code tabular-nums">
+                {post.views_count ?? 0}
+              </span>
+              <span className="block text-[9px] text-zinc-500 font-semibold uppercase tracking-wider">
+                Views
+              </span>
+            </div>
+          </div>
+
+          {/* Sektor Tombol Manajemen Milik User (Edit & Delete Bawaan Kode Lu) */}
+          <div className="flex items-center gap-1.5">
+            <Link to={`/posts/${post.id}/edit`}>
+              <button 
+                type="button" 
+                className="p-2 bg-[#161618] border border-[#2A2A2C] hover:border-zinc-600 rounded-lg text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                title="Edit Postingan"
+              >
+                <Edit2 className="w-3.5 h-3.5" />
+              </button>
+            </Link>
+
+            {/* Tombol Delete Beserta Kondisi IsPending Sesuai Baris Kode Asli Lu */}
+            <button
+              type="button"
+              disabled={deleteMutation?.isPending}
+              onClick={() => onDelete && onDelete(post.id)}
+              className="p-2 bg-red-950/10 border border-red-950/50 hover:border-red-900 rounded-lg text-red-400 hover:text-red-300 transition-colors disabled:opacity-50 cursor-pointer"
+              title="Hapus Postingan"
+            >
+              {deleteMutation?.isPending ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Trash2 className="w-3.5 h-3.5" />
+              )}
+            </button>
+          </div>
+
         </div>
+
       </div>
     </Card>
   );

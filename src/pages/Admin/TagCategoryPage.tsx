@@ -1,13 +1,14 @@
 // src/pages/Admin/TagCategoryPage.tsx
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { LayoutGrid, Hash } from 'lucide-react';
+import { LayoutGrid, Hash, Database, Tags, TagsIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
 import CategoryFormModal from '../../features/Admin/F10_CategoryMaster/components/CategoryFormModal';
 import CategoryTable from '../../features/Admin/F10_CategoryMaster/components/CategoryTable';
 import TagFormModal from '../../features/Admin/F12_TagMaster/components/TagFormModal';
 import TagTable from '../../features/Admin/F12_TagMaster/components/TagTable';
+import ResponsiveLayout from '../../components/shared/ResponsiveLayout';
 
 import { getCategories, createCategory, updateCategory, deleteCategory } from '../../features/Admin/F10_CategoryMaster/api';
 import { getModeratorTags, createTag, updateModeratorTag, deleteModeratorTag } from '../../features/Admin/F12_TagMaster/api';
@@ -146,59 +147,77 @@ export default function TagCategoryPage() {
   };
 
   return (
-    <div className="container max-w-5xl mx-auto py-8 px-4 font-['Inter']">
-      <div className="mb-6 flex space-x-2">
-        <button
-          onClick={() => setActiveTab('categories')}
-          className={`px-4 py-2 text-sm font-semibold rounded-md flex items-center gap-2 transition-colors ${
-            activeTab === 'categories' ? 'bg-[#D4AF37] text-black' : 'bg-[#161618] text-gray-400 border border-zinc-800 hover:text-white'
-          }`}
-        >
-          <LayoutGrid className="w-4 h-4" /> Categories
-        </button>
-        <button
-          onClick={() => setActiveTab('tags')}
-          className={`px-4 py-2 text-sm font-semibold rounded-md flex items-center gap-2 transition-colors ${
-            activeTab === 'tags' ? 'bg-[#D4AF37] text-black' : 'bg-[#161618] text-gray-400 border border-zinc-800 hover:text-white'
-          }`}
-        >
-          <Hash className="w-4 h-4" /> Tags
-        </button>
+    <ResponsiveLayout>
+      <div className="w-full py-8">
+        
+        {/* Header Section */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-2">
+            <TagsIcon className="w-6 h-6 text-[#D4AF37]" />
+            <h1 className="text-2xl font-bold text-white tracking-tight">Content Master</h1>
+          </div>
+          <p className="text-sm text-gray-500">Manage your forum categories and system tags.</p>
+        </div>
+
+        {/* Tab Navigation */}
+        <div className="flex items-center gap-2 mb-6 bg-[#161618] p-1 rounded-full border border-[#2A2A2C] w-fit">
+          <button
+            onClick={() => setActiveTab('categories')}
+            className={`px-6 py-2 text-xs font-bold rounded-full transition-all flex items-center gap-2 ${
+              activeTab === 'categories' 
+                ? 'bg-[#D4AF37] text-black' 
+                : 'text-gray-500 hover:text-gray-300'
+            }`}
+          >
+            <LayoutGrid className="w-3.5 h-3.5" /> Categories
+          </button>
+          <button
+            onClick={() => setActiveTab('tags')}
+            className={`px-6 py-2 text-xs font-bold rounded-full transition-all flex items-center gap-2 ${
+              activeTab === 'tags' 
+                ? 'bg-[#D4AF37] text-black' 
+                : 'text-gray-500 hover:text-gray-300'
+            }`}
+          >
+            <Hash className="w-3.5 h-3.5" /> Tags
+          </button>
+        </div>
+
+        {/* Content Area */}
+        <div className="transition-opacity duration-300">
+          {activeTab === 'categories' ? (
+            <CategoryTable
+              categories={categories}
+              isLoading={isLoadingCategories}
+              onAdd={() => { setSelectedCategory(null); setIsCategoryModalOpen(true); }}
+              onEdit={(cat) => { setSelectedCategory(cat); setIsCategoryModalOpen(true); }}
+              onDelete={handleDeleteCategory}
+            />
+          ) : (
+            <TagTable
+              tags={tags}
+              isLoading={isLoadingTags}
+              onAdd={() => { setSelectedTag(null); setIsTagModalOpen(true); }}
+              onEdit={(tag) => { setSelectedTag(tag); setIsTagModalOpen(true); }}
+              onDelete={handleDeleteTag}
+            />
+          )}
+        </div>
+
+        <CategoryFormModal
+          isOpen={isCategoryModalOpen}
+          onClose={() => setIsCategoryModalOpen(false)}
+          onSubmit={handleCategorySubmit}
+          initialData={selectedCategory ? { name: selectedCategory.name, slug: selectedCategory.slug } : null}
+        />
+
+        <TagFormModal
+          isOpen={isTagModalOpen}
+          onClose={() => setIsTagModalOpen(false)}
+          onSubmit={handleTagSubmit}
+          initialData={selectedTag ? { name: selectedTag.name, color: selectedTag.color || '#D4AF37' } : null}
+        />
       </div>
-
-      {activeTab === 'categories' && (
-        <CategoryTable
-          categories={categories}
-          isLoading={isLoadingCategories}
-          onAdd={() => { setSelectedCategory(null); setIsCategoryModalOpen(true); }}
-          onEdit={(cat) => { setSelectedCategory(cat); setIsCategoryModalOpen(true); }}
-          onDelete={handleDeleteCategory}
-        />
-      )}
-
-      {activeTab === 'tags' && (
-        <TagTable
-          tags={tags}
-          isLoading={isLoadingTags}
-          onAdd={() => { setSelectedTag(null); setIsTagModalOpen(true); }}
-          onEdit={(tag) => { setSelectedTag(tag); setIsTagModalOpen(true); }}
-          onDelete={handleDeleteTag}
-        />
-      )}
-
-      <CategoryFormModal
-        isOpen={isCategoryModalOpen}
-        onClose={() => setIsCategoryModalOpen(false)}
-        onSubmit={handleCategorySubmit}
-        initialData={selectedCategory ? { name: selectedCategory.name, slug: selectedCategory.slug } : null}
-      />
-
-      <TagFormModal
-        isOpen={isTagModalOpen}
-        onClose={() => setIsTagModalOpen(false)}
-        onSubmit={handleTagSubmit}
-        initialData={selectedTag ? { name: selectedTag.name, color: selectedTag.color || '#D4AF37' } : null}
-      />
-    </div>
+    </ResponsiveLayout>
   );
 }

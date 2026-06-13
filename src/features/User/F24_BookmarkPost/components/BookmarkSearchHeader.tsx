@@ -9,7 +9,7 @@ interface BookmarkSearchHeaderProps {
 
 export default function BookmarkSearchHeader({ formik }: BookmarkSearchHeaderProps) {
   return (
-    <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 pb-6 border-b border-zinc-800">
+    <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 pb-6">
       <div className="space-y-1">
         <CardTitle className="text-xl font-semibold text-zinc-100 flex items-center gap-2">
           <BookMarked className="h-5 w-5 text-[#D4AF37]" /> Postingan Tersimpan

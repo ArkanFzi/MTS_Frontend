@@ -34,36 +34,45 @@ export default function BanUserModal({ user, isOpen, onClose }: BanUserModalProp
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-md bg-[#161618] border border-[#2A2A2C] rounded-xl p-6 shadow-2xl">
+      {/* Overlay Gelap saja tanpa blur */}
+      <div className="absolute inset-0 bg-black/70" onClick={onClose} />
+      
+      {/* Modal diperkecil dengan max-w-sm */}
+      <div className="relative z-10 w-full max-w-sm bg-[#161618] border border-[#2A2A2C] rounded-xl p-5 shadow-2xl">
         <div className="flex items-center gap-3 mb-4">
           <div className="p-2 rounded-lg bg-red-950/30 border border-red-900/40">
-            <UserX className="w-5 h-5 text-red-400" />
+            <UserX className="w-4 h-4 text-red-400" />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-white">Ban User</h3>
-            <p className="text-xs text-gray-400">Suspend account access for {user.username}</p>
+            <h3 className="text-base font-bold text-white">Ban User</h3>
+            <p className="text-[10px] text-gray-400 uppercase tracking-wider">
+              {user.username}
+            </p>
           </div>
         </div>
 
         <div className="mb-5">
-          <label className="block text-sm font-medium text-gray-300 mb-2">Ban Reason</label>
+          <label className="block text-xs font-medium text-gray-500 mb-2">BAN REASON</label>
           <textarea
-            className="w-full bg-[#0B0B0C] border border-[#2A2A2C] rounded-lg p-3 text-sm text-gray-200 outline-none focus:border-red-500 min-h-[100px]"
+            className="w-full bg-[#0B0B0C] border border-[#2A2A2C] rounded-lg p-3 text-xs text-gray-200 outline-none focus:border-red-500/50 min-h-[80px]"
             placeholder="Provide a reason for the ban..."
             value={reason}
             onChange={(e) => setReason(e.target.value)}
           />
         </div>
 
-        <div className="flex justify-end gap-3">
-          <Button variant="outline" onClick={onClose} className="border-[#2A2A2C] text-gray-400 hover:text-white">
+        <div className="flex justify-end gap-2">
+          <Button 
+            variant="ghost" 
+            onClick={onClose} 
+            className="text-xs text-gray-400 hover:text-white"
+          >
             Cancel
           </Button>
           <Button
             onClick={() => mutation.mutate()}
             disabled={!reason.trim() || mutation.isPending}
-            className="bg-red-600 hover:bg-red-700 text-white font-semibold disabled:opacity-50"
+            className="bg-red-600 hover:bg-red-700 text-white font-semibold text-xs rounded-full px-4 h-9"
           >
             {mutation.isPending ? 'Banning...' : 'Confirm Ban'}
           </Button>

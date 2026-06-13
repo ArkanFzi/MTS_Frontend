@@ -4,10 +4,11 @@ import { fetchBookmarks } from '../../features/User/F24_BookmarkPost/api';
 import LoadingSpinner from '../../components/shared/LoadingSpinner';
 import BookmarkSearchHeader from '../../features/User/F24_BookmarkPost/components/BookmarkSearchHeader';
 import BookmarkCard from '../../features/User/F24_BookmarkPost/components/BookmarkCard';
-import { Card, CardContent } from '../../components/ui/card';
-import { FolderHeart } from 'lucide-react';
+import { Card } from '../../components/ui/card';
+import { FolderHeart, AlertTriangle } from 'lucide-react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
+import ResponsiveLayout from '../../components/shared/ResponsiveLayout';
 
 export default function BookmarksPage() {
   // 1. Mengambil data bookmark menggunakan React Query useQuery
@@ -29,54 +30,82 @@ export default function BookmarksPage() {
 
   const bookmarks = data?.data || [];
 
-  // 3. Logika Filter: Menyaring data berdasarkan judul postingan atau catatan user
+  // 3. Logika Filter: Menyaring data berdasarkan judul postingan atau catatan user yang aman dari undefined
   const filteredBookmarks = bookmarks.filter((item) => {
+    if (!item || !item.post) return false;
+    
     const query = formik.values.searchQuery.toLowerCase();
-    const matchTitle = item.post?.title?.toLowerCase().includes(query);
+    const matchTitle = item.post.title?.toLowerCase().includes(query);
     return matchTitle;
   });
 
-  // Handle State Loading Utama
+  // Handle State Loading Utama (Dibungkus ResponsiveLayout dengan padding yang sama)
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center p-12">
-        <LoadingSpinner />
-      </div>
+      <ResponsiveLayout>
+        <div className="flex min-h-[400px] items-center justify-center p-6 w-full py-8 px-4 md:px-0">
+          <LoadingSpinner />
+        </div>
+      </ResponsiveLayout>
     );
   }
 
-  // Handle State Error API
+  // Handle State Error API (Dibungkus ResponsiveLayout dengan padding yang sama)
   if (isError) {
     return (
-      <div className="container max-w-5xl mx-auto py-8 px-4">
-        <Card className="bg-[#161618] border border-zinc-800 shadow-xl p-12 text-center">
-          <p className="text-sm text-red-400 font-mono">Gagal memuat data bookmark dari server.</p>
-        </Card>
-      </div>
+      <ResponsiveLayout>
+        <div className="w-full py-8 px-4 md:px-0">
+          <Card className="bg-[#131315] border border-red-950/40 p-8 md:p-12 text-center rounded-xl flex flex-col items-center justify-center gap-3">
+            <AlertTriangle className="w-8 h-8 text-red-500" />
+            <p className="text-sm text-red-400 font-medium">
+              Gagal memuat data bookmark dari server. Coba muat ulang halaman.
+            </p>
+          </Card>
+        </div>
+      </ResponsiveLayout>
     );
   }
 
   return (
-    <div className="container max-w-5xl mx-auto py-8 px-4">
-      <Card className="bg-[#161618] border border-zinc-800 shadow-xl">
+    <ResponsiveLayout>
+      {/* w-full py-8 dengan padding responsif menyamakan standar MyPostsPage */}
+      <div className="w-full py-8 px-4 md:px-0 space-y-6">
         
+        {/* ── Header & Form Pencarian ── */}
         <BookmarkSearchHeader formik={formik} />
 
-        <CardContent className="p-0">
+        {/* ── Sektor List Bookmark Konten ── */}
+        <div className="w-full">
           {filteredBookmarks.length === 0 ? (
-            <div className="flex flex-col items-center justify-center text-center p-12 space-y-3">
+            /* State Kosong / Hasil Filter Tidak Ditemukan */
+            <Card className="bg-[#131315] border border-[#2A2A2C] rounded-xl text-center p-12 flex flex-col items-center justify-center space-y-3">
               <FolderHeart className="h-12 w-12 text-zinc-700 stroke-[1.5]" />
-              <p className="text-zinc-400 text-sm">Belum ada postingan bookmark yang ditemukan.</p>
-            </div>
+              <div className="space-y-1">
+                <p className="text-zinc-200 text-base font-semibold">Tidak ada bookmark</p>
+                <p className="text-zinc-500 text-sm max-w-xs mx-auto">
+                  {formik.values.searchQuery 
+                    ? `Kata kunci "${formik.values.searchQuery}" tidak cocok dengan dokumen manapun.`
+                    : 'Belum ada postingan bookmark yang tersimpan di akun lu.'}
+                </p>
+              </div>
+            </Card>
           ) : (
-            <div className="flex flex-col divide-y divide-zinc-800">
-              {filteredBookmarks.map((item) => (
-                <BookmarkCard key={item.id} item={item} />
+            /* List Card Item Responsif dengan jarak gap-4 yang konsisten */
+            <div className="flex flex-col gap-4">
+              {filteredBookmarks.map((item, index) => (
+                <div 
+                  key={item.id}
+                  className="animate-in fade-in slide-in-from-bottom-2 duration-500"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  <BookmarkCard item={item} />
+                </div>
               ))}
             </div>
           )}
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+
+      </div>
+    </ResponsiveLayout>
   );
 }

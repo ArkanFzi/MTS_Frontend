@@ -137,3 +137,15 @@
       minute: '2-digit',
     });
   }
+
+
+ export interface UserTableRowProps {
+  user: UserListItem;
+  // Menerima string, array string, atau array object dengan property name
+  currentUserRole?: string | string[] | Record<string, any>[]; 
+  onNavigate: (id: string) => void;
+  onRoleChange: (user: UserListItem, role: string) => void;
+  onResetPassword: (id: string, username: string) => void;
+  onWarn: (id: string, username: string) => void;
+  onBanModalOpen: (user: UserListItem) => void;
+}

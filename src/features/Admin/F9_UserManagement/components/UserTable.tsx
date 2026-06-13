@@ -38,7 +38,7 @@ export default function UserTable({ users }: UserTableProps) {
 
   const safeUsers = Array.isArray(users) ? users : [];
 
-  // Logic Penyaringan Data (Defensif terhadap format string & object relation Laravel)
+  // Logic Penyaringan Data
   const filteredUsers = safeUsers.filter((user) => {
     if (activeFilter === 'all') return true;
 
@@ -47,7 +47,6 @@ export default function UserTable({ users }: UserTableProps) {
       : [];
 
     if (activeFilter === 'user') {
-      // Mengasumsikan user biasa adalah yang tidak punya role admin maupun moderator
       return !userRoles.includes('admin') && !userRoles.includes('moderator');
     }
     return userRoles.includes(activeFilter);
@@ -78,7 +77,6 @@ export default function UserTable({ users }: UserTableProps) {
     },
   });
 
-  // Handlers
   const confirmRoleChange = () => {
     if (!roleModal) return;
     roleMutation.mutate({ id: roleModal.user.id, role: roleModal.newRole });
@@ -141,7 +139,7 @@ export default function UserTable({ users }: UserTableProps) {
                 <UserTableRow
                   key={user.id}
                   user={user}
-                  currentUserRole={currentUser?.role}
+                  currentUserRole={currentUser?.roles || currentUser?.role}
                   onNavigate={(id) => navigate(`/admin/users/${id}`)}
                   onRoleChange={(usr, role) => setRoleModal({ user: usr, newRole: role })}
                   onResetPassword={(id, username) => setResetModalOpen({ id, username })}

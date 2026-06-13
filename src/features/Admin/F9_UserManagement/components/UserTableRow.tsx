@@ -1,6 +1,6 @@
 // src/features/Admin/F9_UserManagement/components/UserTableRow.tsx
 import { Shield, ShieldAlert, Ban, MoreHorizontal, KeyRound, AlertTriangle, ExternalLink, CheckCircle } from 'lucide-react';
-import type { UserListItem } from '../types';
+import type { UserTableRowProps, UserListItem } from '../types';
 import { Avatar, AvatarFallback, AvatarImage } from '../../../../components/ui/avatar';
 import { Badge } from '../../../../components/ui/badge';
 import { Button } from '../../../../components/ui/button';
@@ -13,18 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '../../../../components/ui/dropdown-menu';
 
-interface UserTableRowProps {
-  user: UserListItem;
-  currentUserRole?: string;
-  onNavigate: (id: string) => void;
-  onRoleChange: (user: UserListItem, role: string) => void;
-  onResetPassword: (id: string, username: string) => void;
-  onWarn: (id: string, username: string) => void;
-  onBanModalOpen: (user: UserListItem) => void;
-}
-
 function getRoleBadge(roles: any) {
-  // Menormalisasi array objek relasi atau string ke bentuk array string lowercase tunggal
   const normalizedRoles = Array.isArray(roles)
     ? roles.map((r: any) => (typeof r === 'string' ? r.toLowerCase() : r?.name?.toLowerCase()))
     : [];
@@ -44,6 +33,42 @@ export default function UserTableRow({
   onBanModalOpen,
 }: UserTableRowProps) {
   const roleBadge = getRoleBadge(user.roles);
+
+  // 1. Normalisasi data role target di baris tabel ini
+  const targetRoles = Array.isArray(user.roles)
+    ? user.roles.map((r: any) => (typeof r === 'string' ? r.toLowerCase() : r?.name?.toLowerCase()))
+    : [];
+
+  const isTargetAdmin = targetRoles.includes('admin');
+  const isTargetMod = targetRoles.includes('moderator');
+
+  // 2. Ekstraksi aman untuk role user yang sedang LOGIN (mencegah crash .toLowerCase)
+  const loginUserRoles: string[] = [];
+  
+  if (Array.isArray(currentUserRole)) {
+    currentUserRole.forEach((r) => {
+      if (typeof r === 'string') {
+        loginUserRoles.push(r.toLowerCase());
+      } else if (r && typeof r === 'object' && 'name' in r) {
+        loginUserRoles.push(String(r.name).toLowerCase());
+      }
+    });
+  } else if (typeof currentUserRole === 'string') {
+    loginUserRoles.push(currentUserRole.toLowerCase());
+  }
+
+  const isLoginAdmin = loginUserRoles.includes('admin');
+  const isLoginMod = loginUserRoles.includes('moderator');
+
+  // 3. Aturan Hierarki Moderasi (Ban & Warn)
+  // Admin bisa menindak siapa saja kecuali sesama Admin. Mod hanya bisa menindak Member biasa.
+  const canModerate = 
+    (isLoginAdmin && !isTargetAdmin) || 
+    (isLoginMod && !isTargetAdmin && !isTargetMod);
+
+  // 4. Aturan Manajemen Akun (Ubah Role & Reset Password)
+  // Hanya Admin yang berhak mengubah status role atau mereset password
+  const canManageRoleOrPassword = isLoginAdmin && !isTargetAdmin;
 
   return (
     <tr className="hover:bg-[#1A1A1C] transition-colors">
@@ -98,44 +123,64 @@ export default function UserTableRow({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="bg-[#0B0B0C] border-[#2A2A2C]">
-            <DropdownMenuLabel className="text-[10px] text-gray-500">Change Role</DropdownMenuLabel>
-            <DropdownMenuSeparator className="bg-[#2A2A2C]" />
-            <DropdownMenuItem onClick={() => onRoleChange(user, 'user')} className="text-xs text-gray-300">
-              <Shield className="w-3.5 h-3.5 mr-2" /> Set as User
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onRoleChange(user, 'moderator')} className="text-xs text-gray-300">
-              <ShieldAlert className="w-3.5 h-3.5 mr-2" /> Set as Moderator
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onRoleChange(user, 'admin')} className="text-xs text-gray-300">
-              <KeyRound className="w-3.5 h-3.5 mr-2" /> Set as Admin
-            </DropdownMenuItem>
-            <DropdownMenuSeparator className="bg-[#2A2A2C]" />
+            
+            {/* OPSI MANAJEMEN ROLE */}
+            {canManageRoleOrPassword && (
+              <>
+                <DropdownMenuLabel className="text-[10px] text-gray-500">Change Role</DropdownMenuLabel>
+                <DropdownMenuSeparator className="bg-[#2A2A2C]" />
+                <DropdownMenuItem onClick={() => onRoleChange(user, 'user')} className="text-xs text-gray-300">
+                  <Shield className="w-3.5 h-3.5 mr-2" /> Set as User
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onRoleChange(user, 'moderator')} className="text-xs text-gray-300">
+                  <ShieldAlert className="w-3.5 h-3.5 mr-2" /> Set as Moderator
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onRoleChange(user, 'admin')} className="text-xs text-gray-300">
+                  <KeyRound className="w-3.5 h-3.5 mr-2" /> Set as Admin
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-[#2A2A2C]" />
+              </>
+            )}
+
+            {/* OPSI LIHAT DETAIL */}
             <DropdownMenuItem
               onClick={() => onNavigate(user.id)}
               className="text-xs text-blue-400 focus:text-blue-300 focus:bg-blue-950/30"
             >
               <ExternalLink className="w-3.5 h-3.5 mr-2" /> Manage Details
             </DropdownMenuItem>
-            <DropdownMenuSeparator className="bg-[#2A2A2C]" />
-            {currentUserRole === 'admin' && (
+            
+            {/* SEPARATOR HIERARKI */}
+            {(canManageRoleOrPassword || canModerate) && <DropdownMenuSeparator className="bg-[#2A2A2C]" />}
+
+            {/* Reset Password */}
+            {canManageRoleOrPassword && (
               <DropdownMenuItem onClick={() => onResetPassword(user.id, user.username)} className="text-xs text-gray-300">
                 <KeyRound className="w-3.5 h-3.5 mr-2 text-blue-400" /> Reset Password
               </DropdownMenuItem>
             )}
-            <DropdownMenuItem onClick={() => onWarn(user.id, user.username)} className="text-xs text-gray-300">
-              <AlertTriangle className="w-3.5 h-3.5 mr-2 text-amber-500" /> Warn User
-            </DropdownMenuItem>
-            <DropdownMenuSeparator className="bg-[#2A2A2C]" />
-            <DropdownMenuItem 
-              onClick={() => onBanModalOpen(user)}
-              className={user.is_banned ? "text-xs text-emerald-400 focus:text-emerald-300 focus:bg-emerald-950/20" : "text-xs text-red-400 focus:text-red-300 focus:bg-red-950/20"}
-            >
-              {user.is_banned ? (
-                <><CheckCircle className="w-3.5 h-3.5 mr-2" /> Unban User</>
-              ) : (
-                <><Ban className="w-3.5 h-3.5 mr-2" /> Ban User</>
-              )}
-            </DropdownMenuItem>
+
+            {/* Warn User */}
+            {canModerate && (
+              <DropdownMenuItem onClick={() => onWarn(user.id, user.username)} className="text-xs text-gray-300">
+                <AlertTriangle className="w-3.5 h-3.5 mr-2 text-amber-500" /> Warn User
+              </DropdownMenuItem>
+            )}
+
+            {/* Ban/Unban User */}
+            {canModerate && (
+              <DropdownMenuItem 
+                onClick={() => onBanModalOpen(user)}
+                className={user.is_banned ? "text-xs text-emerald-400 focus:text-emerald-300 focus:bg-emerald-950/20" : "text-xs text-red-400 focus:text-red-300 focus:bg-red-950/20"}
+              >
+                {user.is_banned ? (
+                  <><CheckCircle className="w-3.5 h-3.5 mr-2" /> Unban User</>
+                ) : (
+                  <><Ban className="w-3.5 h-3.5 mr-2" /> Ban User</>
+                )}
+              </DropdownMenuItem>
+            )}
+
           </DropdownMenuContent>
         </DropdownMenu>
       </td>

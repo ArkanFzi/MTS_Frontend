@@ -7,6 +7,7 @@ import { deletePost } from '../api';
 import { Card } from '../../../../components/ui/card';
 import { Badge } from '../../../../components/ui/badge';
 import { useAuthStore } from '../../../../store/useAuthStore';
+import VoteControl from '../../F22_VoteSystem/components/VoteControl';
 
 interface PostCardItemProps {
   post: Post;
@@ -106,9 +107,15 @@ export default function PostCardItem({ post }: PostCardItemProps) {
           <span className="flex items-center gap-1">
             <MessageCircle className="w-3 h-3" /> {post.comments_count ?? 0}
           </span>
-          <span className="text-[#D4AF37] font-fira-code font-bold">
-            {post.vote_score} pts
-          </span>
+          
+          {/* Ganti span statis dengan komponen VoteControl */}
+          <VoteControl
+            targetId={post.id}
+            targetType="post"
+            initialScore={post.vote_score}
+            userVote={post.user_vote} // Pastikan properti ini tersedia dari backend
+            direction="horizontal"
+          />
 
           {/* Owner actions */}
           {isOwner && (

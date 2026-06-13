@@ -18,7 +18,7 @@ export interface UpdatePasswordPayload {
 
 export interface ProfileResponse {
   success: boolean;
-  message?: string; // Backend show() doesn't return message
+  message?: string; 
   data: Profile;
 }
 

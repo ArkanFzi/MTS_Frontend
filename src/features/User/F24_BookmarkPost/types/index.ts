@@ -28,3 +28,8 @@ export interface ToggleBookmarkResponse {
   message: string;
   status: string; // 'bookmarked' | 'unbookmarked'
 }
+
+
+export interface BookmarkCardProps {
+  item: any;
+}

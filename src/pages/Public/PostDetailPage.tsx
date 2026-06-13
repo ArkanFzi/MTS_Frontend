@@ -20,6 +20,7 @@ import { Button } from "../../components/ui/button";
 import { Skeleton } from "../../components/ui/skeleton";
 import { useAuthStore } from "../../store/useAuthStore";
 import type { Comment } from "../../features/User/F17_Comment/types";
+
 export default function PostDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -36,9 +37,7 @@ export default function PostDetailPage() {
   const isOwner = user?.id === post?.user_id;
   const isModOrAdmin = user?.role === "moderator" || user?.role === "admin";
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const postAgeMinutes = useMemo(() => {
-    // eslint-disable-next-line react-hooks/purity
     return post
       ? (Date.now() - new Date(post.created_at).getTime()) / 60000
       : 0;
@@ -60,7 +59,7 @@ export default function PostDetailPage() {
   // ─── Loading ───
   if (isLoading) {
     return (
-      <div className="flex gap-6 py-8 px-6 max-w-6xl mx-auto">
+      <div className="flex gap-6 py-6 md:py-8 px-4 md:px-6 max-w-6xl mx-auto">
         <div className="flex-1 min-w-0 space-y-6">
           <Skeleton className="w-3/4 h-10" />
           <div className="flex gap-2">
@@ -81,7 +80,7 @@ export default function PostDetailPage() {
   // ─── Error ───
   if (isError || !post) {
     return (
-      <div className="flex gap-6 py-8 px-6 max-w-6xl mx-auto">
+      <div className="flex gap-6 py-8 px-4 md:px-6 max-w-6xl mx-auto">
         <div className="flex-1 text-center py-20">
           <p className="text-gray-400 text-lg mb-4">
             Postingan tidak ditemukan atau telah dihapus.
@@ -108,16 +107,16 @@ export default function PostDetailPage() {
   });
 
   return (
-    <div className="flex gap-6 py-8 px-6 max-w-6xl mx-auto">
+    <div className="flex gap-6 py-6 md:py-8 px-4 md:px-6 max-w-6xl mx-auto">
       {/* ── Main Content ── */}
       <div className="flex-1 min-w-0">
         {/* ── Title ── */}
-        <h1 className="text-[26px] font-bold text-white leading-snug mb-4">
+        <h1 className="text-xl sm:text-2xl md:text-[26px] font-bold text-white leading-snug mb-4 break-words">
           {post.title}
         </h1>
 
         {/* ── Tags + Metadata Row ── */}
-        <div className="flex items-center justify-between flex-wrap gap-3 mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-[#1E1E20]">
           <div className="flex items-center gap-2 flex-wrap">
             {post.category && (
               <Link to={`/categories`}>
@@ -140,94 +139,105 @@ export default function PostDetailPage() {
               </Link>
             ))}
           </div>
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-gray-500 sm:text-right">
             Ditanyakan {timeAgo(post.created_at)} &bull; Dilihat{" "}
             {formatNumber(post.view_count)} kali
           </span>
         </div>
 
-        {/* ── Question Body with Vote ── */}
-        <div className="flex gap-5 mb-6">
+        {/* ── Question Body with Vote (Mobile Friendly Layout) ── */}
+        <div className="flex flex-col sm:flex-row gap-4 sm:gap-5 mb-6 items-start">
+          {/* Vote Control: Horizontal on mobile, Vertical on desktop */}
           <VoteControl
             targetId={post.id}
             targetType="post"
             initialScore={post.vote_score}
             userVote={post.user_vote}
-            className="pt-1"
+            className="flex sm:flex-col items-center gap-3 sm:gap-1 pt-1 bg-[#161618] sm:bg-transparent p-2 sm:p-0 rounded-lg w-full sm:w-auto justify-center sm:justify-start"
           />
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 w-full">
             <PostBody body={post.body} />
           </div>
         </div>
 
-        {/* ── Action Buttons Row ── */}
-        <div className="flex items-center gap-3 mb-8 pb-6 border-b border-[#2A2A2C]">
-          <LikeButton
-            targetId={post.id}
-            targetType="post"
-            initialIsLiked={post.is_liked}
-            initialLikesCount={post.likes_count}
-          />
-          {user && (
-            <BookmarkToggle
-              postId={post.id}
-              isInitiallyBookmarked={post.is_bookmarked === true}
+        {/* ── Action Buttons & Author Card Row ── */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 pb-6 border-b border-[#2A2A2C]">
+          {/* Left: Action Buttons */}
+          <div className="flex items-center gap-2 flex-wrap order-2 md:order-1">
+            <LikeButton
+              targetId={post.id}
+              targetType="post"
+              initialIsLiked={post.is_liked}
+              initialLikesCount={post.likes_count}
             />
-          )}
-          <button
-            onClick={() => navigator.clipboard.writeText(window.location.href)}
-            className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-[#D4AF37] transition-colors px-2 py-1.5 rounded hover:bg-[#1A1A1C]"
-          >
-            <Share2 className="w-3.5 h-3.5" />
-            Bagikan
-          </button>
-          {user && !isOwner && (
+            {user && (
+              <BookmarkToggle
+                postId={post.id}
+                isInitiallyBookmarked={post.is_bookmarked === true}
+              />
+            )}
+            {/* Tombol Bagikan */}
             <button
-              onClick={() => setReportModalOpen(true)}
-              className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-red-400 transition-colors px-2 py-1.5 rounded hover:bg-[#1A1A1C]"
+              onClick={() =>
+                navigator.clipboard.writeText(window.location.href)
+              }
+              className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-[#D4AF37] transition-colors px-2 py-1.5 rounded hover:bg-[#1A1A1C]"
             >
-              <Flag className="w-3.5 h-3.5" />
-              Report
+              <Share2 className="w-3.5 h-3.5" />
+              Bagikan
             </button>
-          )}
-          {isOwner && (
-            <>
-              <button
-                onClick={() =>
-                  !isEditExpired && navigate(`/posts/${post.id}/edit`)
-                }
-                disabled={isEditExpired}
-                title={
-                  isEditExpired
-                    ? "Postingan hanya dapat diedit dalam 30 menit pertama"
-                    : "Edit Postingan"
-                }
-                className={`flex items-center gap-1.5 text-xs transition-colors px-2 py-1.5 rounded ${
-                  isEditExpired
-                    ? "text-gray-600 cursor-not-allowed opacity-50"
-                    : "text-gray-500 hover:text-[#D4AF37] hover:bg-[#1A1A1C]"
-                }`}
-              >
-                <Edit3 className="w-3.5 h-3.5" />
-                Edit
-              </button>
-              <button
-                onClick={handleDelete}
-                disabled={deleteMutation.isPending}
-                className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-red-400 transition-colors px-2 py-1.5 rounded hover:bg-[#1A1A1C] disabled:opacity-50"
-              >
-                {deleteMutation.isPending ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                ) : (
-                  <Trash2 className="w-3.5 h-3.5" />
-                )}
-                Hapus
-              </button>
-            </>
-          )}
 
-          {/* Author badge — right-aligned */}
-          {post.user && <PostAuthorCard user={post.user} />}
+            {/* Tombol Report */}
+            {user && !isOwner && (
+              <button
+                onClick={() => setReportModalOpen(true)}
+                className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-red-400 transition-colors px-2 py-1.5 rounded hover:bg-[#1A1A1C]"
+              >
+                <Flag className="w-3.5 h-3.5" />
+                Report
+              </button>
+            )}
+            {isOwner && (
+              <>
+                <button
+                  onClick={() =>
+                    !isEditExpired && navigate(`/posts/${post.id}/edit`)
+                  }
+                  disabled={isEditExpired}
+                  title={
+                    isEditExpired
+                      ? "Postingan hanya dapat diedit dalam 30 menit pertama"
+                      : "Edit Postingan"
+                  }
+                  className={`flex items-center gap-1.5 text-xs transition-colors px-2 py-1.5 rounded ${
+                    isEditExpired
+                      ? "text-gray-600 cursor-not-allowed opacity-50"
+                      : "text-gray-500 hover:text-[#D4AF37] hover:bg-[#1A1A1C]"
+                  }`}
+                >
+                  <Edit3 className="w-3.5 h-3.5" />
+                  Edit
+                </button>
+                <button
+                  onClick={handleDelete}
+                  disabled={deleteMutation.isPending}
+                  className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-red-400 transition-colors px-2 py-1.5 rounded hover:bg-[#1A1A1C] disabled:opacity-50"
+                >
+                  {deleteMutation.isPending ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <Trash2 className="w-3.5 h-3.5" />
+                  )}
+                  Hapus
+                </button>
+              </>
+            )}
+          </div>
+
+          {/* Right: Author Card */}
+          <div className="order-1 md:order-2 self-start md:self-auto w-full md:w-auto">
+            {post.user && <PostAuthorCard user={post.user} />}
+          </div>
         </div>
 
         {/* ── Answers / Comments Section ── */}

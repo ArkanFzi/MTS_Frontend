@@ -32,23 +32,21 @@ export default function BookmarkToggle({ postId, isInitiallyBookmarked = false }
   };
 
   return (
-    <div className="relative inline-block font-['Inter']">
-      <button
-        onClick={handleToggle}
-        disabled={mutation.isPending}
-        className={`flex items-center justify-center p-2.5 border transition-all active:translate-x-p active:translate-y-px disabled:opacity-50 ${
-          isBookmarked
-            ? 'bg-[#0B0B0C] border-[#2A2A2C] text-[#D4AF37] hover:bg-red-950/30 hover:text-red-400 hover:border-red-900'
-            : 'bg-transparent border-zinc-800 text-zinc-500 hover:text-[#D4AF37] hover:border-zinc-700'
-        }`}
-        title={isBookmarked ? 'Hapus dari simpanan' : 'Simpan postingan'}
-      >
-        {mutation.isPending ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
-        ) : (
-          <Bookmark className={`h-4 w-4 ${isBookmarked ? 'fill-[#D4AF37]' : ''}`} />
-        )}
-      </button>
-    </div>
+    <button
+      onClick={handleToggle}
+      disabled={mutation.isPending}
+      className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-[#D4AF37] transition-colors px-1 py-1 rounded hover:bg-[#1A1A1C] disabled:opacity-50"
+      title={isBookmarked ? 'Hapus dari simpanan' : 'Simpan postingan'}
+    >
+      {mutation.isPending ? (
+        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+      ) : (
+        <Bookmark 
+          className={`h-3.5 w-3.5 transition-colors ${
+            isBookmarked ? 'fill-[#D4AF37] text-[#D4AF37]' : 'text-gray-500'
+          }`} 
+        />
+      )}
+    </button>
   );
 }

@@ -8,10 +8,11 @@ import type {
   ResetUserPasswordPayload,
   AdminStatsOverview,
   PointsSummaryResponse,
+  ActivityChartResponse,
 } from '../types';
 
-export const getUsers = async (page = 1): Promise<UserListResponse> => {
-  const response = await axios.get('/api/admin/users', { params: { page } });
+export const getUsers = async (page = 1, search = ''): Promise<UserListResponse> => {
+  const response = await axios.get('/api/admin/users', { params: { page, search: search.trim() || undefined } });
   return response.data;
 };
 
@@ -42,5 +43,15 @@ export const getAdminStats = async (): Promise<AdminStatsOverview> => {
 
 export const getPointsSummary = async (): Promise<PointsSummaryResponse> => {
   const response = await axios.get('/api/admin/stats/points-summary');
+  return response.data;
+};
+
+export const getAuditLogs = async (page = 1) => {
+  const response = await axios.get('/api/admin/audit-logs', { params: { page } });
+  return response.data;
+};
+
+export const getActivityChart = async (): Promise<ActivityChartResponse> => {
+  const response = await axios.get('/api/admin/stats/activity-chart');
   return response.data;
 };

@@ -1,23 +1,17 @@
 // src/features/User/F30_UserReport/types/index.ts
 
 export interface CreateReportPayload {
-  reportable_type: string;
-  reportable_id: string;
+  reportable_id?: string;
+  reportable_type?: 'post' | 'comment' | 'user';
+  target_id?: string;
+  target_type?: 'post' | 'comment' | 'user';
   reason: string;
   description?: string;
 }
 
+export type ReportPayload = CreateReportPayload;
+
 export interface ReportResponse {
-  success: boolean;
   message: string;
-  data: {
-    id: string;
-    reporter_id: string;
-    target_id: string;
-    target_type: string;
-    reason: string;
-    description: string | null;
-    status: string;
-    created_at: string;
-  };
+  data?: Record<string, unknown>;
 }

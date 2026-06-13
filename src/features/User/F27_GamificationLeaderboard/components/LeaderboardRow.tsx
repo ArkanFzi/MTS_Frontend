@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Crown } from 'lucide-react';
+
 import type { LeaderboardEntry } from '../types';
 import { getBadgeTier, badgeTierConfig } from '../types';
 import { Avatar, AvatarImage, AvatarFallback } from '../../../../components/ui/avatar';
@@ -21,58 +21,46 @@ export default function LeaderboardRow({ entry, rank }: LeaderboardRowProps) {
 
   return (
     <div
-      className={`flex items-center gap-4 px-5 py-4 border-b border-[#2A2A2C] transition-colors hover:bg-[#1A1A1C] ${
-        rank === 1 ? 'border-l-2 border-l-[#D4AF37]' : 'border-l-2 border-l-transparent'
-      } ${rank % 2 === 0 ? 'bg-[#131315]' : ''}`}
+      className={`flex items-center flex-nowrap gap-2 sm:gap-4 px-3 sm:px-5 py-3 border-b border-[#2A2A2C] transition-all duration-300 group ${
+        rank === 1 
+          ? 'border-l-2 border-l-[#D4AF37] bg-gradient-to-r from-[#D4AF37]/5 via-transparent to-transparent' 
+          : rank === 2 ? 'border-l-2 border-l-zinc-500/30'
+          : rank === 3 ? 'border-l-2 border-l-amber-600/20'
+          : 'border-l-2 border-l-transparent'
+      } ${rank % 2 === 0 ? 'bg-[#131315]/40' : 'bg-transparent'} hover:bg-[#1A1A1C]`}
     >
-      {/* ── Rank ── */}
-      <div className="flex-shrink-0 w-12 text-center">
-        {rank === 1 ? (
-          <div className="flex items-center justify-center gap-1">
-            <Crown className="w-4 h-4 text-[#D4AF37]" />
-            <span className="text-lg font-black text-[#D4AF37] font-fira-code">#{rank}</span>
-          </div>
-        ) : (
-          <span className={`text-lg font-bold font-fira-code ${isTopThree ? 'text-[#D4AF37]/80' : 'text-gray-500'}`}>
-            #{rank}
-          </span>
-        )}
+      {/* ── Rank: Lebar Tetap ── */}
+      <div className="flex-shrink-0 w-10 sm:w-14 flex items-center justify-center">
+        <span className="text-xs font-medium font-fira-code text-zinc-500">#{rank}</span>
       </div>
 
-      {/* ── Expert (Avatar + Username) ── */}
-      <div className="flex items-center gap-3 flex-1 min-w-0">
-        <Avatar className="h-10 w-10 border border-[#2A2A2C]">
-          {entry.avatar_url ? (
-            <AvatarImage src={entry.avatar_url} alt={entry.username} />
-          ) : null}
-          <AvatarFallback className="bg-[#0B0B0C] text-sm text-[#D4AF37] font-bold">
+      {/* ── Expert: Flex-1 agar mengisi ruang sisa ── */}
+      <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-[100px] overflow-hidden">
+        <Avatar className="h-8 w-8 sm:h-10 sm:w-10 border border-[#2A2A2C]">
+          {entry.avatar_url ? <AvatarImage src={entry.avatar_url} className="object-cover" /> : null}
+          <AvatarFallback className="bg-[#0B0B0C] text-xs text-[#D4AF37]">
             {entry.username.substring(0, 2).toUpperCase()}
           </AvatarFallback>
         </Avatar>
-        <Link
-          to={`/profile/${entry.id}`}
-          className="text-sm font-semibold text-white hover:text-[#D4AF37] transition-colors truncate"
-        >
-          {entry.username}
-        </Link>
-        <span className="text-[10px] text-gray-600 font-medium">Lv.{entry.level}</span>
+        <div className="flex flex-col min-w-0">
+          <Link to={`/profile/${entry.id}`} className="text-sm font-semibold text-white truncate hover:text-[#D4AF37]">
+            {entry.username}
+          </Link>
+          <span className="text-[9px] text-zinc-500 font-fira-code">Lv.{entry.level}</span>
+        </div>
       </div>
 
-      {/* ── Reputation ── */}
-      <div className="flex-shrink-0 text-right min-w-[100px]">
-        <span className="text-base font-bold text-[#D4AF37] font-fira-code tabular-nums">
+      {/* ── Reputation: Lebar Tetap ── */}
+      <div className="flex-shrink-0 w-[65px] sm:w-[100px] text-right">
+        <span className={`block text-xs sm:text-base font-bold font-fira-code tabular-nums ${isTopThree ? 'text-[#D4AF37]' : 'text-zinc-300'}`}>
           {formatNumber(entry.reputation_points)}
         </span>
-        <span className="block text-[10px] text-gray-500 uppercase tracking-wider">Reputation</span>
+        <span className="text-[8px] sm:text-[9px] text-zinc-500 font-medium uppercase tracking-widest">REPUTATION</span>
       </div>
 
-      {/* ── Badge ── */}
-      <div className="flex-shrink-0 min-w-[120px] flex justify-end">
-        <Badge
-          variant="outline"
-          className={`text-[11px] px-3 py-1 h-auto font-semibold border ${badge.className}`}
-        >
-          {rank === 1 && <Crown className="w-3 h-3 mr-1" />}
+      {/* ── Badge: Lebar Tetap ── */}
+      <div className="flex-shrink-0 w-[60px] sm:w-[120px] flex justify-end">
+        <Badge variant="outline" className={`text-[9px] sm:text-[10px] h-auto px-1.5 py-0.5 sm:px-2 sm:py-1 truncate ${badge.className}`}>
           {badge.label}
         </Badge>
       </div>

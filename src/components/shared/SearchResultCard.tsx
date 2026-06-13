@@ -1,12 +1,12 @@
 // src/components/shared/SearchResultCard.tsx
 
-import { Link } from 'react-router-dom';
-import { MessageSquare, Eye, ArrowUp, ArrowDown } from 'lucide-react';
+import { Link } from "react-router-dom";
+import { MessageSquare, Eye, ArrowUp, ArrowDown } from "lucide-react";
 
-import type { SearchResultItem } from '../../features/Common/F4_SearchPost/types';
-import { Card } from '../ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { Badge } from '../ui/badge';
+import type { SearchResultItem } from "../../features/Common/F4_SearchPost/types";
+import { Card } from "../ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { Badge } from "../ui/badge";
 
 interface SearchResultCardProps {
   post: SearchResultItem;
@@ -29,64 +29,80 @@ function timeAgo(dateStr: string): string {
 export function SearchResultCard({ post }: SearchResultCardProps) {
   return (
     <Link to={`/posts/${post.id}`}>
-      <Card className="flex flex-col sm:flex-row gap-5 p-5 bg-[#161618] border-[#2A2A2C] hover:border-[#D4AF37]/30 transition-colors cursor-pointer">
-
-        {/* ── Left: Vote Counter ── */}
-        <div className="flex flex-col items-center sm:items-end justify-start min-w-[80px] gap-2 text-sm">
-          <div className="flex items-center gap-1">
-            <ArrowUp className="h-3.5 w-3.5 text-gray-500" />
-            <span className="text-lg font-bold text-[#D4AF37] font-fira-code">{post.vote_score}</span>
-          </div>
-          <div className="flex items-center gap-1 text-gray-500 text-xs">
-            <ArrowDown className="h-3 w-3" />
-          </div>
-          <div className="flex items-center gap-1 text-gray-500 text-xs">
-            <MessageSquare className="h-3 w-3" />
-            <span>{post.comments_count}</span>
-          </div>
-          <div className="flex items-center gap-1 text-gray-500 text-xs">
-            <Eye className="h-3 w-3" />
-            <span>{post.view_count}</span>
-          </div>
-        </div>
-
-        {/* ── Right: Content ── */}
-        <div className="flex-1 flex flex-col gap-2">
-          {/* Category + Status + Time */}
-          <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-            <Badge variant="outline" className="text-[11px] border-[#2A2A2C] text-gray-400">
-              {post.category.name}
-            </Badge>
-            <span className="text-[11px] text-gray-500">{timeAgo(post.created_at)}</span>
-          </div>
-
-          <h3 className="text-base font-semibold text-white group-hover:text-[#D4AF37] transition-colors line-clamp-1">
-            {post.title}
-          </h3>
-
-          <p className="text-sm text-gray-400 line-clamp-2">
-            {post.body}
-          </p>
-
-          <div className="flex items-center gap-3 mt-2">
-            {post.tags?.slice(0, 4).map((tag) => (
-              <span
-                key={tag.id}
-                className="text-[11px] font-fira-code"
-                style={{ color: tag.color || '#D4AF37' }}
+      <Card className="p-5 bg-[#161618] border-[#2A2A2C] hover:border-[#D4AF37]/30 transition-colors cursor-pointer">
+        <div className="flex flex-col gap-3">
+          {/* ── Content Top: Title & Body ── */}
+          <div className="flex-1 flex flex-col gap-2">
+            <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+              <Badge
+                variant="default"
+                className="text-[11px] bg-[#D4AF37] text-[#171718] font-semibold px-3 py-3"
               >
-                #{tag.name}
+                {post.category.name}
+              </Badge>
+              <span className="text-[11px] font-semibold text-gray-500">
+                {timeAgo(post.created_at)}
               </span>
-            ))}
+            </div>
+            <h3 className="mt-2 text-base font-semibold text-white group-hover:text-[#D4AF37] transition-colors line-clamp-1">
+              {post.title}
+            </h3>
+            <p className="text-sm text-gray-400 line-clamp-2">{post.body}</p>
+          </div>
 
-            <div className="flex items-center gap-2 ml-auto">
-              <Avatar className="h-5 w-5 border border-[#2A2A2C]">
-                <AvatarImage src={post.user.avatar_url || ''} />
-                <AvatarFallback className="bg-[#0B0B0C] text-[10px] text-[#D4AF37]">
-                  {post.user.username.substring(0, 2).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-[11px] text-gray-500">{post.user.username}</span>
+          {/* ── Content Bottom: Stats + Tags + User ── */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-2 border-t border-[#2A2A2C] pt-4">
+            {/* Statistik (Vote, Comment, View) */}
+            <div className="flex items-center gap-4 text-xs text-gray-500">
+              <div className="flex flex-col items-center gap-0.5 ">
+                <ArrowUp className="h-5 w-5 cursor-pointer hover:text-[#D4AF37] transition-colors" />
+
+                {/* Angka dibuat besar (text-2xl) dan font-bold untuk menonjol */}
+                <span className="text-[11px] font-bold leading-none text-[#D4AF37]">
+                  {post.vote_score}
+                </span>
+
+                <ArrowDown className="h-5 w-5 text-gray-500 hover:text-[#D4AF37] cursor-pointer transition-colors" />
+              </div>
+              <div className="flex items-center gap-1">
+                <MessageSquare className="h-5 w-5 hover:text-[#D4AF37]" />
+                <span className="text-sm font-bold leading-none text-[#D4AF37]">
+                  {post.comments_count ?? 0}
+                </span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Eye className="h-6 w-6" />
+                <span className="text-sm font-bold leading-none text-[#D4AF37]">
+                  {post.view_count}
+                </span>
+              </div>
+            </div>
+
+            {/* Tags & User */}
+            <div className="flex items-center justify-between sm:justify-end gap-3 flex-wrap">
+              <div className="flex items-center gap-2">
+                {post.tags?.slice(0, 3).map((tag) => (
+                  <span
+                    key={tag.id}
+                    className="text-[11px] font-fira-code"
+                    style={{ color: tag.color || "#D4AF37" }}
+                  >
+                    #{tag.name}
+                  </span>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-2 ml-0 sm:ml-4 border-l-[2px] border-[#2A2A2C] pl-4 sm:pl-4">
+                <Avatar className="h-5 w-5 border border-[#2A2A2C]">
+                  <AvatarImage src={post.user.avatar_url || ""} />
+                  <AvatarFallback className="bg-[#0B0B0C] text-[10px] text-[#D4AF37]">
+                    {post.user.username.substring(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-[11px] text-gray-500">
+                  {post.user.username}
+                </span>
+              </div>
             </div>
           </div>
         </div>

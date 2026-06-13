@@ -14,6 +14,7 @@ export interface Ban {
 
 export interface WarnPayload {
   reason: string;
+  notes?: string;
 }
 
 export interface BanPayload {
@@ -22,10 +23,8 @@ export interface BanPayload {
 }
 
 export interface BanListResponse {
-  status: string;
-  message: string;
-  data: Ban[];
-  meta: {
+  data: {
+    data: User[];
     current_page: number;
     last_page: number;
     per_page: number;

@@ -15,3 +15,8 @@ export const updateRole = async (id: string, data: UpdateRolePayload): Promise<R
   const response = await axios.put(`/api/admin/roles/${id}`, data);
   return response.data;
 };
+
+export const deleteRole = async (id: string): Promise<{ success: boolean; message: string }> => {
+  const response = await axios.delete(`/api/admin/roles/${id}`);
+  return response.data;
+};

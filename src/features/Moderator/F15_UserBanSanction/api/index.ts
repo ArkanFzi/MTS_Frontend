@@ -7,8 +7,8 @@ import type {
   UnbanResponse,
 } from '../types';
 
-export const getBans = async (page = 1): Promise<BanListResponse> => {
-  const response = await axios.get('/api/moderator/bans', { params: { page } });
+export const getBans = async (page = 1, search = ''): Promise<BanListResponse> => {
+  const response = await axios.get('/api/moderator/bans', { params: { page, search } });
   return response.data;
 };
 

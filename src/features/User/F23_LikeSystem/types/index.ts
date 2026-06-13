@@ -1,7 +1,8 @@
 // src/features/User/F23_LikeSystem/types/index.ts
 
 export interface LikePayload {
-  post_id: string;
+  target_id: string;
+  target_type: 'post' | 'comment';
 }
 
 export interface LikeResponse {

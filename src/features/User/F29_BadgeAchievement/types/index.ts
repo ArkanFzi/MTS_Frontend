@@ -1,25 +1,25 @@
 // src/features/User/F29_BadgeAchievement/types/index.ts
 
+import type { BadgeTier, ConditionType } from '../../../Admin/F11_BadgeMaster/types';
+
 export interface BadgeItem {
   id: string;
   name: string;
   description: string | null;
   icon_url: string | null;
-  tier: string | null;
-  condition_type: string | null;
+  tier: BadgeTier | null;
+  condition_type: ConditionType | null;
   condition_value: number | null;
+  /** Populated when badge is earned; null = locked */
+  earned_at: string | null;
 }
 
-export interface UserBadge {
-  id: string;
-  user_id: string;
-  badge_id: string;
-  earned_at: string;
-  badge?: BadgeItem;
+export interface AllBadgesResponse {
+  success: boolean;
+  data: BadgeItem[];
 }
 
-export interface UserBadgeListResponse {
-  status: string;
-  message: string;
-  data: UserBadge[];
+export interface BadgeStats {
+  unlocked: number;
+  locked: number;
 }

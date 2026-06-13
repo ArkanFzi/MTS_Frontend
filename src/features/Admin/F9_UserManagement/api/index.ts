@@ -1,3 +1,4 @@
+// src/features/Admin/F9_UserManagement/api.ts
 import axios from '../../../../lib/axios';
 import type {
   UserListResponse,
@@ -53,5 +54,13 @@ export const getAuditLogs = async (page = 1) => {
 
 export const getActivityChart = async (): Promise<ActivityChartResponse> => {
   const response = await axios.get('/api/admin/stats/activity-chart');
+  return response.data;
+};
+
+// Tambahkan parameter `reason` di fungsi toggleUserBan
+export const toggleUserBan = async (id: string, isBanned: boolean, reason: string): Promise<UserActionResponse> => {
+  const action = isBanned ? 'unban' : 'ban';
+  // Kirim data { reason } sebagai argumen kedua di axios.post
+  const response = await axios.post(`/api/moderator/bans/${id}/${action}`, { reason });
   return response.data;
 };

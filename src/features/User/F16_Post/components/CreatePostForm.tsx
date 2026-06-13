@@ -18,7 +18,6 @@ import { Badge } from '../../../../components/ui/badge';
 import type { CreatePostPayload } from '../types';
 import type { Category, Tag } from '../../../../types';
 
-// ─── Validation Schema ───
 const validationSchema = Yup.object({
   title: Yup.string()
     .required('Judul wajib diisi')
@@ -34,7 +33,6 @@ const validationSchema = Yup.object({
     .max(5, 'Maksimal 5 tag'),
 });
 
-// ─── Fetch categories ───
 async function fetchCategories(): Promise<Category[]> {
   const response = await axios.get('/api/explore/categories');
   const data = response.data;
@@ -45,7 +43,6 @@ export default function CreatePostForm() {
   const navigate = useNavigate();
   const [tagSearch, setTagSearch] = useState('');
 
-  // Fetch categories & tags for dropdowns
   const { data: categories = [] } = useQuery({
     queryKey: ['categories-list'],
     queryFn: fetchCategories,
@@ -57,7 +54,6 @@ export default function CreatePostForm() {
   });
   const allTags: Tag[] = (tagsData as any)?.data?.data || (tagsData as any)?.data || [];
 
-  // Create post mutation
   const mutation = useMutation({
     mutationFn: (payload: CreatePostPayload) => createPost(payload),
     onSuccess: (res) => {
@@ -83,7 +79,6 @@ export default function CreatePostForm() {
     },
   });
 
-  // ─── Tag selection logic ───
   const selectedTagIds = formik.values.tags;
   const selectedTagObjects = allTags.filter((t) => selectedTagIds.includes(t.id));
 
@@ -106,10 +101,13 @@ export default function CreatePostForm() {
   };
 
   return (
-    <form onSubmit={formik.handleSubmit} className="space-y-6">
+    /* Jarak antar form dirapatkan menggunakan space-y-4 */
+    <form onSubmit={formik.handleSubmit} className="space-y-4">
+      
       {/* ── Title ── */}
-      <div className="space-y-2">
-        <Label htmlFor="title" className="text-sm text-gray-300">
+      <div className="space-y-1.5">
+        {/* Label dinaikkan ke text-base font-semibold */}
+        <Label htmlFor="title" className="text-base font-semibold text-gray-200">
           Judul Pertanyaan <span className="text-red-400">*</span>
         </Label>
         <Input
@@ -119,18 +117,19 @@ export default function CreatePostForm() {
           value={formik.values.title}
           onChange={formik.handleChange}
           onBlur={formik.handleBlur}
-          className="h-11 bg-[#161618] border-[#2A2A2C] text-white placeholder:text-gray-600 text-sm"
+          className="h-11 bg-[#161618] border-[#2A2A2C] text-white  placeholder:text-gray-600 text-sm"
         />
         {formik.touched.title && formik.errors.title && (
-          <p className="text-xs text-red-400 flex items-center gap-1">
+          <p className="text-xs text-red-400 flex items-center gap-1 mt-1">
             <AlertCircle className="w-3 h-3" /> {formik.errors.title}
           </p>
         )}
       </div>
 
       {/* ── Category ── */}
-      <div className="space-y-2">
-        <Label htmlFor="category_id" className="text-sm text-gray-300">
+      <div className="space-y-1.5">
+        {/* Label dinaikkan ke text-base font-semibold */}
+        <Label htmlFor="category_id" className="text-base font-semibold text-gray-200">
           Kategori <span className="text-red-400">*</span>
         </Label>
         <select
@@ -149,29 +148,30 @@ export default function CreatePostForm() {
           ))}
         </select>
         {formik.touched.category_id && formik.errors.category_id && (
-          <p className="text-xs text-red-400 flex items-center gap-1">
+          <p className="text-xs text-red-400 flex items-center gap-1 mt-1">
             <AlertCircle className="w-3 h-3" /> {formik.errors.category_id}
           </p>
         )}
       </div>
 
       {/* ── Body ── */}
-      <div className="space-y-2">
-        <Label htmlFor="body" className="text-sm text-gray-300">
+      <div className="space-y-1.5">
+        {/* Label dinaikkan ke text-base font-semibold */}
+        <Label htmlFor="body" className="text-base font-semibold text-gray-200">
           Detail Pertanyaan <span className="text-red-400">*</span>
         </Label>
         <textarea
           id="body"
           name="body"
-          rows={10}
+          rows={8} /* Dikurangi dari 10 ke 8 agar tinggi form lebih seimbang */
           placeholder="Jelaskan pertanyaan kamu secara detail..."
           value={formik.values.body}
           onChange={formik.handleChange}
           onBlur={formik.handleBlur}
-          className="w-full rounded-md border border-[#2A2A2C] bg-[#161618] px-3 py-3 text-sm text-white placeholder:text-gray-600 outline-none focus:border-[#D4AF37] transition-colors resize-y min-h-[200px]"
+          className="w-full rounded-md border border-[#2A2A2C] bg-[#161618] px-3 py-3 text-sm text-white placeholder:text-gray-600 outline-none focus:border-[#D4AF37] transition-colors resize-y min-h-[180px]"
         />
         {formik.touched.body && formik.errors.body && (
-          <p className="text-xs text-red-400 flex items-center gap-1">
+          <p className="text-xs text-red-400 flex items-center gap-1 mt-1">
             <AlertCircle className="w-3 h-3" /> {formik.errors.body}
           </p>
         )}
@@ -179,14 +179,15 @@ export default function CreatePostForm() {
 
       {/* ── Tags ── */}
       <div className="space-y-2">
-        <Label className="text-sm text-gray-300">
+        {/* Label dinaikkan ke text-base font-semibold */}
+        <Label className="text-base font-semibold text-gray-200">
           Tag <span className="text-red-400">*</span>
-          <span className="text-gray-500 ml-2">({selectedTagIds.length}/5)</span>
+          <span className="text-xs text-gray-500 font-normal ml-2">({selectedTagIds.length}/5)</span>
         </Label>
 
         {/* Selected tags */}
         {selectedTagObjects.length > 0 && (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 mb-2">
             {selectedTagObjects.map((tag) => (
               <Badge
                 key={tag.id}
@@ -236,7 +237,7 @@ export default function CreatePostForm() {
           )}
         </div>
         {formik.touched.tags && formik.errors.tags && (
-          <p className="text-xs text-red-400 flex items-center gap-1">
+          <p className="text-xs text-red-400 flex items-center gap-1 mt-1">
             <AlertCircle className="w-3 h-3" /> {formik.errors.tags}
           </p>
         )}
@@ -244,7 +245,7 @@ export default function CreatePostForm() {
 
       {/* ── Error from API ── */}
       {mutation.isError && (
-        <Card className="border-red-900 bg-red-950/30 p-4">
+        <Card className="border-red-900 bg-red-950/30 p-4 my-2">
           <p className="text-sm text-red-400">
             {(mutation.error as any)?.response?.data?.message || 'Gagal membuat postingan. Pastikan kamu memiliki minimal 15 poin.'}
           </p>
@@ -252,11 +253,11 @@ export default function CreatePostForm() {
       )}
 
       {/* ── Actions ── */}
-      <div className="flex items-center gap-3 pt-2">
+      <div className="flex items-center gap-3 pt-3 justify-start">
         <Button
           type="submit"
           disabled={mutation.isPending || !formik.isValid}
-          className="bg-[#D4AF37] text-black hover:bg-[#D4AF37]/90 font-semibold px-6 disabled:opacity-50"
+          className="bg-[#D4AF37] text-black hover:bg-[#D4AF37]/90 font-bold text-sm px-5 py-2.5 h-auto rounded-full transition-all disabled:opacity-50 cursor-pointer shadow-[0_0_15px_rgba(212,175,55,0.1)]"
         >
           {mutation.isPending ? (
             <>
@@ -267,11 +268,12 @@ export default function CreatePostForm() {
             'Buat Pertanyaan'
           )}
         </Button>
+
         <Button
           type="button"
           variant="outline"
           onClick={() => navigate(-1)}
-          className="border-[#2A2A2C] text-gray-400 hover:bg-[#161618]"
+          className="border-[#2A2A2C] text-gray-400 hover:text-white hover:bg-[#1A1A1C] hover:border-gray-600 font-semibold text-sm px-5 py-2.5 h-auto rounded-full transition-colors cursor-pointer"
         >
           Batal
         </Button>

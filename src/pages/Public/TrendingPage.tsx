@@ -5,6 +5,7 @@ import { getTrendingPosts } from '../../features/Common/F7_TrendingPopularPost/a
 import TrendingPostCard from '../../features/Common/F7_TrendingPopularPost/components/TrendingPostCard';
 import { Skeleton } from '../../components/ui/skeleton';
 import { Button } from '../../components/ui/button';
+import ResponsiveLayout from '../../components/shared/ResponsiveLayout';
 
 type TabType = 'trending' | 'popular';
 
@@ -12,28 +13,14 @@ function TrendingSkeleton() {
   return (
     <div className="flex flex-col gap-4">
       {[1, 2, 3, 4, 5].map((i) => (
-        <div 
-          key={i} 
-          className="flex items-center gap-5 p-5 rounded-2xl border border-[#2A2A2C] bg-[#161618] relative overflow-hidden"
-        >
-          {/* Shimmer overlay effect */}
-          <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent" />
-          
+        <div key={i} className="flex items-center gap-5 p-5 rounded-lg border border-[#2A2A2C] bg-[#161618]">
           <Skeleton className="w-10 h-10 rounded-xl bg-[#2A2A2C]" />
-          <div className="flex-1 space-y-4">
+          <div className="flex-1 space-y-3">
             <div className="flex gap-2">
-              <Skeleton className="w-16 h-5 rounded-md bg-[#2A2A2C]" />
-              <Skeleton className="w-24 h-5 rounded-md bg-[#2A2A2C]" />
+              <Skeleton className="w-16 h-4 rounded-md bg-[#2A2A2C]" />
+              <Skeleton className="w-20 h-4 rounded-md bg-[#2A2A2C]" />
             </div>
-            <Skeleton className="w-4/5 h-6 rounded-md bg-[#2A2A2C]" />
-            <div className="flex items-center gap-3">
-              <Skeleton className="w-6 h-6 rounded-full bg-[#2A2A2C]" />
-              <Skeleton className="w-40 h-4 rounded-md bg-[#2A2A2C]" />
-            </div>
-          </div>
-          <div className="flex gap-2 hidden sm:flex">
-            <Skeleton className="w-[80px] h-14 rounded-xl bg-[#2A2A2C]" />
-            <Skeleton className="w-[80px] h-14 rounded-xl bg-[#2A2A2C]" />
+            <Skeleton className="w-3/4 h-5 rounded-md bg-[#2A2A2C]" />
           </div>
         </div>
       ))}
@@ -52,91 +39,80 @@ export default function TrendingPage() {
   const posts = data?.data || [];
 
   return (
-    <div className="max-w-4xl mx-auto py-10 px-4 sm:px-6 font-['Inter']">
-      {/* ── Header ── */}
-      <div className="mb-10">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="p-2.5 bg-[#161618] border border-[#2A2A2C] rounded-xl shadow-[0_0_15px_rgba(212,175,55,0.1)]">
+    <ResponsiveLayout>
+      <div className="w-full py-8">
+        {/* ── Header ── */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-2">
             <TrendingUp className="w-6 h-6 text-[#D4AF37]" />
+            <h1 className="text-2xl font-bold text-white tracking-tight">Trending Posts</h1>
           </div>
-          <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-zinc-400 tracking-tight">
-            Trending Posts
-          </h1>
-        </div>
-        <p className="text-sm text-zinc-500 sm:ml-14 font-fira-code">
-          The most active and highly rated discussions happening right now.
-        </p>
-      </div>
-
-      {/* ── Tabs ── */}
-      <div className="flex items-center gap-3 mb-8 border-b border-[#2A2A2C] pb-4">
-        <Button
-          variant={activeTab === 'trending' ? 'default' : 'outline'}
-          size="sm"
-          className={`rounded-xl px-6 py-5 text-sm font-semibold gap-2 transition-all duration-300 ${
-            activeTab === 'trending'
-              ? 'bg-[#D4AF37] text-black hover:bg-[#ebd077] shadow-[0_0_20px_rgba(212,175,55,0.25)] border-0 scale-105'
-              : 'border-[#2A2A2C] text-zinc-400 hover:text-white hover:border-[#D4AF37]/40 hover:bg-[#161618] bg-transparent'
-          }`}
-          onClick={() => setActiveTab('trending')}
-        >
-          <Flame className={`w-4 h-4 ${activeTab === 'trending' ? 'text-black' : 'text-zinc-500'}`} />
-          Trending
-        </Button>
-        <Button
-          variant={activeTab === 'popular' ? 'default' : 'outline'}
-          size="sm"
-          className={`rounded-xl px-6 py-5 text-sm font-semibold gap-2 transition-all duration-300 ${
-            activeTab === 'popular'
-              ? 'bg-[#D4AF37] text-black hover:bg-[#ebd077] shadow-[0_0_20px_rgba(212,175,55,0.25)] border-0 scale-105'
-              : 'border-[#2A2A2C] text-zinc-400 hover:text-white hover:border-[#D4AF37]/40 hover:bg-[#161618] bg-transparent'
-          }`}
-          onClick={() => setActiveTab('popular')}
-        >
-          <Eye className={`w-4 h-4 ${activeTab === 'popular' ? 'text-black' : 'text-zinc-500'}`} />
-          Most Viewed
-        </Button>
-      </div>
-
-      {/* ── Content ── */}
-      {isLoading && <TrendingSkeleton />}
-
-      {isError && (
-        <div className="flex flex-col items-center justify-center py-16 px-4 bg-red-950/20 border border-red-900/50 rounded-2xl">
-          <AlertCircle className="w-10 h-10 text-red-500 mb-4 opacity-80" />
-          <p className="text-red-400 font-medium text-center">
-            Failed to load trending posts.
-          </p>
-          <p className="text-red-500/70 text-sm mt-1 text-center">
-            Please check your connection and try again later.
+          <p className="text-sm text-gray-400 ml-9">
+            Diskusi paling aktif dan populer saat ini.
           </p>
         </div>
-      )}
 
-      {!isLoading && !isError && posts.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-20 px-4 border border-dashed border-[#2A2A2C] bg-[#161618]/50 rounded-2xl">
-          <div className="p-4 bg-[#0B0B0C] rounded-full mb-4 border border-[#2A2A2C]">
-            <TrendingUp className="w-8 h-8 text-zinc-600" />
+        {/* ── Tabs ── */}
+<div className="flex items-center gap-2 mb-6 border-b border-[#2A2A2C] pb-4">
+  <Button
+    variant="outline"
+    size="sm"
+    className={`cursor-pointer text-[11px] px-3 py-1 h-auto transition-colors whitespace-nowrap rounded-full ${
+      activeTab === 'trending'
+        ? "!bg-[#D4AF37]/10 !border-[#D4AF37]/40 !text-[#D4AF37]"
+        : "!border-[#2A2A2C] !text-gray-400 hover:!text-white hover:!border-gray-600 !bg-[#1A1A1C]"
+    }`}
+    onClick={() => setActiveTab('trending')}
+  >
+    <Flame className="w-5 h-5 mr-2" />
+    Trending
+  </Button>
+
+  <Button
+    variant="outline"
+    size="sm"
+    className={`cursor-pointer text-[11px] px-3 py-1 h-auto transition-colors whitespace-nowrap rounded-full ${
+      activeTab === 'popular'
+        ? "!bg-[#D4AF37]/10 !border-[#D4AF37]/40 !text-[#D4AF37]"
+        : "!border-[#2A2A2C] !text-gray-400 hover:!text-white hover:border-gray-600 !bg-[#1A1A1C]"
+    }`}
+    onClick={() => setActiveTab('popular')}
+  >
+    <Eye className="w-5 h-5 mr-2" />
+    Most Viewed
+  </Button>
+</div>
+
+        {/* ── Content ── */}
+        {isLoading && <TrendingSkeleton />}
+
+        {isError && (
+          <div className="text-center py-20 border border-red-900/20 bg-red-950/5 rounded-xl">
+            <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-2 opacity-50" />
+            <p className="text-red-400 text-sm">Gagal memuat postingan.</p>
           </div>
-          <p className="text-zinc-400 font-fira-code text-sm text-center">
-            No trending posts available right now.
-          </p>
-        </div>
-      )}
+        )}
 
-      {!isLoading && !isError && posts.length > 0 && (
-        <div className="flex flex-col gap-4">
-          {posts.map((post, index) => (
-            <div 
-              key={post.id} 
-              className="animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-both"
-              style={{ animationDelay: `${index * 100}ms` }}
-            >
-              <TrendingPostCard post={post} rank={index + 1} />
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+        {!isLoading && !isError && posts.length === 0 && (
+          <div className="text-center py-20 border border-dashed border-[#2A2A2C] rounded-xl">
+            <p className="text-gray-500 text-sm">Belum ada postingan untuk kategori ini.</p>
+          </div>
+        )}
+
+        {!isLoading && !isError && posts.length > 0 && (
+          <div className="flex flex-col gap-3">
+            {posts.map((post, index) => (
+              <div 
+                key={post.id} 
+                className="animate-in fade-in slide-in-from-bottom-2 duration-500"
+                style={{ animationDelay: `${index * 50}ms` }}
+              >
+                <TrendingPostCard post={post} rank={index + 1} />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </ResponsiveLayout>
   );
 }

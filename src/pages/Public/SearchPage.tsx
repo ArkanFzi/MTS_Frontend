@@ -57,7 +57,6 @@ export default function SearchPage() {
   const [page, setPage] = useState(1);
   const [allResults, setAllResults] = useState<SearchResultItem[]>([]);
 
-  // ── Fetch search results (always enabled — shows all posts when no query) ──
   const { data, isLoading, isError } = useQuery({
     queryKey: ["search", query, sort, categoryFilter, page],
     queryFn: () =>
@@ -69,37 +68,32 @@ export default function SearchPage() {
       }),
   });
 
-  // ── Fetch categories for filter chips ──
   const { data: categoriesData } = useQuery({
     queryKey: ["categories"],
     queryFn: fetchCategories,
-    staleTime: 10 * 60 * 1000, // 10 min cache
+    staleTime: 10 * 60 * 1000,
   });
 
   const categories = categoriesData?.data || [];
 
-  // ── Accumulate results safely in useEffect (no render-time mutation) ──
   useEffect(() => {
     if (!data?.data) return;
     const newEntries = data.data;
 
     setAllResults((prev) => {
       if (page === 1) return newEntries;
-      // Append new page entries, avoiding duplicates
       const prevCount = (page - 1) * (data.meta?.per_page || 10);
       const base = prev.slice(0, prevCount);
       return [...base, ...newEntries];
     });
   }, [data, page]);
 
-  // ── Derived state ──
   const results = data?.data || [];
   const meta = data?.meta;
   const totalFound = meta?.total || 0;
   const hasMore = meta ? meta.current_page < meta.last_page : false;
   const displayResults = page === 1 ? results : allResults;
 
-  // ── Handlers ──
   const updateParams = (updates: Record<string, string>) => {
     const params = new URLSearchParams(searchParams);
     Object.entries(updates).forEach(([key, value]) => {
@@ -130,7 +124,6 @@ export default function SearchPage() {
   return (
     <ResponsiveLayout>
       <div className="w-full py-8">
-        {/* ── Header ── */}
         <div className="mb-6">
           <div className="flex items-center gap-3 mb-2">
             <Search className="w-6 h-6 text-[#D4AF37]" />
@@ -143,24 +136,23 @@ export default function SearchPage() {
           </p>
         </div>
 
-        {/* ── Search Bar ── */}
         <div className="mb-6">
           <SearchBar initialValue={query} onSearch={handleSearchSubmit} />
         </div>
 
-        {/* ── Category Filter Chips ── */}
         {categories.length > 0 && (
           <div className="mb-4">
             <div className="flex items-center gap-2 mb-2">
               <SlidersHorizontal className="w-3.5 h-3.5 text-gray-500" />
-              <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">
+              <span className="text-[11px] font-bold text-gray-500 uppercase">
                 Filter by Category
               </span>
             </div>
-            <div className="flex flex-wrap gap-2">
+            
+            <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
               <Badge
                 variant="outline"
-                className={`cursor-pointer text-[11px] px-3 py-1 h-auto transition-colors ${
+                className={`cursor-pointer text-[11px] px-3 py-1 h-auto transition-colors whitespace-nowrap ${
                   !categoryFilter
                     ? "bg-[#D4AF37]/10 text-[#D4AF37] border-[#D4AF37]/40"
                     : "bg-[#1A1A1C] text-gray-400 border-[#2A2A2C] hover:text-white hover:border-gray-600"
@@ -169,11 +161,12 @@ export default function SearchPage() {
               >
                 All
               </Badge>
+
               {categories.map((cat) => (
                 <Badge
                   key={cat.id}
                   variant="outline"
-                  className={`cursor-pointer text-[11px] px-3 py-1 h-auto transition-colors ${
+                  className={`cursor-pointer text-[11px] px-3 py-1 h-auto transition-colors whitespace-nowrap ${
                     categoryFilter === cat.slug
                       ? "bg-[#D4AF37]/10 text-[#D4AF37] border-[#D4AF37]/40"
                       : "bg-[#1A1A1C] text-gray-400 border-[#2A2A2C] hover:text-white hover:border-gray-600"
@@ -187,32 +180,31 @@ export default function SearchPage() {
           </div>
         )}
 
-        {/* ── Sort + Results Count Bar ── */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-5 border-b border-[#2A2A2C] pb-4 gap-3">
           <div className="flex items-center gap-3">
-            <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">
+            <span className="text-[11px] font-bold text-gray-500 uppercase">
               Sort:
             </span>
             <div className="flex gap-2">
               <Button
-                variant={sort === "terbaru" ? "default" : "outline"}
+                variant="outline"
                 size="sm"
-                className={`rounded-full px-4 text-xs ${
+                className={`rounded-full px-3 py-4 text-xs transition-colors ${
                   sort === "terbaru"
-                    ? "bg-transparent border-[#D4AF37] text-[#D4AF37]"
-                    : "border-[#2A2A2C] text-gray-400 hover:text-white hover:border-gray-600 bg-transparent"
+                    ? "!bg-transparent !border-[#D4AF37] !text-[#D4AF37]"
+                    : "!border-[#2A2A2C] !text-gray-400 hover:!text-[#D4AF37] hover:!border-[#D4AF37]/50 !bg-transparent"
                 }`}
                 onClick={() => handleSortChange("terbaru")}
               >
                 Terbaru
               </Button>
               <Button
-                variant={sort === "tertinggi" ? "default" : "outline"}
+                variant="outline"
                 size="sm"
-                className={`rounded-full px-4 text-xs ${
+                className={`rounded-full px-3 py-4 text-xs transition-colors ${
                   sort === "tertinggi"
-                    ? "bg-transparent border-[#D4AF37] text-[#D4AF37]"
-                    : "border-[#2A2A2C] text-gray-400 hover:text-white hover:border-gray-600 bg-transparent"
+                    ? "!bg-transparent !border-[#D4AF37] !text-[#D4AF37]"
+                    : "!border-[#2A2A2C] !text-gray-400 hover:!text-[#D4AF37] hover:!border-[#D4AF37]/50 !bg-transparent"
                 }`}
                 onClick={() => handleSortChange("tertinggi")}
               >
@@ -225,7 +217,6 @@ export default function SearchPage() {
           </span>
         </div>
 
-        {/* ── Results ── */}
         <div className="flex flex-col gap-4">
           {isLoading && page === 1 && <ResultsSkeleton />}
 
@@ -258,7 +249,6 @@ export default function SearchPage() {
           )}
         </div>
 
-        {/* ── Load More ── */}
         {hasMore && !isLoading && (
           <div className="flex justify-center mt-8">
             <Button

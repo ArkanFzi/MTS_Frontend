@@ -36,7 +36,7 @@ export function SearchBar({ initialValue = '', onSearch }: SearchBarProps) {
           onChange={(e) => setKeyword(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Cari postingan, error, atau topik..."
-          className="pl-10 pr-9 py-5 bg-[#161618] border-[#2A2A2C] text-white w-full rounded-lg focus-visible:ring-[#D4AF37]/50 focus-visible:border-[#D4AF37]/50 text-sm"
+          className="pl-10 pr-9 py-5 bg-[#161618] border-[#2A2A2C] text-white w-full rounded-xl focus-visible:ring-[#D4AF37]/50 focus-visible:border-[#D4AF37]/50 text-sm"
         />
         {keyword && (
           <button
@@ -49,7 +49,7 @@ export function SearchBar({ initialValue = '', onSearch }: SearchBarProps) {
       </div>
       <Button
         onClick={handleSubmit}
-        className="bg-[#D4AF37] text-black hover:bg-[#c29f2f] font-bold text-sm px-5 h-[42px] rounded-lg flex-shrink-0"
+        className="bg-[#D4AF37] text-black hover:bg-[#c29f2f] font-bold text-sm px-5 h-[34px] rounded-xl flex-shrink-0"
       >
         Search
       </Button>

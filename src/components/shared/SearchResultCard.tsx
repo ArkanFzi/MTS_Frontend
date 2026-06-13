@@ -35,17 +35,16 @@ export function SearchResultCard({ post }: SearchResultCardProps) {
           <div className="flex-1 flex flex-col gap-2">
             <div className="flex items-center gap-2 mb-0.5 flex-wrap">
               <Badge
-                variant="outline"
-                className="text-[11px] border-[#2A2A2C] text-gray-400"
+                variant="default"
+                className="text-[11px] bg-[#D4AF37] text-[#171718] font-semibold px-3 py-3"
               >
                 {post.category.name}
               </Badge>
-              <span className="text-[11px] text-gray-500">
+              <span className="text-[11px] font-semibold text-gray-500">
                 {timeAgo(post.created_at)}
               </span>
             </div>
-
-            <h3 className="text-base font-semibold text-white group-hover:text-[#D4AF37] transition-colors line-clamp-1">
+            <h3 className="mt-2 text-base font-semibold text-white group-hover:text-[#D4AF37] transition-colors line-clamp-1">
               {post.title}
             </h3>
             <p className="text-sm text-gray-400 line-clamp-2">{post.body}</p>
@@ -55,23 +54,27 @@ export function SearchResultCard({ post }: SearchResultCardProps) {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-2 border-t border-[#2A2A2C] pt-4">
             {/* Statistik (Vote, Comment, View) */}
             <div className="flex items-center gap-4 text-xs text-gray-500">
-<div className="flex flex-col items-center gap-0.5 ">
-  <ArrowUp className="h-6 w-6 cursor-pointer hover:text-[#D4AF37] transition-colors" />
-  
-  {/* Angka dibuat besar (text-2xl) dan font-bold untuk menonjol */}
-  <span className="text-xl font-bold leading-none text-[#D4AF37]">
-    {post.vote_score}
-  </span>
-  
-  <ArrowDown className="h-6 w-6 text-gray-500 hover:text-[#D4AF37] cursor-pointer transition-colors" />
-</div>
-              <div className="flex items-center gap-1">
-                <MessageSquare className="h-6 w-6" />
-                <span>{post.comments_count}</span>
+              <div className="flex flex-col items-center gap-0.5 ">
+                <ArrowUp className="h-5 w-5 cursor-pointer hover:text-[#D4AF37] transition-colors" />
+
+                {/* Angka dibuat besar (text-2xl) dan font-bold untuk menonjol */}
+                <span className="text-[11px] font-bold leading-none text-[#D4AF37]">
+                  {post.vote_score}
+                </span>
+
+                <ArrowDown className="h-5 w-5 text-gray-500 hover:text-[#D4AF37] cursor-pointer transition-colors" />
               </div>
               <div className="flex items-center gap-1">
-                <Eye className="h-8 w-8" />
-                <span>{post.view_count}</span>
+                <MessageSquare className="h-5 w-5 hover:text-[#D4AF37]" />
+                <span className="text-sm font-bold leading-none text-[#D4AF37]">
+                  {post.comments_count ?? 0}
+                </span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Eye className="h-6 w-6" />
+                <span className="text-sm font-bold leading-none text-[#D4AF37]">
+                  {post.view_count}
+                </span>
               </div>
             </div>
 
@@ -89,7 +92,7 @@ export function SearchResultCard({ post }: SearchResultCardProps) {
                 ))}
               </div>
 
-              <div className="flex items-center gap-2 ml-0 sm:ml-4 border-l border-[#2A2A2C] pl-0 sm:pl-4">
+              <div className="flex items-center gap-2 ml-0 sm:ml-4 border-l-[2px] border-[#2A2A2C] pl-4 sm:pl-4">
                 <Avatar className="h-5 w-5 border border-[#2A2A2C]">
                   <AvatarImage src={post.user.avatar_url || ""} />
                   <AvatarFallback className="bg-[#0B0B0C] text-[10px] text-[#D4AF37]">

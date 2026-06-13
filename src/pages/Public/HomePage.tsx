@@ -71,10 +71,12 @@ export default function HomePage() {
       <div className="flex flex-col lg:flex-row gap-8 w-full items-start">
         {/* KOLOM KIRI (Feed) */}
         <div className="flex-1 w-full min-w-0">
-          <div className="mb-6 lg:mb-1">
-            <br />
-            <h1 className="text-2xl font-bold text-white">Home Feed</h1>
-          </div>
+<div className="mb-6 lg:mb-1">
+  <br />
+  <h1 className="text-2xl font-bold text-white">
+    Home <span className="text-[#D4AF37]">Feed</span>
+  </h1>
+</div>
 
           <div className="block lg:hidden mb-6">
             <TrendingSidebar />

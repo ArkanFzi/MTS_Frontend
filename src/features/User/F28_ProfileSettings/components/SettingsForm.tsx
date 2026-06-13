@@ -93,9 +93,25 @@ export default function SettingsForm() {
     validationSchema: profileSchema,
     onSubmit: (values) => {
       setProfileSuccess('');
-      const payload: Record<string, any> = { ...values };
-      if (selectedFile) payload.avatar = selectedFile;
-      profileMutation.mutate(payload);
+      
+      // Menggunakan FormData agar file binary terkirim dengan benar
+      const formData = new FormData();
+      formData.append('username', values.username);
+      formData.append('email', values.email);
+      formData.append('bio', values.bio || '');
+      
+      if (selectedFile) {
+        formData.append('avatar', selectedFile);
+      }
+
+      /**
+       * Method Spoofing untuk Backend Laravel:
+       * Mengirimkan data via POST tetapi menyertakan penanda _method = PUT 
+       * supaya route PUT di Laravel bisa membaca payload multipart/form-data.
+       */
+      formData.append('_method', 'PUT');
+
+      profileMutation.mutate(formData);
     },
   });
 

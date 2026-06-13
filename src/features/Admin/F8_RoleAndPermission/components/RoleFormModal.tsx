@@ -53,8 +53,10 @@ export default function RoleFormModal({ open, onClose, editingRole }: RoleModalP
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Di sini bg-black/70 digunakan tanpa backdrop-blur-sm */}
+      <div className="absolute inset-0 bg-black/70" onClick={onClose} />
+      
       <div className="relative z-10 w-full max-w-sm bg-[#161618] border border-[#2A2A2C] rounded-xl p-6 shadow-2xl">
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-lg font-bold text-white">
@@ -63,7 +65,7 @@ export default function RoleFormModal({ open, onClose, editingRole }: RoleModalP
           <button onClick={onClose} className="text-gray-500 hover:text-white transition-colors">
             <X className="w-5 h-5" />
           </button>
-        </div>
+        </div>  
 
         <form onSubmit={formik.handleSubmit} className="space-y-4">
           <div>

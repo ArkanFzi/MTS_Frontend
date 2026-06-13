@@ -24,6 +24,7 @@ import {
   ClipboardList,
   Menu,
   X,
+  ChevronDown, // 🌟 Tambahkan icon chevron untuk dropdown
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { useAuthStore } from "../../store/useAuthStore";
@@ -32,10 +33,12 @@ import { logoutUser } from "../../features/Auth/F3_Logout/api";
 import { toast } from "sonner";
 import type { ReactNode } from "react";
 
+// 🌟 Perbarui interface agar path menjadi opsional dan mendukung children
 interface NavItem {
   name: string;
-  path: string;
+  path?: string; 
   icon: ReactNode;
+  children?: { name: string; path: string }[]; 
 }
 
 const exploreItems: NavItem[] = [
@@ -63,39 +66,6 @@ const exploreItems: NavItem[] = [
     name: "Leaderboard",
     path: "/leaderboard",
     icon: <Trophy className="h-4 w-4 flex-shrink-0" />,
-  },
-];
-
-const userItems: NavItem[] = [
-  {
-    name: "Create Post",
-    path: "/posts/create",
-    icon: <PenSquare className="h-4 w-4 flex-shrink-0" />,
-  },
-  {
-    name: "My Posts",
-    path: "/me/posts",
-    icon: <FileText className="h-4 w-4 flex-shrink-0" />,
-  },
-  {
-    name: "Bookmarks",
-    path: "/bookmarks",
-    icon: <BookMarked className="h-4 w-4 flex-shrink-0" />,
-  },
-  {
-    name: "Notifications",
-    path: "/notifications",
-    icon: <Bell className="h-4 w-4 flex-shrink-0" />,
-  },
-  {
-    name: "My Badges",
-    path: "/me/badges",
-    icon: <Award className="h-4 w-4 flex-shrink-0" />,
-  },
-  {
-    name: "Settings",
-    path: "/settings/profile",
-    icon: <Settings className="h-4 w-4 flex-shrink-0" />,
   },
 ];
 
@@ -161,16 +131,31 @@ function NavGroup({
   isExpanded,
   onNavigate,
   groupIndex,
+  onOpenSidebar, // 🌟 Prop tambahan untuk membuka sidebar otomatis jika posisi sedang collapse
 }: {
   label: string;
   items: NavItem[];
   isExpanded: boolean;
   onNavigate: () => void;
   groupIndex: number;
+  onOpenSidebar?: () => void;
 }) {
+  // State untuk menyimpan menu dropdown mana saja yang sedang terbuka
+  const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>({});
+
+  const toggleDropdown = (name: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    // Jika sidebar sedang mengecil (mini-sidebar), buka sidebarnya dulu baru expand dropdown-nya
+    if (!isExpanded && onOpenSidebar) {
+      onOpenSidebar();
+      setOpenDropdowns((prev) => ({ ...prev, [name]: true }));
+      return;
+    }
+    setOpenDropdowns((prev) => ({ ...prev, [name]: !prev[name] }));
+  };
+
   return (
     <nav className="flex flex-col gap-1.5">
-      {/* Label section - Selalu muncul di desktop, transisi cuma di mobile */}
       <div
         className={`overflow-hidden transition-all duration-300 ease-in-out lg:max-h-10 lg:opacity-100 lg:mb-1 ${
           isExpanded
@@ -189,10 +174,87 @@ function NavGroup({
           transitionDelay: isExpanded ? `${globalIndex * 35}ms` : "0ms",
         };
 
+        const hasChildren = !!item.children;
+        const isOpen = !!openDropdowns[item.name];
+
+        // 🌟 RENDER JIKA NAV ITEM ADALAH DROPDOWN (Punya Children)
+        if (hasChildren) {
+          return (
+            <div key={item.name} className="flex flex-col gap-1">
+              <button
+                onClick={(e) => toggleDropdown(item.name, e)}
+                className={`group relative flex items-center px-3 py-2.5 rounded-md text-sm font-medium transition-all duration-300 lg:justify-start lg:gap-3 lg:w-full ${
+                  isExpanded ? "justify-start gap-3 w-full" : "justify-center"
+                } ${
+                  isOpen
+                    ? "bg-[#0B0B0C] text-[#D4AF37] border border-[#2A2A2C]"
+                    : "text-gray-400 hover:text-[#F0F0F0] hover:bg-[#0B0B0C]/50"
+                }`}
+              >
+                {item.icon}
+
+                <div
+                  style={delayStyle}
+                  className={`overflow-hidden transition-all duration-500 ease-in-out flex-1 flex items-center justify-between lg:max-w-full lg:opacity-100 lg:translate-x-0 lg:visible ${
+                    isExpanded
+                      ? "max-w-full opacity-100 translate-x-0 visible"
+                      : "max-w-0 opacity-0 -translate-x-4 invisible"
+                  }`}
+                >
+                  <span className="truncate text-xs block whitespace-nowrap ml-3 text-left">
+                    {item.name}
+                  </span>
+                  <ChevronDown
+                    className={`h-3 w-3 text-gray-500 transition-transform duration-300 mr-1 ${
+                      isOpen ? "rotate-180 text-[#D4AF37]" : ""
+                    }`}
+                  />
+                </div>
+
+                {!isExpanded && (
+                  <div className="absolute left-full ml-4 hidden max-lg:group-hover:flex items-center z-[9999] pointer-events-none top-1/2 -translate-y-1/2 drop-shadow-2xl">
+                    <div className="w-0 h-0 border-y-[6px] border-y-transparent border-r-[6px] border-r-[#111112]"></div>
+                    <div className="bg-[#111112] text-zinc-200 text-[11px] font-normal px-3 py-1.5 rounded border border-[#2A2A2C] whitespace-nowrap">
+                      {item.name}
+                    </div>
+                  </div>
+                )}
+              </button>
+
+              {/* LIST SUB-MENU (CHILDREN) */}
+              <div
+                className={`overflow-hidden transition-all duration-300 ease-in-out flex flex-col gap-1 pl-7 ${
+                  isOpen && isExpanded
+                    ? "max-h-40 opacity-100 mt-1"
+                    : "max-h-0 opacity-0 pointer-events-none"
+                }`}
+              >
+                {item.children?.map((child) => (
+                  <NavLink
+                    key={child.path}
+                    to={child.path}
+                    onClick={onNavigate}
+                    className={({ isActive }) =>
+                      `flex items-center px-3 py-1.5 rounded text-[11px] font-medium transition-all duration-200 ${
+                        isActive
+                          ? "text-[#D4AF37] font-semibold"
+                          : "text-gray-500 hover:text-zinc-200"
+                      }`
+                    }
+                  >
+                    <span className="truncate">{child.name}</span>
+                  </NavLink>
+                ))}
+              </div>
+            </div>
+          );
+        }
+
+        // RENDER STANDARD NAV LINK (Tanpa Dropdown)
         return (
           <NavLink
             key={item.path}
-            to={item.path}
+            to={item.path!}
             end={item.path === "/"}
             onClick={onNavigate}
             className={({ isActive }) =>
@@ -207,7 +269,6 @@ function NavGroup({
           >
             {item.icon}
 
-            {/* Teks menu utama - Di desktop selalu muncul utuh, di mobile pakai slide-in/out */}
             <div
               style={delayStyle}
               className={`overflow-hidden transition-all duration-500 ease-in-out flex-1 lg:max-w-full lg:opacity-100 lg:translate-x-0 lg:visible ${
@@ -221,7 +282,6 @@ function NavGroup({
               </span>
             </div>
 
-            {/* Tooltip melayang - HANYA aktif di HP saat sidebar ditutup, desktop tidak butuh */}
             {!isExpanded && (
               <div className="absolute left-full ml-4 hidden max-lg:group-hover:flex items-center z-[9999] pointer-events-none top-1/2 -translate-y-1/2 drop-shadow-2xl">
                 <div className="w-0 h-0 border-y-[6px] border-y-transparent border-r-[6px] border-r-[#111112]"></div>
@@ -247,7 +307,6 @@ export default function AppSidebar() {
   const logoutMutation = useMutation({
     mutationFn: logoutUser,
     onSuccess: () => {
-      // Clear all cached queries to prevent stale data leaking to next user session
       queryClient.clear();
       logout();
       toast.success("Logged out successfully.");
@@ -265,6 +324,53 @@ export default function AppSidebar() {
   );
   const isAdmin = user?.roles?.some((r) => r === "admin");
 
+  // 🌟 Pindahkan & Inisialisasi userItems secara dinamis di dalam komponen agar mendapat data user.id
+  const userItems: NavItem[] = [
+    {
+      name: "Create Post",
+      path: "/posts/create",
+      icon: <PenSquare className="h-4 w-4 flex-shrink-0" />,
+    },
+    {
+      name: "My Posts",
+      path: "/me/posts",
+      icon: <FileText className="h-4 w-4 flex-shrink-0" />,
+    },
+    {
+      name: "Bookmarks",
+      path: "/bookmarks",
+      icon: <BookMarked className="h-4 w-4 flex-shrink-0" />,
+    },
+    {
+      name: "Notifications",
+      path: "/notifications",
+      icon: <Bell className="h-4 w-4 flex-shrink-0" />,
+    },
+    {
+      name: "My Badges",
+      path: "/me/badges",
+      icon: <Award className="h-4 w-4 flex-shrink-0" />,
+    },
+    {
+      name: "Settings",
+      icon: <Settings className="h-4 w-4 flex-shrink-0" />,
+      children: [
+        {
+          name: "Change Profile",
+          path: "/settings/profile",
+        },
+        {
+          name: "Public Profile",
+          path: user?.id ? `/profile/${user.id}` : "#",
+        },
+      ],
+    },
+  ];
+
+  const filteredModeratorItems = isAdmin
+    ? moderatorItems.filter((item) => item.path !== "/moderator/tag-category")
+    : moderatorItems;
+
   const roleBadge = isAdmin
     ? { label: "Admin", color: "bg-red-950/50 text-red-400 border-red-900" }
     : isModerator
@@ -278,7 +384,6 @@ export default function AppSidebar() {
 
   return (
     <>
-      {/* ─── OVERLAY BACKDROP GAK AKAN MUNCUL DI DESKTOP (`max-lg:`) ─── */}
       <div
         onClick={() => setIsExpanded(false)}
         className={`fixed inset-0 bg-black/70 z-40 transition-opacity duration-300 ease-in-out lg:hidden ${
@@ -288,7 +393,6 @@ export default function AppSidebar() {
         }`}
       />
 
-      {/* CONTAINER STRUKTUR UTAMA (Mengunci lebar di desktop tetap 250px) */}
       <div className="w-[68px] min-w-[68px] lg:w-[250px] lg:min-w-[250px] h-screen sticky top-0 bg-transparent flex-shrink-0 z-50">
         <aside
           className={`h-screen bg-[#161618] border-r border-[#2A2A2C] flex flex-col p-4 font-['Inter'] transition-all duration-300 ease-in-out lg:fixed lg:left-0 lg:top-0 lg:w-[250px] ${
@@ -297,7 +401,7 @@ export default function AppSidebar() {
               : "absolute left-0 top-0 w-[68px] max-lg:w-[68px]"
           }`}
         >
-          {/* ─── 1. HEADER (KUNCI DI ATAS, GAK IKUT SCROLL) ─── */}
+          {/* HEADER */}
           <div
             onClick={() => {
               if (window.innerWidth < 1024) setIsExpanded(!isExpanded);
@@ -320,7 +424,7 @@ export default function AppSidebar() {
             </div>
           </div>
 
-          {/* ─── 2. USER INFO (KUNCI DI ATAS, GAK IKUT SCROLL) ─── */}
+          {/* USER INFO */}
           {user && (
             <div
               className={`flex items-center py-1.5 mb-6 rounded-lg bg-[#0B0B0C]/40 border border-[#2A2A2C]/40 w-full flex-shrink-0 transition-all duration-300 lg:px-2 lg:gap-3 lg:justify-start ${
@@ -358,7 +462,7 @@ export default function AppSidebar() {
             </div>
           )}
 
-          {/* ─── 3. AREA MENU UTAMA (CUMA BAGIAN INI YANG BISA SCROLL) ─── */}
+          {/* AREA MENU UTAMA */}
           <div className="flex flex-col gap-6 flex-1 overflow-y-auto pr-1 tm-scrollbar">
             <NavGroup
               label="Explore"
@@ -374,6 +478,7 @@ export default function AppSidebar() {
                 label="My Space"
                 items={userItems}
                 isExpanded={isExpanded}
+                onOpenSidebar={() => setIsExpanded(true)} // 🌟 Expand sidebar otomatis jika posisi tertutup
                 onNavigate={() => {
                   if (window.innerWidth < 1024) setIsExpanded(false);
                 }}
@@ -383,7 +488,7 @@ export default function AppSidebar() {
             {isModerator && (
               <NavGroup
                 label="Moderation"
-                items={moderatorItems}
+                items={filteredModeratorItems} 
                 isExpanded={isExpanded}
                 onNavigate={() => {
                   if (window.innerWidth < 1024) setIsExpanded(false);
@@ -404,7 +509,7 @@ export default function AppSidebar() {
             )}
           </div>
 
-          {/* ─── 4. BOTTOM SECTION (KUNCI DI PALING BAWAH) ─── */}
+          {/* BOTTOM SECTION */}
           <div className="mt-auto pt-4 flex-shrink-0 border-t border-[#2A2A2C]/30">
             {user ? (
               <Button

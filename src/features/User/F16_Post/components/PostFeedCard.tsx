@@ -1,9 +1,12 @@
 import { Link } from 'react-router-dom';
-import { ArrowUp, ArrowDown, Eye, MessageCircle } from 'lucide-react';
+// Hapus ArrowUp dan ArrowDown dari lucide-react karena sudah ditangani oleh VoteControl
+import { Eye, MessageCircle } from 'lucide-react'; 
 import type { Post } from '../types';
 import { Card } from '../../../../components/ui/card';
 import { Badge } from '../../../../components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '../../../../components/ui/avatar';
+// Import VoteControl dari fitur VoteSystem
+import VoteControl from '../../F22_VoteSystem/components/VoteControl';
 
 interface PostFeedCardProps {
   post: Post;
@@ -33,18 +36,16 @@ export default function PostFeedCard({ post }: PostFeedCardProps) {
   return (
     <Card className="border-[#2A2A2C] bg-[#161618] py-0 hover:border-[#D4AF37]/30 transition-colors">
       <div className="flex items-start gap-4 p-5">
-        {/* ── Vote Counter ── */}
-        <div className="flex flex-col items-center gap-1 min-w-[50px] pt-0.5">
-          <button className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-[#2A2A2C] text-gray-400 hover:text-[#D4AF37] transition-colors">
-            <ArrowUp className="w-4 h-4" />
-          </button>
-          <span className="text-lg font-bold text-[#D4AF37] font-fira-code tabular-nums">
-            {post.vote_score}
-          </span>
-          <button className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-[#2A2A2C] text-gray-400 hover:text-gray-200 transition-colors">
-            <ArrowDown className="w-4 h-4" />
-          </button>
-        </div>
+        
+        {/* ── Vote Counter Komponen (Menggantikan HTML statis lama) ── */}
+        <VoteControl
+          targetId={post.id}
+          targetType="post"
+          initialScore={post.vote_score}
+          userVote={post.user_vote}
+          direction="vertical"
+          className="min-w-[50px] pt-0.5"
+        />
 
         {/* ── Post Content ── */}
         <div className="flex-1 min-w-0">

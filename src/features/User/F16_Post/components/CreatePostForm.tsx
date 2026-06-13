@@ -1,58 +1,60 @@
 // src/features/User/F16_Post/components/CreatePostForm.tsx
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { useFormik } from 'formik';
-import * as Yup from 'yup';
-import { X, Loader2, Plus, AlertCircle } from 'lucide-react';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import { X, Loader2, Plus, AlertCircle } from "lucide-react";
 
-import { createPost } from '../api';
-import { getAllTags } from '../../../Common/F5_FilterByTag/api';
-import axios from '../../../../lib/axios';
+import { createPost } from "../api";
+import { getAllTags } from "../../../Common/F5_FilterByTag/api";
+import axios from "../../../../lib/axios";
 
-import { Card } from '../../../../components/ui/card';
-import { Input } from '../../../../components/ui/input';
-import { Label } from '../../../../components/ui/label';
-import { Button } from '../../../../components/ui/button';
-import { Badge } from '../../../../components/ui/badge';
-import type { CreatePostPayload } from '../types';
-import type { Category, Tag } from '../../../../types';
+import { Card } from "../../../../components/ui/card";
+import type { AxiosError } from "axios";
+import { Input } from "../../../../components/ui/input";
+import { Label } from "../../../../components/ui/label";
+import { Button } from "../../../../components/ui/button";
+import { Badge } from "../../../../components/ui/badge";
+import type { CreatePostPayload } from "../types";
+import type { Category, Tag } from "../../../../types";
 
 const validationSchema = Yup.object({
   title: Yup.string()
-    .required('Judul wajib diisi')
-    .max(255, 'Judul maksimal 255 karakter'),
+    .required("Judul wajib diisi")
+    .max(255, "Judul maksimal 255 karakter"),
   body: Yup.string()
-    .required('Konten wajib diisi')
-    .min(10, 'Konten minimal 10 karakter'),
-  category_id: Yup.string()
-    .required('Kategori wajib dipilih'),
+    .required("Konten wajib diisi")
+    .min(10, "Konten minimal 10 karakter"),
+  category_id: Yup.string().required("Kategori wajib dipilih"),
   tags: Yup.array()
     .of(Yup.string())
-    .min(1, 'Pilih minimal 1 tag')
-    .max(5, 'Maksimal 5 tag'),
+    .min(1, "Pilih minimal 1 tag")
+    .max(5, "Maksimal 5 tag"),
 });
 
 async function fetchCategories(): Promise<Category[]> {
-  const response = await axios.get('/api/explore/categories');
+  const response = await axios.get("/api/explore/categories");
   const data = response.data;
   return data.data || data;
 }
 
 export default function CreatePostForm() {
   const navigate = useNavigate();
-  const [tagSearch, setTagSearch] = useState('');
+  const [tagSearch, setTagSearch] = useState("");
 
   const { data: categories = [] } = useQuery({
-    queryKey: ['categories-list'],
+    queryKey: ["categories-list"],
     queryFn: fetchCategories,
   });
 
   const { data: tagsData } = useQuery({
-    queryKey: ['all-tags'],
+    queryKey: ["all-tags"],
     queryFn: getAllTags,
   });
-  const allTags: Tag[] = (tagsData as any)?.data?.data || (tagsData as any)?.data || [];
+  const allTags: Tag[] = (tagsData?.data?.data ||
+    tagsData?.data ||
+    []) as Tag[];
 
   const mutation = useMutation({
     mutationFn: (payload: CreatePostPayload) => createPost(payload),
@@ -63,9 +65,9 @@ export default function CreatePostForm() {
 
   const formik = useFormik({
     initialValues: {
-      title: '',
-      body: '',
-      category_id: '',
+      title: "",
+      body: "",
+      category_id: "",
       tags: [] as string[],
     },
     validationSchema,
@@ -80,34 +82,38 @@ export default function CreatePostForm() {
   });
 
   const selectedTagIds = formik.values.tags;
-  const selectedTagObjects = allTags.filter((t) => selectedTagIds.includes(t.id));
+  const selectedTagObjects = allTags.filter((t) =>
+    selectedTagIds.includes(t.id),
+  );
 
   const filteredTags = allTags.filter(
     (t) =>
       !selectedTagIds.includes(t.id) &&
-      t.name.toLowerCase().includes(tagSearch.toLowerCase())
+      t.name.toLowerCase().includes(tagSearch.toLowerCase()),
   );
 
   const toggleTag = (tagId: string) => {
     if (selectedTagIds.includes(tagId)) {
       formik.setFieldValue(
-        'tags',
-        selectedTagIds.filter((id) => id !== tagId)
+        "tags",
+        selectedTagIds.filter((id) => id !== tagId),
       );
     } else if (selectedTagIds.length < 5) {
-      formik.setFieldValue('tags', [...selectedTagIds, tagId]);
-      setTagSearch('');
+      formik.setFieldValue("tags", [...selectedTagIds, tagId]);
+      setTagSearch("");
     }
   };
 
   return (
     /* Jarak antar form dirapatkan menggunakan space-y-4 */
     <form onSubmit={formik.handleSubmit} className="space-y-4">
-      
       {/* ── Title ── */}
       <div className="space-y-1.5">
         {/* Label dinaikkan ke text-base font-semibold */}
-        <Label htmlFor="title" className="text-base font-semibold text-gray-200">
+        <Label
+          htmlFor="title"
+          className="text-base font-semibold text-gray-200"
+        >
           Judul Pertanyaan <span className="text-red-400">*</span>
         </Label>
         <Input
@@ -129,7 +135,10 @@ export default function CreatePostForm() {
       {/* ── Category ── */}
       <div className="space-y-1.5">
         {/* Label dinaikkan ke text-base font-semibold */}
-        <Label htmlFor="category_id" className="text-base font-semibold text-gray-200">
+        <Label
+          htmlFor="category_id"
+          className="text-base font-semibold text-gray-200"
+        >
           Kategori <span className="text-red-400">*</span>
         </Label>
         <select
@@ -140,7 +149,9 @@ export default function CreatePostForm() {
           onBlur={formik.handleBlur}
           className="h-11 w-full rounded-md border border-[#2A2A2C] bg-[#161618] px-3 text-sm text-white outline-none focus:border-[#D4AF37] transition-colors"
         >
-          <option value="" disabled>Pilih kategori...</option>
+          <option value="" disabled>
+            Pilih kategori...
+          </option>
           {categories.map((cat) => (
             <option key={cat.id} value={cat.id}>
               {cat.name}
@@ -168,7 +179,7 @@ export default function CreatePostForm() {
           value={formik.values.body}
           onChange={formik.handleChange}
           onBlur={formik.handleBlur}
-          className="w-full rounded-md border border-[#2A2A2C] bg-[#161618] px-3 py-3 text-sm text-white placeholder:text-gray-600 outline-none focus:border-[#D4AF37] transition-colors resize-y min-h-[180px]"
+          className="w-full rounded-md border border-[#2A2A2C] bg-[#161618] px-3 py-3 text-sm text-white placeholder:text-gray-600 outline-none focus:border-[#D4AF37] transition-colors resize-y min-h-45"
         />
         {formik.touched.body && formik.errors.body && (
           <p className="text-xs text-red-400 flex items-center gap-1 mt-1">
@@ -182,7 +193,9 @@ export default function CreatePostForm() {
         {/* Label dinaikkan ke text-base font-semibold */}
         <Label className="text-base font-semibold text-gray-200">
           Tag <span className="text-red-400">*</span>
-          <span className="text-xs text-gray-500 font-normal ml-2">({selectedTagIds.length}/5)</span>
+          <span className="text-xs text-gray-500 font-normal ml-2">
+            ({selectedTagIds.length}/5)
+          </span>
         </Label>
 
         {/* Selected tags */}
@@ -205,7 +218,9 @@ export default function CreatePostForm() {
         {/* Tag search input */}
         <div className="relative">
           <Input
-            placeholder={selectedTagIds.length >= 5 ? 'Maksimal 5 tag' : 'Cari tag...'}
+            placeholder={
+              selectedTagIds.length >= 5 ? "Maksimal 5 tag" : "Cari tag..."
+            }
             value={tagSearch}
             onChange={(e) => setTagSearch(e.target.value)}
             disabled={selectedTagIds.length >= 5}
@@ -224,12 +239,14 @@ export default function CreatePostForm() {
                   className="w-full px-3 py-2 text-left text-sm text-gray-300 hover:bg-[#2A2A2C] hover:text-[#D4AF37] transition-colors flex items-center gap-2"
                 >
                   <span
-                    className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: tag.color || '#D4AF37' }}
+                    className="w-2.5 h-2.5 rounded-full shrink-0"
+                    style={{ backgroundColor: tag.color || "#D4AF37" }}
                   />
                   {tag.name}
                   {tag.usage_count !== undefined && (
-                    <span className="text-xs text-gray-600 ml-auto">{tag.usage_count} posts</span>
+                    <span className="text-xs text-gray-600 ml-auto">
+                      {tag.usage_count} posts
+                    </span>
                   )}
                 </button>
               ))}
@@ -247,7 +264,12 @@ export default function CreatePostForm() {
       {mutation.isError && (
         <Card className="border-red-900 bg-red-950/30 p-4 my-2">
           <p className="text-sm text-red-400">
-            {(mutation.error as any)?.response?.data?.message || 'Gagal membuat postingan. Pastikan kamu memiliki minimal 15 poin.'}
+            {(
+              (mutation.error as AxiosError)?.response?.data as {
+                message: string;
+              }
+            )?.message ||
+              "Gagal membuat postingan. Pastikan kamu memiliki minimal 15 poin."}
           </p>
         </Card>
       )}
@@ -265,7 +287,7 @@ export default function CreatePostForm() {
               Memposting...
             </>
           ) : (
-            'Buat Pertanyaan'
+            "Buat Pertanyaan"
           )}
         </Button>
 

@@ -89,8 +89,7 @@ export function BadgeMasterPage() {
     : badges;
 
   return (
-    <div className="w-full min-h-screen bg-[#0B0B0C] text-white p-6 sm:p-10 font-sans antialiased">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="max-w-7xl mx-auto py-8 px-6 space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -165,7 +164,6 @@ export function BadgeMasterPage() {
             />
           )}
         </div>
-      </div>
 
       <BadgeFormModal
         isOpen={isFormOpen}

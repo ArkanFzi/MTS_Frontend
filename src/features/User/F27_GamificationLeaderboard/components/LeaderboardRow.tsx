@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Crown } from 'lucide-react';
+
 import type { LeaderboardEntry } from '../types';
 import { getBadgeTier, badgeTierConfig } from '../types';
 import { Avatar, AvatarImage, AvatarFallback } from '../../../../components/ui/avatar';

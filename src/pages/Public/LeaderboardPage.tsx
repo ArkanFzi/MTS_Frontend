@@ -1,12 +1,11 @@
+// src/pages/LeaderboardPage.tsx
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Trophy, ChevronDown } from "lucide-react";
+import { Trophy } from "lucide-react";
 import { getLeaderboard } from "../../features/User/F27_GamificationLeaderboard/api";
 import type { LeaderboardEntry } from "../../features/User/F27_GamificationLeaderboard/types";
-import LeaderboardRow from "../../features/User/F27_GamificationLeaderboard/components/LeaderboardRow";
-import { Button } from "../../components/ui/button";
 import ResponsiveLayout from "../../components/shared/ResponsiveLayout";
-
+import LeaderboardTable from "../../features/User/F27_GamificationLeaderboard/components/LeaderboardTable";
 import LeaderboardSkeleton from "../../features/User/F27_GamificationLeaderboard/components/LeaderboardSkeleton";
 
 export default function LeaderboardPage() {
@@ -21,9 +20,12 @@ export default function LeaderboardPage() {
 
   useEffect(() => {
     if (!data?.data) return;
+
+    // GUARD CLAUSE: Sinkronisasi paket data halaman API dengan state page aktif
+    if (data.meta && data.meta.current_page !== page) return;
+
     const newEntries = data.data;
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     setAllEntries((prev) => {
       if (page === 1) return newEntries;
       const prevCount = (page - 1) * limit;
@@ -32,14 +34,21 @@ export default function LeaderboardPage() {
     });
   }, [data, page]);
 
-  const entries = data?.data || [];
   const meta = data?.meta;
   const hasMore = meta ? meta.current_page < meta.last_page : false;
-  const displayEntries = page === 1 ? entries : allEntries;
+  const displayEntries = allEntries.length > 0 ? allEntries : (data?.data || []);
+
+  const handleCollapse = () => {
+    setPage(1);
+    const anchor = document.getElementById("leaderboard-anchor");
+    if (anchor) {
+      anchor.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
 
   return (
     <ResponsiveLayout>
-      <div className="w-full py-8">
+      <div id="leaderboard-anchor" className="w-full py-8">
         {/* ── Header ── */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
@@ -53,58 +62,26 @@ export default function LeaderboardPage() {
           </p>
         </div>
 
-        {/* ── Table Header (Sinkron dengan LeaderboardRow) ── */}
-        <div className="flex items-center flex-nowrap gap-2 mb-5 sm:gap-4 px-3 sm:px-5 py-3 border-b border-[#2A2A2C] text-[9px] font-bold text-gray-500 uppercase">
-          <div className="shrink-0 w-10 sm:w-14 text-center">Rank</div>
-          <div className="flex-1 min-w-25">Expert</div>
-          <div className="shrink-0 w-16.25 sm:w-25 text-right">Rep</div>
-          <div className="shrink-0 w-15 sm:w-30 text-right">Badge</div>
-        </div>
-
-        {/* ── Content ── */}
-        {isLoading && page === 1 && <LeaderboardSkeleton />}
-
-        {!isLoading && isError && (
+        {/* ── Content Wrapper ── */}
+        {isLoading && page === 1 ? (
+          <LeaderboardSkeleton />
+        ) : isError ? (
           <p className="text-red-400 text-center py-20">
             Failed to load leaderboard. Please try again later.
           </p>
-        )}
-
-        {!isLoading && !isError && entries.length === 0 && (
+        ) : displayEntries.length === 0 ? (
           <div className="text-center py-20 border border-dashed border-[#2A2A2C] rounded-xl">
             <p className="text-gray-500">No leaderboard data available yet.</p>
           </div>
-        )}
-
-        {!isError && displayEntries.length > 0 && (
-          <div className="border border-[#2A2A2C] rounded-lg overflow-hidden bg-[#161618]">
-            {displayEntries.map((entry, index) => (
-              <LeaderboardRow key={entry.id} entry={entry} rank={index + 1} />
-            ))}
-          </div>
-        )}
-
-        {/* ── Load More ── */}
-        {hasMore && !isLoading && (
-          <div className="flex justify-center mt-8">
-            <Button
-              variant="outline"
-              className="border-[#2A2A2C] text-[#D4AF37] hover:bg-[#161618] px-8 gap-2 rounded-full"
-              onClick={() => setPage((p) => p + 1)}
-            >
-              Load More
-              <ChevronDown className="w-4 h-4" />
-            </Button>
-          </div>
-        )}
-
-        {isLoading && page > 1 && (
-          <div className="flex justify-center mt-8">
-            <div className="flex items-center gap-2 text-gray-400 text-sm">
-              <div className="w-4 h-4 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
-              Loading more...
-            </div>
-          </div>
+        ) : (
+          <LeaderboardTable
+            entries={displayEntries}
+            isLoading={isLoading}
+            hasMore={hasMore}
+            page={page}
+            onLoadMore={() => setPage((p) => p + 1)}
+            onCollapse={handleCollapse}
+          />
         )}
       </div>
     </ResponsiveLayout>

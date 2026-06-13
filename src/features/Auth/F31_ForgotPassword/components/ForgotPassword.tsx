@@ -3,7 +3,7 @@ import * as Yup from 'yup';
 import { Input } from '../../../../components/ui/input';
 import { Button } from '../../../../components/ui/button';
 import { Label } from '../../../../components/ui/label';
-import { Mail, Lock, ArrowLeft, Loader2 } from 'lucide-react';
+import { Mail, Lock, Loader2 } from 'lucide-react';
 import type { ForgotPasswordFormProps, ResetPasswordFormProps } from '../types';
 
 // ─── Validation schemas ───

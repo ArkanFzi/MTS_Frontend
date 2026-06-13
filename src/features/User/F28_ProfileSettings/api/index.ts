@@ -1,38 +1,35 @@
 // src/features/User/F28_ProfileSettings/api/index.ts
 import axios from '../../../../lib/axios';
-import type {
-  UpdateProfilePayload,
-  UpdatePasswordPayload,
-  ProfileResponse,
-  ProfileUpdateResponse,
-  PasswordUpdateResponse,
-} from '../types';
+import type { PasswordUpdateResponse, ProfileResponse, ProfileUpdateResponse, UpdatePasswordPayload } from '../types';
 
+/**
+ * Mengambil data profil user yang sedang login
+ * URL Asli: http://localhost:8000/api/settings/profile
+ */
 export const getProfile = async (): Promise<ProfileResponse> => {
-  const response = await axios.get('/api/settings/profile');
+  const response = await axios.get('/api/settings/profile'); 
   return response.data;
 };
 
 /**
- * Update profile — sends FormData to support avatar file upload.
- * Uses POST with _method=PUT because FormData + PUT has browser quirks.
+ * Memperbarui informasi profil beserta avatar (menggunakan FormData)
+ * URL Asli: http://localhost:8000/api/settings/profile
  */
-export const updateProfile = async (data: UpdateProfilePayload): Promise<ProfileUpdateResponse> => {
-  const formData = new FormData();
-  formData.append('_method', 'PUT');
-
-  if (data.username !== undefined) formData.append('username', data.username);
-  if (data.email !== undefined) formData.append('email', data.email);
-  if (data.bio !== undefined) formData.append('bio', data.bio);
-  if (data.avatar) formData.append('avatar', data.avatar);
-
+export const updateProfile = async (formData: FormData): Promise<ProfileUpdateResponse> => {
   const response = await axios.post('/api/settings/profile', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
+    headers: {
+      // Memaksa browser untuk menyusun ulang content-type dan boundary file
+      'Content-Type': 'multipart/form-data',
+    },
   });
   return response.data;
 };
 
-export const updatePassword = async (data: UpdatePasswordPayload): Promise<PasswordUpdateResponse> => {
-  const response = await axios.put('/api/settings/password', data);
+/**
+ * Memperbarui password user
+ * URL Asli: http://localhost:8000/api/settings/password
+ */
+export const updatePassword = async (payload: UpdatePasswordPayload): Promise<PasswordUpdateResponse> => {
+  const response = await axios.put('/api/settings/password', payload);
   return response.data;
 };

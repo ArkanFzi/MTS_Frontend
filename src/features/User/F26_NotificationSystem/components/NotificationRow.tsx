@@ -12,37 +12,89 @@ interface NotificationRowProps {
   onMarkRead: (id: string) => void;
 }
 
-// Helper: build human-readable message from notification type + actor
+// Helper: build human-readable message (Tanpa actorName di dalam string agar tidak double)
 function buildMessage(notification: NotificationItem): string {
-  const actorName = notification.actor?.username || 'Someone';
   switch (notification.type) {
+    // Interaksi Konten
+    case 'like_post':
+      return `menyukai postingan Anda.`;
+    case 'like_comment':
+      return `menyukai komentar Anda.`;
+    case 'upvote_post':
+      return `memberikan upvote pada postingan Anda.`;
+    case 'upvote_comment':
+      return `memberikan upvote pada komentar Anda.`;
     case 'new_comment':
-    case 'new_answer':
-      return `${actorName} menjawab pertanyaan Anda.`;
-    case 'accepted_answer':
-      return `${actorName} menerima jawaban Anda.`;
-    case 'new_vote':
-    case 'new_like':
-      return `${actorName} memberikan vote pada postingan Anda.`;
-    case 'badge_earned':
-      return `Selamat! Anda mendapatkan badge baru.`;
+      return `memberikan jawaban pada postingan Anda.`;
+    case 'comment_reply':
+      return `membalas komentar Anda.`;
+    case 'answer_accepted':
+      return `menerima jawaban Anda.`;
+    
+    // Sosial
+    case 'followed':
+      return `mulai mengikuti Anda.`;
+    
+    // Sistem & Profil (Milik user sendiri, diarahkan ke settings)
+    case 'complete_profile_reminder':
+      return `Selamat datang! Jangan lupa lengkapi profil Anda.`;
     case 'profile_completed':
-      return `Profil Anda sekarang lengkap!`;
+      return `Profil Anda sekarang lengkap! Terima kasih.`;
+    case 'badge_awarded':
+      return `Selamat! Anda mendapatkan badge baru.`;
+
+    // Moderasi & Admin
+    case 'new_report':
+      return `melaporkan sebuah konten.`;
+    case 'report_updated':
+      return `Laporan Anda telah diproses oleh moderator.`;
+    case 'user_banned':
+      return `Akun Anda telah di-ban oleh moderator.`;
+    case 'user_warned':
+      return `Anda mendapatkan peringatan dari moderator.`;
+    case 'role_assigned':
+      return `Role Anda telah diperbarui oleh admin.`;
+
     default:
-      return `${actorName} berinteraksi dengan konten Anda.`;
+      return `berinteraksi dengan konten Anda.`;
   }
 }
 
-// Helper: resolve link from reference_type + reference_id
+// Helper: Resolve link untuk KLIK CARD UTAMA (Bukan klik profil pelaku)
 function buildLink(notification: NotificationItem): string | null {
+  // Notifikasi tertentu mungkin tidak punya reference_id tapi butuh link tetap
+  if (notification.type === 'complete_profile_reminder' || notification.type === 'profile_completed') {
+    return '/settings/profile';
+  }
+  
+  // 🌟 HANDLE DETAIL WARNING
+  if (notification.type === 'user_warned') {
+    return '/me/warnings'; 
+    // Catatan: Jika halaman warning kamu butuh ID spesifik, ganti menjadi:
+    // return `/me/warnings/${notification.reference_id}`;
+  }
+
   if (!notification.reference_id) return null;
+  
+  if (notification.type === 'followed') {
+    return `/profile/${notification.reference_id}`;
+  }
+
+  if (notification.type === 'new_report' || notification.type === 'report_updated') {
+    return `/moderator/reports`;
+  }
+
   switch (notification.reference_type) {
     case 'post':
       return `/posts/${notification.reference_id}`;
     case 'comment':
-      return `/posts/${notification.reference_id}`; // navigate to the post
+      if (notification.reference && notification.reference.post_id) {
+        return `/posts/${notification.reference.post_id}`;
+      }
+      return `/posts/${notification.reference_id}`;
+    case 'user':
     case 'App\\Models\\Auth\\User':
-      return '/settings/profile';
+      return `/profile/${notification.reference_id}`;
     default:
       return null;
   }
@@ -54,12 +106,21 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({ notification, 
   const message = buildMessage(notification);
   const link = buildLink(notification);
 
+  // Handler klik card utama (ke arah konten/post/laporan/warning)
   const handleNotificationClick = () => {
     if (!is_read) {
       onMarkRead(id);
     }
     if (link) {
       navigate(link);
+    }
+  };
+
+  // Handler klik Avatar / Username pelaku (Pasti ke PROFIL PUBLIK orang tersebut)
+  const handleActorClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Mencegah card utama ikut ter-klik
+    if (actor?.id) {
+      navigate(`/profile/${actor.id}`); 
     }
   };
 
@@ -79,6 +140,10 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({ notification, 
     if (type === 'profile_completed') {
       return <UserCheck className="h-4 w-4 text-cyan-500" />;
     }
+    // Mengubah warna icon bell/warning khusus jika tipenya user_warned
+    if (type === 'user_warned') {
+      return <Bell className="h-4 w-4 text-red-500 animate-pulse" />;
+    }
     return <Bell className="h-4 w-4 text-zinc-400" />;
   };
 
@@ -89,8 +154,12 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({ notification, 
         !is_read ? 'bg-[#161618] border-l-2 border-l-[#D4AF37]' : ''
       }`}
     >
-      <div className="relative shrink-0">
-        <Avatar className="h-10 w-10 border border-zinc-700">
+      {/* KOTAK AVATAR (MENGARAH KE PROFIL PUBLIK PELAKU) */}
+      <div 
+        onClick={handleActorClick} 
+        className="relative shrink-0 cursor-pointer group/avatar"
+      >
+        <Avatar className="h-10 w-10 border border-zinc-700 transition-colors group-hover/avatar:border-zinc-500">
           {actor?.avatar_url ? (
             <AvatarImage src={actor.avatar_url} alt={actor.username} />
           ) : (
@@ -104,10 +173,15 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({ notification, 
         </div>
       </div>
 
+      {/* KONTEN TEKS NOTIFIKASI */}
       <div className="flex-1 space-y-1">
         <div className="text-sm text-zinc-200">
           {actor && (
-            <span className="font-bold text-zinc-100 mr-1 hover:underline">
+            /* USERNAME (MENGARAH KE PROFIL PUBLIK PELAKU) */
+            <span 
+              onClick={handleActorClick}
+              className="font-bold text-zinc-100 mr-1 hover:underline cursor-pointer"
+            >
               {actor.username}
             </span>
           )}
@@ -118,13 +192,14 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({ notification, 
         </div>
       </div>
 
+      {/* TOMBOL TANDAI DIBACA */}
       {!is_read && (
         <Button
           variant="ghost"
           size="sm"
           className="text-xs text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800"
           onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-            e.stopPropagation();
+            e.stopPropagation(); // Mencegah card utama ikut ter-klik
             onMarkRead(id);
           }}
         >

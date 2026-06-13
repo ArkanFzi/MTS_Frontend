@@ -1,5 +1,5 @@
 // src/features/User/F24_BookmarkPost/components/BookmarkToggle.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toggleBookmark } from '../api';
 import { Bookmark, Loader2 } from 'lucide-react';
@@ -11,11 +11,15 @@ interface BookmarkToggleProps {
 
 export default function BookmarkToggle({ postId, isInitiallyBookmarked = false }: BookmarkToggleProps) {
   const queryClient = useQueryClient();
+  const [isBookmarked, setIsBookmarked] = useState(isInitiallyBookmarked);
 
   const mutation = useMutation({
     mutationFn: () => toggleBookmark(postId),
-    onSuccess: () => {
+    onSuccess: (data) => {
+      const newStatus = data.status === 'bookmarked';
+      setIsBookmarked(newStatus);
       queryClient.invalidateQueries({ queryKey: ['bookmarks'] });
+      queryClient.invalidateQueries({ queryKey: ['post'] });
     },
     onError: (err) => {
       console.error('Failed to toggle bookmark:', err);
@@ -33,16 +37,16 @@ export default function BookmarkToggle({ postId, isInitiallyBookmarked = false }
         onClick={handleToggle}
         disabled={mutation.isPending}
         className={`flex items-center justify-center p-2.5 border transition-all active:translate-x-p active:translate-y-px disabled:opacity-50 ${
-          isInitiallyBookmarked
+          isBookmarked
             ? 'bg-[#0B0B0C] border-[#2A2A2C] text-[#D4AF37] hover:bg-red-950/30 hover:text-red-400 hover:border-red-900'
             : 'bg-transparent border-zinc-800 text-zinc-500 hover:text-[#D4AF37] hover:border-zinc-700'
         }`}
-        title={isInitiallyBookmarked ? 'Hapus dari simpanan' : 'Simpan postingan'}
+        title={isBookmarked ? 'Hapus dari simpanan' : 'Simpan postingan'}
       >
         {mutation.isPending ? (
           <Loader2 className="h-4 w-4 animate-spin" />
         ) : (
-          <Bookmark className={`h-4 w-4 ${isInitiallyBookmarked ? 'fill-[#D4AF37]' : ''}`} />
+          <Bookmark className={`h-4 w-4 ${isBookmarked ? 'fill-[#D4AF37]' : ''}`} />
         )}
       </button>
     </div>

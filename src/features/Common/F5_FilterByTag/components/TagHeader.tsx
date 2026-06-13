@@ -3,7 +3,6 @@
 import { Link } from 'react-router-dom';
 import { Hash, Bell, PenSquare, FolderOpen } from 'lucide-react';
 import type { TagInfo, CategoryOption } from '../types';
-import { Badge } from '../../../../components/ui/badge';
 import { Button } from '../../../../components/ui/button';
 
 interface TagHeaderProps {

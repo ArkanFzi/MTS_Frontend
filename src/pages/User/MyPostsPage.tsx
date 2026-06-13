@@ -6,28 +6,8 @@ import { ChevronDown, FileText, Plus } from 'lucide-react';
 import { getMyPosts } from '../../features/User/F16_Post/api';
 import PostCardItem from '../../features/User/F16_Post/components/PostCardItem';
 import { Button } from '../../components/ui/button';
-import { Skeleton } from '../../components/ui/skeleton';
 
-function ListSkeleton() {
-  return (
-    <div className="flex flex-col gap-4">
-      {[1, 2, 3].map((i) => (
-        <div key={i} className="bg-[#161618] border border-[#2A2A2C] rounded-lg p-5 space-y-3">
-          <div className="flex gap-2">
-            <Skeleton className="w-16 h-4 rounded-full" />
-            <Skeleton className="w-12 h-4 rounded-full" />
-          </div>
-          <Skeleton className="w-3/4 h-5" />
-          <div className="flex gap-2">
-            <Skeleton className="w-20 h-4 rounded-full" />
-            <Skeleton className="w-16 h-4 rounded-full" />
-          </div>
-          <Skeleton className="w-1/2 h-3" />
-        </div>
-      ))}
-    </div>
-  );
-}
+import MyPostsSkeleton from '../../features/User/F16_Post/components/MyPostsSkeleton';
 
 export default function MyPostsPage() {
   const [page, setPage] = useState(1);
@@ -63,7 +43,7 @@ export default function MyPostsPage() {
       </div>
 
       {/* Loading */}
-      {isLoading && <ListSkeleton />}
+      {isLoading && <MyPostsSkeleton />}
 
       {/* Error */}
       {isError && (

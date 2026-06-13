@@ -12,6 +12,8 @@ export interface Reply {
   created_at: string;
   updated_at: string;
   user?: User;
+  is_liked?: boolean;
+  likes_count?: number;
 }
 
 export interface CreateReplyPayload {

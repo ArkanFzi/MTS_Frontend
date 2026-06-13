@@ -21,3 +21,5 @@ export interface TrendingResponse {
   message: string;
   data: TrendingPost[];
 }
+
+export type TabType = 'trending' | 'popular';
